@@ -49,6 +49,7 @@ public class PlayerCameraHandling : MonoBehaviour
         return (true, hitInfo.point);
     }
 
+    //Should be improved.
     private void ApplyLookDirection ()
     {
         Vector3 direction;
@@ -125,12 +126,11 @@ public class PlayerCameraHandling : MonoBehaviour
     private void Update ()
     {
         ApplyLookDirection();
+        CheckForPositionChange();
     }
 
-    private void FixedUpdate ()
+    private void LateUpdate ()
     {
-        CheckForPositionChange();
-
         if ( updateCameraPosition )
             UpdatePosition();
     }

@@ -20,15 +20,13 @@ public partial struct RotatingMovingCubesSystem : ISystem
     }
 }
 
-[BurstCompile, WithAll(typeof(RotatingCube))]
+[BurstCompile, WithAll(typeof(RotatingCube)), WithDisabled(typeof(Stunned))]
 public partial struct RotateCubesJob : IJobEntity
 {
     public float deltaTime;
 
-    public void Execute ( MovingRotatingCubeAspect movingRotatingCubeAspect )
+    public void Execute ( MovingRotatingCubeAspect cubeAspect )
     {
-        movingRotatingCubeAspect.localTransform.ValueRW = movingRotatingCubeAspect.localTransform.ValueRO.RotateY(movingRotatingCubeAspect.rotateSpeed.ValueRO.value * deltaTime);
-
-        movingRotatingCubeAspect.localTransform.ValueRW = movingRotatingCubeAspect.localTransform.ValueRO.Translate(movingRotatingCubeAspect.movementVector.ValueRO.movementVector * deltaTime);
+        cubeAspect.localTransform.ValueRW = cubeAspect.localTransform.ValueRO.Translate(cubeAspect.movementVector.ValueRO.movementVector * deltaTime);
     }
 }

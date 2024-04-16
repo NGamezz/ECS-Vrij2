@@ -1,6 +1,7 @@
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Jobs;
 using Unity.Transforms;
 
 public partial struct SpawnCubesSystem : ISystem
@@ -25,7 +26,7 @@ public partial struct SpawnCubesSystem : ISystem
         {
             SystemAPI.SetComponent(entities[i], new LocalTransform()
             {
-                Position = new Unity.Mathematics.float3(UnityEngine.Random.Range(-5, 6), 0.5f, UnityEngine.Random.Range(-5, 6)),
+                Position = new Unity.Mathematics.float3(UnityEngine.Random.Range(-5, 6), 5.0f, UnityEngine.Random.Range(-5, 6)),
                 Scale = 1.0f,
                 Rotation = Unity.Mathematics.quaternion.identity,
             });
