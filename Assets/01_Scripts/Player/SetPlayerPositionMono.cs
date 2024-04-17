@@ -8,12 +8,17 @@ public class SetPlayerPositionMono : MonoBehaviour
 
     void Start ()
     {
-        SetPlayerPositionSystem playerPositionSystem = World.DefaultGameObjectInjectionWorld.GetExistingSystemManaged<SetPlayerPositionSystem>();
+        var world = World.DefaultGameObjectInjectionWorld;
+
+        SetPlayerPositionSystem playerPositionSystem = world.GetExistingSystemManaged<SetPlayerPositionSystem>();
         playerPositionSystem.onRequestPlayerPosition = GetFloat3PlayerPos;
 
-        PlayerShootingSystem shootingSystem = World.DefaultGameObjectInjectionWorld.GetExistingSystemManaged<PlayerShootingSystem>();
+        PlayerShootingSystem shootingSystem = world.GetExistingSystemManaged<PlayerShootingSystem>();
         shootingSystem.requestPlayerPosition = GetFloat3PlayerPos;
-        shootingSystem.requestPlayerRotation += GetPlayerRotation;
+        shootingSystem.requestPlayerRotation = GetPlayerRotation;
+
+        SpawnEnemies spawnEnemiesSystem = world.GetExistingSystemManaged<SpawnEnemies>();
+        spawnEnemiesSystem.requestPlayerPosition = GetFloat3PlayerPos;
     }
 
     private Quaternion GetPlayerRotation()

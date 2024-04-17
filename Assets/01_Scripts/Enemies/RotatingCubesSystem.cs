@@ -1,7 +1,7 @@
 using Unity.Burst;
 using Unity.Entities;
 
-public partial struct RotatingMovingCubesSystem : ISystem
+public partial struct EnemyMoveSystem : ISystem
 {
     public void OnCreate ( ref SystemState state )
     {
@@ -11,7 +11,7 @@ public partial struct RotatingMovingCubesSystem : ISystem
     [BurstCompile]
     public void OnUpdate ( ref SystemState state )
     {
-        RotateCubesJob rotateCubesJob = new()
+        MoveEnemyJob rotateCubesJob = new()
         {
             deltaTime = SystemAPI.Time.DeltaTime,
         };
@@ -21,12 +21,12 @@ public partial struct RotatingMovingCubesSystem : ISystem
 }
 
 [BurstCompile, WithAll(typeof(RotatingCube)), WithDisabled(typeof(Stunned))]
-public partial struct RotateCubesJob : IJobEntity
+public partial struct MoveEnemyJob : IJobEntity
 {
     public float deltaTime;
 
     public void Execute ( MovingRotatingCubeAspect cubeAspect )
     {
-        cubeAspect.localTransform.ValueRW = cubeAspect.localTransform.ValueRO.Translate(cubeAspect.movementVector.ValueRO.movementVector * deltaTime);
+        cubeAspect.LocalTransform = cubeAspect.LocalTransform.Translate(cubeAspect.MovementVector * deltaTime);
     }
 }

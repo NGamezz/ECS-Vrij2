@@ -28,13 +28,15 @@ public partial class PlayerShootingSystem : SystemBase
         PhysicsWorld world = SystemAPI.GetSingletonRW<PhysicsWorldSingleton>().ValueRW.PhysicsWorld;
 
         float3 playerPos = requestPlayerPosition.Invoke();
+        playerPos.y -= 0.5f;
+
         var playerRotation = requestPlayerRotation.Invoke();
 
         SpawnCubesConfig config = SystemAPI.GetSingleton<SpawnCubesConfig>();
 
         EntityCommandBuffer buffer = new(Unity.Collections.Allocator.Temp);
 
-        foreach ( var (localTransform, entity) in SystemAPI.Query<RefRO<LocalTransform>>().WithAll<Player>().WithDisabled<Stunned>().WithEntityAccess() )
+        foreach ( var localTransform in SystemAPI.Query<RefRO<LocalTransform>>().WithAll<Player>().WithDisabled<Stunned>() )
         {
             float3 forward = math.mul(playerRotation, new float3(0f, 0f, 1f));
             float3 rayEnd = forward * 50.0f + playerPos;
@@ -46,16 +48,21 @@ public partial class PlayerShootingSystem : SystemBase
                 Filter = CollisionFilter.Default,
             };
 
-            world.CastRay(rayInput, out Unity.Physics.RaycastHit closestHit);
+            var succes = world.CastRay(rayInput, out Unity.Physics.RaycastHit closestHit);
+            Debug.DrawRay(playerPos, rayEnd, Color.cyan, 10.0f);
 
-            if(entity == null)
+            if ( !succes )
+            {
+                continue;
+            }
+            else if ( EntityManager.IsComponentEnabled<Stunned>(closestHit.Entity) )
             {
                 continue;
             }
 
-            SystemAPI.SetComponentEnabled<Stunned>(closestHit.Entity, true);
+            buffer.SetComponentEnabled<Stunned>(closestHit.Entity, true);
 
-            OnShoot?.Invoke(entity, EventArgs.Empty);
+            OnShoot?.Invoke(closestHit.Entity, EventArgs.Empty);
         }
 
         buffer.Playback(EntityManager);

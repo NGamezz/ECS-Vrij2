@@ -1,35 +1,78 @@
+using System;
 using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Jobs;
+using Unity.Mathematics;
 using Unity.Transforms;
 
-public partial struct SpawnCubesSystem : ISystem
+[BurstCompile]
+public partial class SpawnEnemies : SystemBase
 {
-    public void OnCreate ( ref SystemState state )
+    public Func<float3> requestPlayerPosition;
+
+    protected override void OnCreate ()
     {
-        state.RequireForUpdate<SpawnCubesConfig>();
+        RequireForUpdate<SpawnCubesConfig>();
     }
 
     [BurstCompile]
-    public void OnUpdate ( ref SystemState state )
+    protected override void OnUpdate ()
     {
-        state.Enabled = false;
-
-        SpawnCubesConfig spawnCubesConfig = SystemAPI.GetSingleton<SpawnCubesConfig>();
-
-        NativeArray<Entity> entities = new(spawnCubesConfig.amountToSpawn, Allocator.Temp);
-
-        state.EntityManager.Instantiate(spawnCubesConfig.prefab, entities);
-
-        for ( int i = 0; i < entities.Length; i++ )
+        EntityCommandBuffer buffer = new(Allocator.TempJob);
+        foreach ( var (spawnTimer, config) in SystemAPI.Query<RefRW<SpawnTimer>, RefRO<SpawnCubesConfig>>() )
         {
-            SystemAPI.SetComponent(entities[i], new LocalTransform()
+            spawnTimer.ValueRW.Value = spawnTimer.ValueRO.Value - SystemAPI.Time.DeltaTime;
+            if ( spawnTimer.ValueRO.Value > 0 )
+            { continue; }
+
+            spawnTimer.ValueRW.Value = config.ValueRO.timeToSpawn;
+
+            var seed = (uint)UnityEngine.Random.Range(0, int.MaxValue);
+            Unity.Mathematics.Random random = new(seed);
+
+            var playerPos = requestPlayerPosition.Invoke();
+
+            SpawnJob spawnEnemiesJob = new()
             {
-                Position = new Unity.Mathematics.float3(UnityEngine.Random.Range(-5, 6), 5.0f, UnityEngine.Random.Range(-5, 6)),
-                Scale = 1.0f,
-                Rotation = Unity.Mathematics.quaternion.identity,
-            });
+                playerPos = playerPos,
+                Ecb = buffer.AsParallelWriter(),
+                config = config,
+                random = random,
+            };
+
+            spawnEnemiesJob.Schedule(config.ValueRO.amountToSpawn, 64).Complete();
         }
+        buffer.Playback(EntityManager);
+        buffer.Dispose();
+    }
+}
+
+[BurstCompile]
+public struct SpawnJob : IJobParallelFor
+{
+    public EntityCommandBuffer.ParallelWriter Ecb;
+
+    [ReadOnly] public Unity.Mathematics.Random random;
+
+    [ReadOnly] public float3 playerPos;
+
+    [ReadOnly, NativeDisableUnsafePtrRestriction] public RefRO<SpawnCubesConfig> config;
+
+    [BurstCompile]
+    public void Execute ( int index )
+    {
+        float3 position = playerPos + new float3(random.NextFloat3((int)config.ValueRO.spawnBounds.x, (int)config.ValueRO.spawnBounds.y));
+
+        position.y = 1.0f;
+
+        var entity = Ecb.Instantiate(index, config.ValueRO.prefab);
+        Ecb.SetComponent(index, entity, new LocalTransform()
+        {
+            Scale = 1.0f,
+            Rotation = quaternion.identity,
+            Position = position
+        });
     }
 }

@@ -381,7 +381,7 @@ MonoBehaviour:
   m_SimulationType: 1
   m_Gravity:
     x: -0
-    y: -9.81
+    y: -31
     z: -0
   m_SolverIterationCount: 4
   m_EnableSolverStabilizationHeuristic: 0
@@ -437,7 +437,7 @@ GameObject:
   - component: {fileID: 983160257}
   - component: {fileID: 983160256}
   m_Layer: 0
-  m_Name: SpawnCubesConfig
+  m_Name: SpawnConfig
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -456,11 +456,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prefab: {fileID: 3534396262627108685, guid: f8a361a95e0f46d44a9dcbe7cde76bbc, type: 3}
-  amountToSpawn: 20
+  amountToSpawn: 500
+  spawnRate: 1
+  timeToSpawn: 5
   spawnBounds:
-    x: 10
+    x: -10
     y: 10
-    z: 10
 --- !u!4 &983160257
 Transform:
   m_ObjectHideFlags: 0
@@ -487,7 +488,6 @@ GameObject:
   - component: {fileID: 1213206000}
   - component: {fileID: 1213205999}
   - component: {fileID: 1213206001}
-  - component: {fileID: 1213206002}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -516,7 +516,7 @@ Transform:
   m_GameObject: {fileID: 1213205998}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 6.9, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -534,57 +534,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2abb6eef8c802c14497dec074432845e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &1213206002
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1213205998}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ccea9ea98e38942e0b0938c27ed1903e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_MotionType: 0
-  m_Smoothing: 0
-  m_Mass: 1
-  m_LinearDamping: 0.01
-  m_AngularDamping: 0.05
-  m_InitialLinearVelocity:
-    x: 0
-    y: 0
-    z: 0
-  m_InitialAngularVelocity:
-    x: 0
-    y: 0
-    z: 0
-  m_GravityFactor: 1
-  m_OverrideDefaultMassDistribution: 0
-  m_CenterOfMass:
-    x: 0
-    y: 0
-    z: 0
-  m_Orientation:
-    Value:
-      x: 0
-      y: 0
-      z: 0
-    RotationOrder: 4
-  m_InertiaTensor:
-    x: 0.4
-    y: 0.4
-    z: 0.4
-  m_WorldIndex: 0
-  m_CustomTags:
-    Tag00: 0
-    Tag01: 0
-    Tag02: 0
-    Tag03: 0
-    Tag04: 0
-    Tag05: 0
-    Tag06: 0
-    Tag07: 0
 --- !u!1 &2051255524
 GameObject:
   m_ObjectHideFlags: 0

@@ -7,7 +7,11 @@ public class SpawnCubesConfigAuthoring : MonoBehaviour
     public GameObject prefab;
     public int amountToSpawn;
 
-    public float3 spawnBounds;
+    public float spawnRate;
+
+    public float timeToSpawn;
+
+    public float2 spawnBounds;
 
     private class Baker : Baker<SpawnCubesConfigAuthoring>
     {
@@ -20,14 +24,28 @@ public class SpawnCubesConfigAuthoring : MonoBehaviour
                 prefab = GetEntity(authoring.prefab, TransformUsageFlags.Dynamic),
                 amountToSpawn = authoring.amountToSpawn,
                 spawnBounds = authoring.spawnBounds,
+                spawnRate = authoring.spawnRate,
+                timeToSpawn = authoring.timeToSpawn,
+            });
+
+            AddComponent(entity, new SpawnTimer()
+            {
+                Value = authoring.timeToSpawn,
             });
         }
     }
+}
+
+public struct SpawnTimer : IComponentData
+{
+    public float Value;
 }
 
 public struct SpawnCubesConfig : IComponentData
 {
     public Entity prefab;
     public int amountToSpawn;
-    public float3 spawnBounds;
+    public float2 spawnBounds;
+    public float spawnRate;
+    public float timeToSpawn;
 }
