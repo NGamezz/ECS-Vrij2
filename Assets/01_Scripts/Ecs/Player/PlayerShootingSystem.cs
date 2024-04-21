@@ -61,8 +61,9 @@ public partial class PlayerShootingSystem : SystemBase
             }
 
             buffer.SetComponentEnabled<Stunned>(closestHit.Entity, true);
+            buffer.SetComponentEnabled<SoulHarvest>(closestHit.Entity, true);
 
-            OnShoot?.Invoke(closestHit.Entity, EventArgs.Empty);
+            OnShoot?.Invoke(closestHit.Position, EventArgs.Empty);
         }
 
         buffer.Playback(EntityManager);

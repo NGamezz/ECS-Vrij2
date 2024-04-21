@@ -5,7 +5,7 @@ using Unity.Transforms;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class CollectionPoint : MonoBehaviour
+public class CollectionPointHybrid : MonoBehaviour
 {
     [SerializeField] private float range = 5.0f;
 
@@ -30,7 +30,6 @@ public class CollectionPoint : MonoBehaviour
         var direction = entityPos - transform.position;
 
         var lenght = math.length(direction);
-        Debug.Log(lenght);
 
         if ( lenght < range )
             AddSoul();
