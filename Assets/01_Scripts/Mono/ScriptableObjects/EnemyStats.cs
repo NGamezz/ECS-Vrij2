@@ -8,4 +8,6 @@ public class EnemyStats : ScriptableObject
     public float damage;
     public float attackRange;
     public float spawnSpeed;
+
+    public float enemiesPerBatch;
 }

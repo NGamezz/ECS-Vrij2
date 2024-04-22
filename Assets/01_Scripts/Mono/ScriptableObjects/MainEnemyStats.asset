@@ -17,3 +17,4 @@ MonoBehaviour:
   damage: 10
   attackRange: 5
   spawnSpeed: 10
+  enemiesPerBatch: 7

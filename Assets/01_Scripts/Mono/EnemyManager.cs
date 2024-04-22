@@ -6,18 +6,21 @@ using System.Threading.Tasks;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.UIElements;
+using UnityEngine.XR;
 
 public class EnemyManager : MonoBehaviour
 {
-    [SerializeField] private int amountOfEnemiesPerBatch = 2;
-
     [SerializeField] private List<DifficultyGrade> difficultyGrades = new();
 
-    [SerializeField] private List<Enemy> enemies = new();
+    [SerializeField] private List<Enemy> activeEnemies = new();
+
+    [Tooltip("How many can be seen on the screen at once, without having to create more of them.")]
+    [SerializeField] private byte startingAmountOfPooledObjects = 30;
 
     [SerializeField] private float2 spawnRange = new(5.0f, 15.0f);
 
-    private ObjectPool<GameObject> objectPool;
+    private ObjectPool<GameObject> objectPool = new();
 
     private Coroutine currentRoutine;
 
@@ -25,38 +28,47 @@ public class EnemyManager : MonoBehaviour
 
     [SerializeField] private Transform playerTransform;
 
-    private void Start ()
+    private void Start()
     {
         currentDifficultyGrade = difficultyGrades[0];
 
-        objectPool = new();
-
+        GenerateObjects();
         currentRoutine = StartCoroutine(SpawnEnemies());
     }
 
     //Implement Object Pooling Later.
-    private void RemoveEnemy ( object sender, EventArgs eventArgs )
+    private void RemoveEnemy(object sender, EventArgs eventArgs)
     {
         Enemy enemy = (Enemy)sender;
 
         Debug.Log("Death");
 
         enemy.OnDeath -= RemoveEnemy;
-        enemies.Remove(enemy);
-        Destroy(enemy.gameObject);
+        activeEnemies.Remove(enemy);
+        enemy.gameObject.SetActive(false);
+        objectPool.PoolObject(enemy.gameObject);
+    }
+
+    private void GenerateObjects()
+    {
+        for (int i = 0; i < startingAmountOfPooledObjects; i++)
+        {
+            var gameObject = Instantiate(currentDifficultyGrade.enemyPrefabs[0], transform);
+            gameObject.SetActive(false);
+            gameObject.AddComponent<Enemy>();
+            objectPool.PoolObject(gameObject);
+        }
     }
 
     private IEnumerator SpawnEnemies()
     {
-        Debug.Log("Spawning Enemies.");
-
-        for (int i = 0; i < amountOfEnemiesPerBatch; i++)
+        for (int i = 0; i < currentDifficultyGrade.enemyStats.enemiesPerBatch; i++)
         {
             var position = playerTransform.position + (UnityEngine.Random.insideUnitSphere.normalized * UnityEngine.Random.Range(spawnRange.x, spawnRange.y));
-
             position.y = transform.position.y;
 
-            var gameObject = Instantiate(currentDifficultyGrade.enemyPrefabs[0], transform);
+            var gameObject = objectPool.GetPooledObject() ?? Instantiate(currentDifficultyGrade.enemyPrefabs[0], transform);
+            gameObject.SetActive(true);
 
             if (!gameObject.TryGetComponent(out NavMeshAgent agent))
             {
@@ -64,31 +76,35 @@ public class EnemyManager : MonoBehaviour
             }
             agent.Warp(position);
 
-            var enemy = gameObject.AddComponent<Enemy>();
+            if (!gameObject.TryGetComponent<Enemy>(out var enemy))
+            {
+                enemy = gameObject.AddComponent<Enemy>();
+            }
 
             enemy.OnStart(playerTransform, currentDifficultyGrade.enemyStats);
             enemy.OnDeath += RemoveEnemy;
+            enemy.UpdateStats(currentDifficultyGrade.enemyStats);
 
             Debug.Log("Spawned Enemy.");
 
-            enemies.Add(enemy);
+            activeEnemies.Add(enemy);
         }
         yield return new WaitForSeconds(currentDifficultyGrade.enemyStats.spawnSpeed);
 
         currentRoutine = StartCoroutine(SpawnEnemies());
     }
 
-    private void Update ()
+    private void Update()
     {
-        foreach ( var enemy in enemies )
+        foreach (var enemy in activeEnemies)
         {
             enemy.OnUpdate();
         }
     }
 
-    private void FixedUpdate ()
+    private void FixedUpdate()
     {
-        foreach ( var enemy in enemies )
+        foreach (var enemy in activeEnemies)
         {
             enemy.OnFixedUpdate();
         }
