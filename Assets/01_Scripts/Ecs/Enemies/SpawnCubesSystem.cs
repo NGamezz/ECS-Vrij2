@@ -20,6 +20,9 @@ public partial class SpawnEnemies : SystemBase
     [BurstCompile]
     protected override void OnUpdate ()
     {
+        Enabled = false;
+        return;
+
         EntityCommandBuffer buffer = new(Allocator.TempJob);
         foreach ( var (spawnTimer, config) in SystemAPI.Query<RefRW<SpawnTimer>, RefRO<SpawnCubesConfig>>() )
         {

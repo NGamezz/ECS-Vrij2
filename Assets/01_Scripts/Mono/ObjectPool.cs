@@ -1,18 +1,48 @@
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 
-public class ObjectPool
+public class ObjectPool<T> where T : class
 {
-    // Start is called before the first frame update
-    void Start()
+    private class ObjectHolder
     {
-        
+        public List<T> objects = new();
     }
 
-    // Update is called once per frame
-    void Update()
+    private Dictionary<bool, ObjectHolder> objectsInPool = new();
+
+    public T GetPooledObject()
     {
-        
+        if (!objectsInPool.ContainsKey(false))
+            return null;
+
+        var item = objectsInPool[false].objects[0];
+        objectsInPool[false].objects.Remove(item);
+
+        if (objectsInPool[false].objects.Count < 1)
+        {
+            objectsInPool.Remove(false);
+        }
+
+        if (!objectsInPool.ContainsKey(true))
+        {
+            var newHolder = new ObjectHolder();
+            newHolder.objects.Add(item);
+            objectsInPool.Add(true, newHolder);
+        }
+
+        return item;
+    }
+
+    public void PoolObject(T item)
+    {
+        if (!objectsInPool.ContainsKey(false))
+        {
+            var newHolder = new ObjectHolder();
+            newHolder.objects.Add(item);
+            objectsInPool.Add(false, newHolder);
+        }
+        else
+        {
+            objectsInPool[false].objects.Add(item);
+        }
     }
 }

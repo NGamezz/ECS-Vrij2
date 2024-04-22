@@ -1,3 +1,4 @@
+using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
@@ -11,6 +12,8 @@ public class MoveToTarget
 
     private NavMeshAgent agent;
 
+    private float3 cachedPosition;
+
     public void SetStats ( EnemyStats stats )
     {
         distanceToPlayer = stats.attackRange;
@@ -19,7 +22,7 @@ public class MoveToTarget
 
     public void OnDisable ()
     {
-        if ( agent == null )
+        if ( agent == null || !agent.isActiveAndEnabled )
             return;
 
         agent.ResetPath();
@@ -49,7 +52,7 @@ public class MoveToTarget
 
     private void CheckForCancelPath ()
     {
-        if ( Vector3.Distance(ownTransform.position, target.position) < distanceToPlayer )
+        if ( Vector3.Distance(ownTransform.position, target.position) < distanceToPlayer || Vector3.Distance(cachedPosition, target.position) > 5.0f)
         {
             agent.isStopped = true;
             agent.ResetPath();
@@ -61,6 +64,7 @@ public class MoveToTarget
         if ( agent == null || target == null )
         { return; }
 
+        cachedPosition = target.position;
         agent.SetDestination(target.position);
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,13 +17,11 @@ public class EnemyManager : MonoBehaviour
 
     [SerializeField] private float2 spawnRange = new(5.0f, 15.0f);
 
-    private ObjectPool objectPool;
+    private ObjectPool<GameObject> objectPool;
 
-    private Task currentTask;
+    private Coroutine currentRoutine;
 
     private DifficultyGrade currentDifficultyGrade;
-
-    private CancellationToken cancellationToken;
 
     [SerializeField] private Transform playerTransform;
 
@@ -32,10 +31,7 @@ public class EnemyManager : MonoBehaviour
 
         objectPool = new();
 
-        var tokenSource = new CancellationTokenSource();
-        cancellationToken = tokenSource.Token;
-
-        currentTask = SpawnEnemies(cancellationToken);
+        currentRoutine = StartCoroutine(SpawnEnemies());
     }
 
     //Implement Object Pooling Later.
@@ -43,28 +39,26 @@ public class EnemyManager : MonoBehaviour
     {
         Enemy enemy = (Enemy)sender;
 
+        Debug.Log("Death");
+
         enemy.OnDeath -= RemoveEnemy;
         enemies.Remove(enemy);
-        Destroy(enemy);
+        Destroy(enemy.gameObject);
     }
 
-    private async Task SpawnEnemies ( CancellationToken ct )
+    private IEnumerator SpawnEnemies()
     {
         Debug.Log("Spawning Enemies.");
 
-        ct.ThrowIfCancellationRequested();
-
-        for ( int i = 0; i < amountOfEnemiesPerBatch; i++ )
+        for (int i = 0; i < amountOfEnemiesPerBatch; i++)
         {
-            ct.ThrowIfCancellationRequested();
-
             var position = playerTransform.position + (UnityEngine.Random.insideUnitSphere.normalized * UnityEngine.Random.Range(spawnRange.x, spawnRange.y));
 
             position.y = transform.position.y;
 
             var gameObject = Instantiate(currentDifficultyGrade.enemyPrefabs[0], transform);
 
-            if ( !gameObject.TryGetComponent(out NavMeshAgent agent) )
+            if (!gameObject.TryGetComponent(out NavMeshAgent agent))
             {
                 agent = gameObject.AddComponent<NavMeshAgent>();
             }
@@ -79,12 +73,9 @@ public class EnemyManager : MonoBehaviour
 
             enemies.Add(enemy);
         }
+        yield return new WaitForSeconds(currentDifficultyGrade.enemyStats.spawnSpeed);
 
-        await Awaitable.WaitForSecondsAsync(currentDifficultyGrade.enemyStats.spawnSpeed);
-
-        ct.ThrowIfCancellationRequested();
-
-        currentTask = SpawnEnemies(ct);
+        currentRoutine = StartCoroutine(SpawnEnemies());
     }
 
     private void Update ()

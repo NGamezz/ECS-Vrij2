@@ -12,6 +12,9 @@ public partial class SetPlayerPositionSystem : SystemBase
     [BurstCompile]
     protected override void OnUpdate ()
     {
+        Enabled = false;
+        return;
+
         float3 playerPositon = onRequestPlayerPosition.Invoke();
 
         SetPlayerDataJob setPlayerDataJob = new ()

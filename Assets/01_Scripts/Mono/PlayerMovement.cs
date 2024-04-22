@@ -66,7 +66,7 @@ public class PlayerMovement : MonoBehaviour
     void Start ()
     {
         rb = meshObject.GetComponent<Rigidbody>();
-        rb ??= meshObject.AddComponent<Rigidbody>();
+        rb = rb != null ? rb : meshObject.AddComponent<Rigidbody>();
 
         stamina = maxStamina;
     }

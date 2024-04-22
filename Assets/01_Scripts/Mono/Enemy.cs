@@ -8,7 +8,7 @@ public class Enemy : Soulable, IDamageable
 
     public Vector3 Position => transform.position;
 
-    public void OnStart ( Transform playerTransform, EnemyStats stats)
+    public void OnStart(Transform playerTransform, EnemyStats stats)
     {
         moveToTarget = new();
 
@@ -17,32 +17,35 @@ public class Enemy : Soulable, IDamageable
         UpdateStats(stats);
     }
 
-    public void UpdateStats ( EnemyStats stats )
+    public void UpdateStats(EnemyStats stats)
     {
         health = stats.maxHealth;
         moveToTarget.SetStats(stats);
     }
 
-    public void OnUpdate ()
+    public void OnUpdate()
     {
 
     }
 
-    private void OnDisable ()
+    private void OnDisable()
     {
         moveToTarget?.OnDisable();
     }
 
-    public void OnFixedUpdate ()
+    public void OnFixedUpdate()
     {
         moveToTarget.OnFixedUpdate();
     }
 
-    public void AfflictDamage ( float amount )
+    public void AfflictDamage(float amount)
     {
         health -= amount;
 
-        if ( health <= 0 )
+        if (health <= 0)
+        {
             OnDeath?.Invoke(this, new());
+            Debug.Log(health);
+        }
     }
 }

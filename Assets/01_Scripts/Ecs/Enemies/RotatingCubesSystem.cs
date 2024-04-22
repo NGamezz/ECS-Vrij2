@@ -11,6 +11,9 @@ public partial struct EnemyMoveSystem : ISystem
     [BurstCompile]
     public void OnUpdate ( ref SystemState state )
     {
+        state.Enabled = false;
+        return;
+
         MoveEnemyJob rotateCubesJob = new()
         {
             deltaTime = SystemAPI.Time.DeltaTime,

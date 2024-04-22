@@ -22,6 +22,9 @@ public partial class PlayerShootingSystem : SystemBase
     [BurstCompile]
     protected override void OnUpdate ()
     {
+        Enabled = false;
+        return;
+
         if ( !Input.GetKeyDown(KeyCode.E) )
         { return; }
 

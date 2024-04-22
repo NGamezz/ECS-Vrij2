@@ -14,6 +14,9 @@ public partial class SoulHarvestSystem : SystemBase
     [BurstCompile]
     protected override void OnUpdate ()
     {
+        Enabled = false;
+        return;
+
         foreach ( var (pillar, transform, pillarEntity) in SystemAPI.Query<RefRW<SoulHarvestPillar>, RefRO<LocalTransform>>().WithDisabled<PillarCompleted>().WithEntityAccess() )
         {
             foreach ( var (localTransformm, entity) in SystemAPI.Query<RefRO<LocalTransform>>().WithAll<SoulHarvest>().WithEntityAccess() )
