@@ -89,6 +89,7 @@ public class PlayerShooting : MonoBehaviour
             bool instantiated = false;
 
             var bullet = objectPool.GetPooledObject();
+            
             if (bullet == null)
             {
                 bullet = Instantiate(currentGun.projectTilePrefab, transform);

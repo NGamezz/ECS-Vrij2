@@ -16,7 +16,7 @@ public class GunStats : ScriptableObject
 
     public Vector3 spreadOffset;
 
-    public int amountOfBulletsPer;
+    public byte amountOfBulletsPer;
 
     public int damageProjectileLifeTimeSpeed;
 
@@ -26,7 +26,7 @@ public class GunStats : ScriptableObject
     private void UpdateCombinedValue()
     {
         damageProjectileLifeTimeSpeed = damage;
-        damageProjectileLifeTimeSpeed += (projectileSpeed << 8);
-        damageProjectileLifeTimeSpeed += (projectileLifeTime << 16);
+        damageProjectileLifeTimeSpeed |= (projectileSpeed << 8);
+        damageProjectileLifeTimeSpeed |= (projectileLifeTime << 16);
     }
 }

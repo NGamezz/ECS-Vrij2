@@ -1,13 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.UIElements;
-using UnityEngine.XR;
 
 public class EnemyManager : MonoBehaviour
 {
@@ -28,7 +25,7 @@ public class EnemyManager : MonoBehaviour
 
     [SerializeField] private Transform playerTransform;
 
-    private void Start()
+    private void Start ()
     {
         currentDifficultyGrade = difficultyGrades[0];
 
@@ -36,22 +33,29 @@ public class EnemyManager : MonoBehaviour
         currentRoutine = StartCoroutine(SpawnEnemies());
     }
 
-    //Implement Object Pooling Later.
-    private void RemoveEnemy(object sender, EventArgs eventArgs)
+    private void RemoveEnemy ( Enemy sender )
     {
-        Enemy enemy = (Enemy)sender;
-
-        Debug.Log("Death");
-
-        enemy.OnDeath -= RemoveEnemy;
-        activeEnemies.Remove(enemy);
-        enemy.gameObject.SetActive(false);
-        objectPool.PoolObject(enemy.gameObject);
+        activeEnemies.Remove(sender);
+        sender.OnDeath -= OnEnemyDeath;
+        sender.gameObject.SetActive(false);
+        objectPool.PoolObject(sender.gameObject);
     }
 
-    private void GenerateObjects()
+    private async void OnEnemyDeath ( Enemy sender )
     {
-        for (int i = 0; i < startingAmountOfPooledObjects; i++)
+        Vector3 position = sender.Position;
+
+        await Task.Run(() =>
+        {
+            WorldManager.InvokeCellEvent(CellEventType.OnEntityDeath, position, position);
+        });
+
+        RemoveEnemy(sender);
+    }
+
+    private void GenerateObjects ()
+    {
+        for ( int i = 0; i < startingAmountOfPooledObjects; i++ )
         {
             var gameObject = Instantiate(currentDifficultyGrade.enemyPrefabs[0], transform);
             gameObject.SetActive(false);
@@ -60,9 +64,9 @@ public class EnemyManager : MonoBehaviour
         }
     }
 
-    private IEnumerator SpawnEnemies()
+    private IEnumerator SpawnEnemies ()
     {
-        for (int i = 0; i < currentDifficultyGrade.enemyStats.enemiesPerBatch; i++)
+        for ( int i = 0; i < currentDifficultyGrade.enemyStats.enemiesPerBatch; i++ )
         {
             var position = playerTransform.position + (UnityEngine.Random.insideUnitSphere.normalized * UnityEngine.Random.Range(spawnRange.x, spawnRange.y));
             position.y = transform.position.y;
@@ -70,22 +74,20 @@ public class EnemyManager : MonoBehaviour
             var gameObject = objectPool.GetPooledObject() ?? Instantiate(currentDifficultyGrade.enemyPrefabs[0], transform);
             gameObject.SetActive(true);
 
-            if (!gameObject.TryGetComponent(out NavMeshAgent agent))
+            if ( !gameObject.TryGetComponent(out NavMeshAgent agent) )
             {
                 agent = gameObject.AddComponent<NavMeshAgent>();
             }
             agent.Warp(position);
 
-            if (!gameObject.TryGetComponent<Enemy>(out var enemy))
+            if ( !gameObject.TryGetComponent<Enemy>(out var enemy) )
             {
                 enemy = gameObject.AddComponent<Enemy>();
             }
 
             enemy.OnStart(playerTransform, currentDifficultyGrade.enemyStats);
-            enemy.OnDeath += RemoveEnemy;
+            enemy.OnDeath += OnEnemyDeath;
             enemy.UpdateStats(currentDifficultyGrade.enemyStats);
-
-            Debug.Log("Spawned Enemy.");
 
             activeEnemies.Add(enemy);
         }
@@ -94,17 +96,17 @@ public class EnemyManager : MonoBehaviour
         currentRoutine = StartCoroutine(SpawnEnemies());
     }
 
-    private void Update()
+    private void Update ()
     {
-        foreach (var enemy in activeEnemies)
+        foreach ( var enemy in activeEnemies )
         {
             enemy.OnUpdate();
         }
     }
 
-    private void FixedUpdate()
+    private void FixedUpdate ()
     {
-        foreach (var enemy in activeEnemies)
+        foreach ( var enemy in activeEnemies )
         {
             enemy.OnFixedUpdate();
         }

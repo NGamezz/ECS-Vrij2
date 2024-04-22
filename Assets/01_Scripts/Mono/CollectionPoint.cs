@@ -1,6 +1,4 @@
-using NaughtyAttributes;
-using System;
-using System.Collections.Generic;
+using System.Threading.Tasks;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Events;
@@ -8,7 +6,6 @@ using UnityEngine.Events;
 [RequireComponent(typeof(SphereCollider))]
 public class CollectionPoint : MonoBehaviour
 {
-    [OnValueChanged(nameof(UpdateRange))]
     [SerializeField] private float range = 5.0f;
 
     [SerializeField] private bool gizmos = true;
@@ -18,51 +15,56 @@ public class CollectionPoint : MonoBehaviour
     [SerializeField] private int amountToTrigger = 10;
 
     [SerializeField] private UnityEvent eventToTrigger;
-    [SerializeField] private List<Soulable> currentSoulablesWithinReach = new();
 
-    private SphereCollider sphereCollider;
+    private Vector3 ownPosition;
 
-    private void UpdateRange ()
+    private async void CalculateOnDeath ( object entity )
     {
-        if ( sphereCollider == null )
-        {
-            if ( !gameObject.TryGetComponent<SphereCollider>(out sphereCollider) )
-            {
-                sphereCollider = gameObject.AddComponent<SphereCollider>();
-                sphereCollider.isTrigger = true;
-            }
-        }
+        Vector3 position = (Vector3)entity;
 
-        sphereCollider.radius = range / 2.0f;
+        await Task.Run(() =>
+        {
+            OnEnemyDeath(position);
+        });
+
+        if ( souls >= amountToTrigger )
+        {
+            await Task.Run(() =>
+            {
+                WorldManager.RemoveGridListener(ownPosition, CalculateOnDeath, CellEventType.OnEntityDeath);
+            });
+            eventToTrigger?.Invoke();
+        }
     }
 
-    private void OnEnemyDeath ( object entity, EventArgs args )
+    private Task OnEnemyDeath ( Vector3 position )
     {
-        Enemy enemy = (Enemy)entity;
-
-        Vector3 entityPos = enemy.Position;
-
-        var direction = entityPos - transform.position;
+        var direction = position - ownPosition;
 
         var lenght = math.length(direction);
 
         if ( lenght < range )
             AddSoul(1);
 
-        if ( souls >= amountToTrigger )
-        {
-            eventToTrigger?.Invoke();
-            Debug.Log("Triggered Event.");
-            this.enabled = false;
-        }
-
-        enemy.OnDeath -= OnEnemyDeath;
-        currentSoulablesWithinReach.Remove(enemy);
+        return Task.CompletedTask;
     }
 
     private void Start ()
     {
-        sphereCollider = GetComponent<SphereCollider>();
+        ownPosition = transform.position;
+
+        Task.Run(() =>
+        {
+            WorldManager.AddGridListener(ownPosition, CalculateOnDeath, CellEventType.OnEntityDeath);
+        });
+    }
+
+    private void OnDisable ()
+    {
+        Task.Run(() =>
+        {
+            WorldManager.RemoveGridListener(ownPosition, CalculateOnDeath, CellEventType.OnEntityDeath);
+        });
     }
 
     private void AddSoul ( int amount )
@@ -70,31 +72,11 @@ public class CollectionPoint : MonoBehaviour
         souls += amount;
     }
 
-    private void OnTriggerEnter ( Collider other )
-    {
-        if ( !other.TryGetComponent<Soulable>(out var soulAble) )
-        { return; }
-
-        currentSoulablesWithinReach.Add(soulAble);
-    }
-
-    private void OnTriggerExit ( Collider other )
-    {
-        if ( !other.TryGetComponent<Soulable>(out var soulAble) )
-        { return; }
-
-        if ( !currentSoulablesWithinReach.Contains(soulAble) )
-            return;
-
-        soulAble.OnDeath -= OnEnemyDeath;
-        currentSoulablesWithinReach.Remove(soulAble);
-    }
-
     private void OnDrawGizmos ()
     {
         if ( !gizmos )
             return;
 
-        Gizmos.DrawWireSphere(transform.position, range / 2.0f);
+        Gizmos.DrawWireSphere(ownPosition, range / 2.0f);
     }
 }

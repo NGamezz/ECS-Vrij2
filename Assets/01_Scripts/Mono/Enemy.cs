@@ -44,8 +44,7 @@ public class Enemy : Soulable, IDamageable
 
         if (health <= 0)
         {
-            OnDeath?.Invoke(this, new());
-            Debug.Log(health);
+            OnDeath?.Invoke(this);
         }
     }
 }

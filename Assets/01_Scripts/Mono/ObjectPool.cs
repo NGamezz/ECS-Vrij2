@@ -9,20 +9,22 @@ public class ObjectPool<T> where T : class
 
     private Dictionary<bool, ObjectHolder> objectsInPool = new();
 
-    public T GetPooledObject()
+    public T GetPooledObject ()
     {
-        if (!objectsInPool.ContainsKey(false))
-            return null;
+        T item = null;
 
-        var item = objectsInPool[false].objects[0];
+        if ( !objectsInPool.ContainsKey(false) )
+            return item;
+
+        item = objectsInPool[false].objects[0];
         objectsInPool[false].objects.Remove(item);
 
-        if (objectsInPool[false].objects.Count < 1)
+        if ( objectsInPool[false].objects.Count < 1 )
         {
             objectsInPool.Remove(false);
         }
 
-        if (!objectsInPool.ContainsKey(true))
+        if ( !objectsInPool.ContainsKey(true) )
         {
             var newHolder = new ObjectHolder();
             newHolder.objects.Add(item);
@@ -32,9 +34,9 @@ public class ObjectPool<T> where T : class
         return item;
     }
 
-    public void PoolObject(T item)
+    public void PoolObject ( T item )
     {
-        if (!objectsInPool.ContainsKey(false))
+        if ( !objectsInPool.ContainsKey(false) )
         {
             var newHolder = new ObjectHolder();
             newHolder.objects.Add(item);

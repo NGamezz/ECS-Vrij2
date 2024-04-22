@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Threading.Tasks;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -80,7 +81,7 @@ public class PlayerMovement : MonoBehaviour
             pressedKey = true;
             Debug.Log("Activate Sprint.");
         }
-        if ( Input.GetKeyUp(KeyCode.LeftShift) && pressedKey)
+        if ( Input.GetKeyUp(KeyCode.LeftShift) && pressedKey )
         {
             moveSpeed -= sprintSpeedIncrease;
             pressedKey = false;
@@ -92,11 +93,11 @@ public class PlayerMovement : MonoBehaviour
         {
             stamina += staminaRegenSpeed * Time.deltaTime;
         }
-        if(isRunning && stamina - sprintStaminaCost > 0)
+        if ( isRunning && stamina - sprintStaminaCost > 0 )
         {
             stamina -= sprintStaminaCost * Time.deltaTime;
         }
-        else if(isRunning && stamina - sprintStaminaCost <= 0)
+        else if ( isRunning && stamina - sprintStaminaCost <= 0 )
         {
             pressedKey = false;
             moveSpeed -= sprintSpeedIncrease;

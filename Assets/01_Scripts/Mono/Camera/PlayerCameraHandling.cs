@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -79,31 +80,36 @@ public class PlayerCameraHandling : MonoBehaviour
     {
         var meshPos = meshTransform.position;
         var meshScreenPos = mainCamera.WorldToScreenPoint(meshPos);
-
         var res = Screen.currentResolution;
 
-        var withinSafeZone = meshScreenPos.x <= res.width - distanceFromBorder.x
-            && meshScreenPos.y <= res.height - distanceFromBorder.y
-            && meshScreenPos.y >= distanceFromBorder.y
-            && meshScreenPos.x >= distanceFromBorder.x;
+        Task.Run(() =>
+        {
+            var withinSafeZone = meshScreenPos.x <= res.width - distanceFromBorder.x
+                && meshScreenPos.y <= res.height - distanceFromBorder.y
+                && meshScreenPos.y >= distanceFromBorder.y
+                && meshScreenPos.x >= distanceFromBorder.x;
 
-        if ( withinSafeZone )
-            return;
+            if ( withinSafeZone )
+                return;
 
-        updateCameraPosition = true;
+            updateCameraPosition = true;
+        });
     }
 
     private void UpdatePosition ()
     {
+        var cameraPos = cameraTransform.position;
         var meshPos = meshTransform.position;
-        var newPos = new Vector3(meshPos.x, cameraTransform.position.y, meshPos.z);
 
-        cameraTransform.position = Vector3.SmoothDamp(cameraTransform.position, newPos, ref velocity, smoothTime);
+        var newPos = new Vector3(meshPos.x, cameraPos.y, meshPos.z);
+        cameraPos = Vector3.SmoothDamp(cameraPos, newPos, ref velocity, smoothTime);
 
-        if ( Vector3.Distance(cameraTransform.position, newPos) < cameraRecenterDeadzone )
+        if ( Vector3.Distance(cameraPos, newPos) < cameraRecenterDeadzone )
         {
             updateCameraPosition = false;
         }
+
+        cameraTransform.position = cameraPos;
     }
 
     private void Start ()
