@@ -14,7 +14,7 @@ public class GunStats : ScriptableObject
     [OnValueChanged(nameof(UpdateCombinedValue))]
     public byte projectileSpeed;
 
-    public Vector3 spreadOffset;
+    public float2 spreadOffset;
 
     public byte amountOfBulletsPer;
 

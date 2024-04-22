@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -23,9 +24,9 @@ public class PlayerShooting : MonoBehaviour
 
     private ObjectPool<GameObject> objectPool = new();
 
-    void Start()
+    void Start ()
     {
-        if (guns.Count < 1)
+        if ( guns.Count < 1 )
             return;
 
         currentGun = guns[0];
@@ -36,18 +37,18 @@ public class PlayerShooting : MonoBehaviour
         GenerateBullets();
     }
 
-    private void SetLayerRecursive(GameObject objectToSect, int layer)
+    private void SetLayerRecursive ( GameObject objectToSect, int layer )
     {
         objectToSect.layer = layer;
-        foreach (Transform child in objectToSect.transform)
+        foreach ( Transform child in objectToSect.transform )
         {
             SetLayerRecursive(child.gameObject, layer);
         }
     }
 
-    private void GenerateBullets()
+    private void GenerateBullets ()
     {
-        for (int i = 0; i < defaultAmountOfPooledObjects; i++)
+        for ( int i = 0; i < defaultAmountOfPooledObjects; i++ )
         {
             var gameObject = Instantiate(currentGun.projectTilePrefab, transform);
             gameObject.SetActive(false);
@@ -60,37 +61,36 @@ public class PlayerShooting : MonoBehaviour
         }
     }
 
-    private void SelectGun(GunStats gun)
+    private void SelectGun ( GunStats gun )
     {
         StopCoroutine(currentShootRoutine);
 
         currentGun = gun;
     }
 
-    private void OnObjectHit(bool succes, GameObject objectToPool)
+    private void OnObjectHit ( bool succes, GameObject objectToPool )
     {
         objectPool.PoolObject(objectToPool);
     }
 
-    public void OnShoot(InputAction.CallbackContext ctx)
+    public void OnShoot ( InputAction.CallbackContext ctx )
     {
-        if (!canShoot)
+        if ( !canShoot )
             return;
 
         currentShootRoutine = StartCoroutine(Shoot());
     }
 
-    private IEnumerator Shoot()
+    private IEnumerator Shoot ()
     {
         canShoot = false;
 
-        for (int i = 0; i < currentGun.amountOfBulletsPer; i++)
+        for ( int i = 0; i < currentGun.amountOfBulletsPer; i++ )
         {
             bool instantiated = false;
-
             var bullet = objectPool.GetPooledObject();
-            
-            if (bullet == null)
+
+            if ( bullet == null )
             {
                 bullet = Instantiate(currentGun.projectTilePrefab, transform);
                 instantiated = true;
@@ -98,12 +98,14 @@ public class PlayerShooting : MonoBehaviour
 
             bullet.SetActive(true);
 
-            var newPos = (meshTransform.position + currentGun.spreadOffset) + (meshTransform.forward);
-            bullet.transform.SetPositionAndRotation(newPos, meshTransform.rotation);
+            var meshForward = meshTransform.forward;
+            var newPos = meshTransform.position + meshForward;
+            bullet.transform.position = newPos;
+            bullet.transform.forward = (meshForward + new Vector3(Random.Range(currentGun.spreadOffset.x, currentGun.spreadOffset.y), 0.0f, Random.Range(currentGun.spreadOffset.x, currentGun.spreadOffset.y))).normalized;
 
             var gunComponent = bullet.GetComponent<Gun>();
 
-            if (instantiated)
+            if ( instantiated )
             {
                 gunComponent.UponHit = OnObjectHit;
                 gunComponent.playerLayer = gameObject.layer;

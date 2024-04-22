@@ -1,12 +1,12 @@
 using System;
-using System.Collections.Generic;
 using Unity.Mathematics;
 using Vector3 = UnityEngine.Vector3;
+using System.Collections.Concurrent;
 
 public static class WorldManager
 {
     public static int2 cellSize = new(30, 30);
-    private static Dictionary<int2, Cell> grid = new();
+    private static ConcurrentDictionary<int2, Cell> grid = new();
 
     public static void AddGridListener ( Vector3 fPosition, Action<object> action, CellEventType type )
     {
@@ -17,14 +17,11 @@ public static class WorldManager
 
         if ( !grid.ContainsKey(position) )
         {
-            var newCell = new Cell();
-            newCell.AddListener(type, action);
-            grid.Add(position, newCell);
+            grid.TryAdd(position, new Cell(type, action));
             return;
         }
 
-        var cell = grid[position];
-        cell.AddListener(type, action);
+        grid[position].AddListener(type, action);
     }
 
     public static void InvokeCellEvent ( CellEventType type, Vector3 fPosition, object input )
@@ -37,8 +34,7 @@ public static class WorldManager
         if ( !grid.ContainsKey(position) )
             return;
 
-        var cell = grid[position];
-        cell.InvokeEvent(type, input);
+        grid[position].InvokeEvent(type, input);
     }
 
     public static void RemoveGridListener ( Vector3 fPosition, Action<object> action, CellEventType type )
@@ -51,8 +47,7 @@ public static class WorldManager
         if ( !grid.ContainsKey(position) )
             return;
 
-        var cell = grid[position];
-        cell.RemoveListener(type, action);
+        grid[position].RemoveListener(type, action);
     }
 
     public static void ClearListeners ( int2 position )
@@ -99,7 +94,17 @@ public enum CellEventType
 
 public class Cell
 {
-    private Dictionary<CellEventType, Action<object>> events = new();
+    private ConcurrentDictionary<CellEventType, Action<object>> events = new();
+
+    public Cell(CellEventType type, Action<object> action)
+    {
+        if ( events.ContainsKey(type) )
+        {
+            events[type] += action;
+            return;
+        }
+        events.TryAdd(type, action);
+    }
 
     public void AddListener ( CellEventType type, Action<object> action )
     {
@@ -108,7 +113,7 @@ public class Cell
             events[type] += action;
             return;
         }
-        events.Add(type, action);
+        events.TryAdd(type, action);
     }
 
     public void RemoveListener ( CellEventType type, Action<object> action )

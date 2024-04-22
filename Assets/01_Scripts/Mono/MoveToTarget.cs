@@ -52,7 +52,8 @@ public class MoveToTarget
 
     private void CheckForCancelPath ()
     {
-        if ( Vector3.Distance(ownTransform.position, target.position) < distanceToPlayer || Vector3.Distance(cachedPosition, target.position) > 5.0f)
+        Vector3 targetPos = target.position;
+        if ( Vector3.Distance(ownTransform.position, targetPos) < distanceToPlayer || Vector3.Distance(cachedPosition, targetPos) > 5.0f )
         {
             agent.isStopped = true;
             agent.ResetPath();
@@ -65,6 +66,6 @@ public class MoveToTarget
         { return; }
 
         cachedPosition = target.position;
-        agent.SetDestination(target.position);
+        agent.SetDestination(cachedPosition);
     }
 }

@@ -16,8 +16,10 @@ MonoBehaviour:
   damage: 25
   projectileLifeTime: 5
   projectileSpeed: 5
-  spreadOffset: {x: 0, y: 0, z: 0}
-  amountOfBulletsPer: 2
+  spreadOffset:
+    x: -1
+    y: 1
+  amountOfBulletsPer: 10
   damageProjectileLifeTimeSpeed: 328985
   prefab: {fileID: 4120230577132574208, guid: 99345b48c7a11944d82e5bf97126101f, type: 3}
   projectTilePrefab: {fileID: 707548780560738199, guid: 1680428cdcdae8c4fa53fcafe2840dae, type: 3}
