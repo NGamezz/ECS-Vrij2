@@ -1,30 +1,25 @@
+using System;
 using System.Collections;
-using System.Threading.Tasks;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class PlayerMovement : MonoBehaviour
+[Serializable]
+public class PlayerMovement
 {
-    [SerializeField] private float moveSpeed = 10.0f;
-
-    [SerializeField] private float dashForce = 10.0f;
-
     [SerializeField] private float dashCooldown = 0.2f;
 
     [SerializeField] private GameObject meshObject;
 
     [SerializeField] private int groundLayerMask = 4;
 
-    [SerializeField] private float maxStamina = 100.0f;
-
-    [SerializeField] private float sprintSpeedIncrease = 2.0f;
-
     [SerializeField] private float sprintStaminaCost = 2.0f;
 
     [SerializeField] private float stamina;
 
     [SerializeField] private float staminaRegenSpeed = 1.0f;
+
+    public PlayerStats playerStats;
 
     private bool isRunning = false;
     private bool pressedKey = false;
@@ -40,56 +35,56 @@ public class PlayerMovement : MonoBehaviour
         inputVector = ctx.ReadValue<Vector2>();
     }
 
-    public void OnJump ( InputAction.CallbackContext ctx )
+    public void OnDash ()
     {
-        if ( !canJump || !Physics.SphereCast(meshObject.transform.position, 0.5f, -meshObject.transform.up, out _, 2.0f, 1 << groundLayerMask) || stamina < maxStamina / 2.0f )
+        if ( !canJump || !Physics.SphereCast(meshObject.transform.position, 0.5f, -meshObject.transform.up, out _, 2.0f, (1 << groundLayerMask)) || stamina < playerStats.maxStamina / 2.0f )
             return;
 
         var direction = inputVector.magnitude == 0 ? rb.transform.forward : new(inputVector.x, 0.0f, inputVector.y);
 
-        stamina -= maxStamina / 2.0f;
+        stamina -= playerStats.maxStamina / 2.0f;
 
         Debug.Log("Dash");
 
         canJump = false;
-        rb.AddForce(dashForce * direction, ForceMode.Impulse);
+        rb.AddForce(playerStats.dashForce * direction, ForceMode.Impulse);
 
-        StartCoroutine(ResetDashCooldown());
+        ResetDashCooldown();
     }
 
-    private IEnumerator ResetDashCooldown ()
+    private async void ResetDashCooldown ()
     {
         canJump = false;
-        yield return new WaitForSeconds(dashCooldown);
+        await Awaitable.WaitForSecondsAsync(dashCooldown);
         canJump = true;
     }
 
-    void Start ()
+    public void OnStart ()
     {
         rb = meshObject.GetComponent<Rigidbody>();
         rb = rb != null ? rb : meshObject.AddComponent<Rigidbody>();
 
-        stamina = maxStamina;
+        stamina = playerStats.maxStamina;
     }
 
     private void HandleInput ()
     {
         if ( Input.GetKeyDown(KeyCode.LeftShift) && stamina - sprintStaminaCost > 0 )
         {
-            moveSpeed += sprintSpeedIncrease;
+            playerStats.moveSpeed += playerStats.sprintSpeedIncrease;
             isRunning = true;
             pressedKey = true;
             Debug.Log("Activate Sprint.");
         }
         if ( Input.GetKeyUp(KeyCode.LeftShift) && pressedKey )
         {
-            moveSpeed -= sprintSpeedIncrease;
+            playerStats.moveSpeed -= playerStats.sprintSpeedIncrease;
             pressedKey = false;
             isRunning = false;
             Debug.Log("Deactivate Sprint.");
         }
 
-        if ( !isRunning && stamina + staminaRegenSpeed <= maxStamina )
+        if ( !isRunning && stamina + staminaRegenSpeed <= playerStats.maxStamina )
         {
             stamina += staminaRegenSpeed * Time.deltaTime;
         }
@@ -100,23 +95,35 @@ public class PlayerMovement : MonoBehaviour
         else if ( isRunning && stamina - sprintStaminaCost <= 0 )
         {
             pressedKey = false;
-            moveSpeed -= sprintSpeedIncrease;
+            playerStats.moveSpeed -= playerStats.sprintSpeedIncrease;
             isRunning = false;
+        }
+    }
+
+    private void VelocityLimiting ()
+    {
+        var vel = rb.velocity;
+        var flatVel = new Vector3(vel.x, 0.0f, vel.z);
+        if ( flatVel.magnitude > playerStats.moveSpeed )
+        {
+            flatVel.Normalize();
+            rb.velocity = flatVel * playerStats.moveSpeed;
         }
     }
 
     private void ApplyForce ()
     {
-        rb.AddForce(new float3(inputVector.x, 0.0f, inputVector.y) * moveSpeed, ForceMode.Force);
+        rb.AddForce(new float3(inputVector.x, 0.0f, inputVector.y) * playerStats.moveSpeed, ForceMode.Force);
     }
 
-    private void Update ()
+    public void OnUpdate ()
     {
         HandleInput();
     }
 
-    private void FixedUpdate ()
+    public void OnFixedUpdate ()
     {
         ApplyForce();
+        VelocityLimiting();
     }
 }

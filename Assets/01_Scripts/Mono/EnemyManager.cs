@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Unity.Mathematics;
@@ -10,6 +9,8 @@ public class EnemyManager : MonoBehaviour
 {
     [SerializeField] private List<DifficultyGrade> difficultyGrades = new();
 
+    [SerializeField] private MoveTarget enemyTarget;
+
     [SerializeField] private List<Enemy> activeEnemies = new();
 
     [Tooltip("How many can be seen on the screen at once, without having to create more of them.")]
@@ -19,8 +20,6 @@ public class EnemyManager : MonoBehaviour
 
     private ObjectPool<GameObject> objectPool = new();
 
-    private Coroutine currentRoutine;
-
     private DifficultyGrade currentDifficultyGrade;
 
     [SerializeField] private Transform playerTransform;
@@ -29,8 +28,10 @@ public class EnemyManager : MonoBehaviour
     {
         currentDifficultyGrade = difficultyGrades[0];
 
+        enemyTarget.target = playerTransform;
+
         GenerateObjects();
-        currentRoutine = StartCoroutine(SpawnEnemies());
+        SpawnEnemies();
     }
 
     private void RemoveEnemy ( Enemy sender )
@@ -41,11 +42,11 @@ public class EnemyManager : MonoBehaviour
         objectPool.PoolObject(sender.gameObject);
     }
 
-    private async void OnEnemyDeath ( Enemy sender )
+    private void OnEnemyDeath ( Enemy sender )
     {
         Vector3 position = sender.Position;
 
-        await Task.Run(() =>
+        Task.Run(() =>
         {
             WorldManager.InvokeCellEvent(CellEventType.OnEntityDeath, position, position);
         });
@@ -64,7 +65,7 @@ public class EnemyManager : MonoBehaviour
         }
     }
 
-    private IEnumerator SpawnEnemies ()
+    private async void SpawnEnemies ()
     {
         for ( int i = 0; i < currentDifficultyGrade.enemyStats.enemiesPerBatch; i++ )
         {
@@ -85,15 +86,17 @@ public class EnemyManager : MonoBehaviour
                 enemy = gameObject.AddComponent<Enemy>();
             }
 
-            enemy.OnStart(playerTransform, currentDifficultyGrade.enemyStats);
+            enemy.OnStart(currentDifficultyGrade.enemyStats, enemyTarget);
             enemy.OnDeath += OnEnemyDeath;
             enemy.UpdateStats(currentDifficultyGrade.enemyStats);
+            enemy.Dead = false;
 
             activeEnemies.Add(enemy);
         }
-        yield return new WaitForSeconds(currentDifficultyGrade.enemyStats.spawnSpeed);
 
-        currentRoutine = StartCoroutine(SpawnEnemies());
+        await Awaitable.WaitForSecondsAsync(currentDifficultyGrade.enemyStats.spawnSpeed);
+
+        SpawnEnemies();
     }
 
     private void Update ()

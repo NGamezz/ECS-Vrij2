@@ -2,48 +2,53 @@ using UnityEngine;
 
 public class Enemy : Soulable, IDamageable
 {
+    public bool Dead = false;
+
+    public Vector3 Position => transform.position;
+
     private MoveToTarget moveToTarget;
 
     private float health;
 
-    public Vector3 Position => transform.position;
-
-    public void OnStart(Transform playerTransform, EnemyStats stats)
+    public void OnStart ( EnemyStats stats , MoveTarget moveTarget)
     {
         moveToTarget = new();
-
-        moveToTarget.OnStart(playerTransform, gameObject.transform);
+        moveToTarget.OnStart(moveTarget, gameObject.transform);
 
         UpdateStats(stats);
     }
 
-    public void UpdateStats(EnemyStats stats)
+    public void UpdateStats ( EnemyStats stats )
     {
         health = stats.maxHealth;
         moveToTarget.SetStats(stats);
     }
 
-    public void OnUpdate()
+    public void OnUpdate ()
     {
 
     }
 
-    private void OnDisable()
+    private void OnDisable ()
     {
         moveToTarget?.OnDisable();
     }
 
-    public void OnFixedUpdate()
+    public void OnFixedUpdate ()
     {
         moveToTarget.OnFixedUpdate();
     }
 
-    public void AfflictDamage(float amount)
+    public void AfflictDamage ( float amount )
     {
+        if ( Dead )
+            return;
+
         health -= amount;
 
-        if (health <= 0)
+        if ( health <= 0 )
         {
+            Dead = true;
             OnDeath?.Invoke(this);
         }
     }

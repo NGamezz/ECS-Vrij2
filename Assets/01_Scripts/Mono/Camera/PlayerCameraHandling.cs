@@ -38,16 +38,17 @@ public class PlayerCameraHandling : MonoBehaviour
         lookVector = ctx.ReadValue<Vector2>();
     }
 
+    private RaycastHit[] hits = new RaycastHit[1];
     private (bool succes, Vector3 position) GetMousePosition ()
     {
         var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
 
-        if ( !Physics.Raycast(ray, out var hitInfo, float.MaxValue, ~(1 << playerLayerMask)) )
+        if ( Physics.RaycastNonAlloc(ray, hits, float.MaxValue, ~(1 << playerLayerMask)) == 0 )
         {
             return (false, Vector3.zero);
         }
 
-        return (true, hitInfo.point);
+        return (true, hits[0].point);
     }
 
     //Should be improved.
@@ -57,12 +58,15 @@ public class PlayerCameraHandling : MonoBehaviour
 
         if ( lookAtMouse )
         {
-            var (success, mousePos) = GetMousePosition();
+            var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
 
-            if ( !success )
+            if ( Physics.RaycastNonAlloc(ray, hits, float.MaxValue, ~(1 << playerLayerMask)) == 0 )
+            {
+                direction = meshTransform.forward;
                 return;
+            }
 
-            direction = mousePos - meshTransform.position;
+            direction = hits[0].point - meshTransform.position;
             direction.y = 0.0f;
         }
         else
@@ -82,18 +86,15 @@ public class PlayerCameraHandling : MonoBehaviour
         var meshScreenPos = mainCamera.WorldToScreenPoint(meshPos);
         var res = Screen.currentResolution;
 
-        Task.Run(() =>
-        {
-            var withinSafeZone = meshScreenPos.x <= res.width - distanceFromBorder.x
-                && meshScreenPos.y <= res.height - distanceFromBorder.y
-                && meshScreenPos.y >= distanceFromBorder.y
-                && meshScreenPos.x >= distanceFromBorder.x;
+        var withinSafeZone = meshScreenPos.x <= res.width - distanceFromBorder.x
+            && meshScreenPos.y <= res.height - distanceFromBorder.y
+            && meshScreenPos.y >= distanceFromBorder.y
+            && meshScreenPos.x >= distanceFromBorder.x;
 
-            if ( withinSafeZone )
-                return;
+        if ( withinSafeZone )
+            return;
 
-            updateCameraPosition = true;
-        });
+        updateCameraPosition = true;
     }
 
     private void UpdatePosition ()

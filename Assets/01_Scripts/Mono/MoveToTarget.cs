@@ -7,14 +7,14 @@ public class MoveToTarget
 {
     private float distanceToPlayer = 5.0f;
 
-    private Transform target;
+    private MoveTarget moveTarget;
     private Transform ownTransform;
 
     private NavMeshAgent agent;
 
     private float3 cachedPosition;
 
-    public void SetStats ( EnemyStats stats )
+    public void SetStats ( EnemyStats stats)
     {
         distanceToPlayer = stats.attackRange;
         agent.speed = stats.moveSpeed;
@@ -29,20 +29,20 @@ public class MoveToTarget
         agent.isStopped = true;
     }
 
-    public void OnStart ( Transform target, Transform ownTransform )
+    public void OnStart ( MoveTarget target, Transform ownTransform )
     {
         if ( !ownTransform.TryGetComponent(out agent) )
         {
             agent = ownTransform.AddComponent<NavMeshAgent>();
         }
 
-        this.target = target;
+        moveTarget = target;
         this.ownTransform = ownTransform;
     }
 
     public void OnFixedUpdate ()
     {
-        if ( !agent.hasPath && Vector3.Distance(ownTransform.position, target.position) > distanceToPlayer )
+        if ( !agent.hasPath && Vector3.Distance(ownTransform.position, moveTarget.target.position) > distanceToPlayer )
         {
             UpdatePath();
         }
@@ -52,7 +52,7 @@ public class MoveToTarget
 
     private void CheckForCancelPath ()
     {
-        Vector3 targetPos = target.position;
+        Vector3 targetPos = moveTarget.target.position;
         if ( Vector3.Distance(ownTransform.position, targetPos) < distanceToPlayer || Vector3.Distance(cachedPosition, targetPos) > 5.0f )
         {
             agent.isStopped = true;
@@ -62,10 +62,10 @@ public class MoveToTarget
 
     private void UpdatePath ()
     {
-        if ( agent == null || target == null )
+        if ( agent == null || moveTarget.target == null )
         { return; }
 
-        cachedPosition = target.position;
+        cachedPosition = moveTarget.target.position;
         agent.SetDestination(cachedPosition);
     }
 }

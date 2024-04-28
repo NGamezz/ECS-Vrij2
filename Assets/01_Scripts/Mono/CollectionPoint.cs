@@ -3,7 +3,6 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Events;
 
-[RequireComponent(typeof(SphereCollider))]
 public class CollectionPoint : MonoBehaviour
 {
     [SerializeField] private float range = 5.0f;
@@ -18,35 +17,33 @@ public class CollectionPoint : MonoBehaviour
 
     private Vector3 ownPosition;
 
-    private async void CalculateOnDeath ( object entity )
+    Vector3 currentEntityPosition = Vector3.zero;
+    private void CalculateOnDeath ( object entity )
     {
-        Vector3 position = (Vector3)entity;
-
-        await Task.Run(() =>
+        Task.Run(async () =>
         {
-            OnEnemyDeath(position);
-        });
+            currentEntityPosition = (Vector3)entity;
+            OnEnemyDeath(currentEntityPosition);
 
-        if ( souls >= amountToTrigger )
-        {
-            await Task.Run(() =>
+            if ( souls >= amountToTrigger )
             {
                 WorldManager.RemoveGridListener(ownPosition, CalculateOnDeath, CellEventType.OnEntityDeath);
-            });
-            eventToTrigger?.Invoke();
-        }
+
+                if ( eventToTrigger != null )
+                {
+                    await Awaitable.MainThreadAsync();
+                    eventToTrigger?.Invoke();
+                }
+            }
+        });
     }
 
-    private Task OnEnemyDeath ( Vector3 position )
+    private void OnEnemyDeath ( Vector3 position )
     {
-        var direction = position - ownPosition;
-
-        var lenght = math.length(direction);
+        var lenght = math.length(position - ownPosition);
 
         if ( lenght < range )
             AddSoul(1);
-
-        return Task.CompletedTask;
     }
 
     private void Start ()

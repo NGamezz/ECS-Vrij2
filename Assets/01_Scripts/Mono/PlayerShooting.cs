@@ -1,10 +1,10 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.InputSystem;
+using Random = UnityEngine.Random;
 
-public class PlayerShooting : MonoBehaviour
+[Serializable]
+public class PlayerShooting
 {
     [SerializeField] private List<GunStats> guns = new();
 
@@ -18,21 +18,23 @@ public class PlayerShooting : MonoBehaviour
 
     private GunStats currentGun;
 
-    private Coroutine currentShootRoutine;
-
     private bool canShoot = true;
 
     private ObjectPool<GameObject> objectPool = new();
 
-    void Start ()
+    private Transform bulletHolder;
+
+    public void OnStart ( Transform bulletHolder )
     {
+        this.bulletHolder = bulletHolder;
+
         if ( guns.Count < 1 )
             return;
 
         currentGun = guns[0];
-        var gunObject = Instantiate(currentGun.prefab, gunPosition);
+        var gunObject = GameObject.Instantiate(currentGun.prefab, gunPosition);
         gunObject.transform.position = gunPosition.position;
-        SetLayerRecursive(gunObject, gameObject.layer);
+        SetLayerRecursive(gunObject, bulletHolder.gameObject.layer);
 
         GenerateBullets();
     }
@@ -50,12 +52,12 @@ public class PlayerShooting : MonoBehaviour
     {
         for ( int i = 0; i < defaultAmountOfPooledObjects; i++ )
         {
-            var gameObject = Instantiate(currentGun.projectTilePrefab, transform);
+            var gameObject = GameObject.Instantiate(currentGun.projectTilePrefab, bulletHolder);
             gameObject.SetActive(false);
 
             var bulletComponent = gameObject.GetComponent<Gun>();
             bulletComponent.UponHit = OnObjectHit;
-            bulletComponent.playerLayer = this.gameObject.layer;
+            bulletComponent.playerLayer = bulletHolder.gameObject.layer;
 
             objectPool.PoolObject(gameObject);
         }
@@ -63,8 +65,6 @@ public class PlayerShooting : MonoBehaviour
 
     private void SelectGun ( GunStats gun )
     {
-        StopCoroutine(currentShootRoutine);
-
         currentGun = gun;
     }
 
@@ -73,15 +73,15 @@ public class PlayerShooting : MonoBehaviour
         objectPool.PoolObject(objectToPool);
     }
 
-    public void OnShoot ( InputAction.CallbackContext ctx )
+    public void OnShoot ()
     {
         if ( !canShoot )
             return;
 
-        currentShootRoutine = StartCoroutine(Shoot());
+        Shoot();
     }
 
-    private IEnumerator Shoot ()
+    private async void Shoot ()
     {
         canShoot = false;
 
@@ -92,7 +92,7 @@ public class PlayerShooting : MonoBehaviour
 
             if ( bullet == null )
             {
-                bullet = Instantiate(currentGun.projectTilePrefab, transform);
+                bullet = GameObject.Instantiate(currentGun.projectTilePrefab, bulletHolder);
                 instantiated = true;
             }
 
@@ -108,7 +108,7 @@ public class PlayerShooting : MonoBehaviour
             if ( instantiated )
             {
                 gunComponent.UponHit = OnObjectHit;
-                gunComponent.playerLayer = gameObject.layer;
+                gunComponent.playerLayer = bulletHolder.gameObject.layer;
             }
 
             gunComponent.Damage = currentGun.damageProjectileLifeTimeSpeed & 255;
@@ -116,7 +116,7 @@ public class PlayerShooting : MonoBehaviour
             gunComponent.ProjectileLifeTime = (currentGun.damageProjectileLifeTimeSpeed >> 16) & 255;
         }
 
-        yield return new WaitForSeconds(currentGun.attackSpeed);
+        await Awaitable.WaitForSecondsAsync(currentGun.attackSpeed);
 
         canShoot = true;
     }

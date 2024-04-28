@@ -9,7 +9,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1657449708863341812}
-  - component: {fileID: 1690044819841699070}
   - component: {fileID: 2395464484768575222}
   m_Layer: 0
   m_Name: CollectionPoint
@@ -34,27 +33,6 @@ Transform:
   - {fileID: 4401335347490529319}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!135 &1690044819841699070
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2578221032556716366}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Radius: 7.5
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &2395464484768575222
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -73,8 +51,19 @@ MonoBehaviour:
   amountToTrigger: 10
   eventToTrigger:
     m_PersistentCalls:
-      m_Calls: []
-  currentSoulablesWithinReach: []
+      m_Calls:
+      - m_Target: {fileID: 2578221032556716366}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &6918989908946899179
 GameObject:
   m_ObjectHideFlags: 0
