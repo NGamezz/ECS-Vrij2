@@ -1,5 +1,7 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -16,6 +18,8 @@ public class PlayerShooting
 
     [SerializeField] private int playerLayer;
 
+    private MonoBehaviour owner;
+
     private GunStats currentGun;
 
     private bool canShoot = true;
@@ -24,9 +28,13 @@ public class PlayerShooting
 
     private Transform bulletHolder;
 
-    public void OnStart ( Transform bulletHolder )
+    private int bulletHolderLayer;
+
+    public void OnStart ( Transform bulletHolder, MonoBehaviour owner )
     {
         this.bulletHolder = bulletHolder;
+
+        this.owner = owner;
 
         if ( guns.Count < 1 )
             return;
@@ -35,6 +43,8 @@ public class PlayerShooting
         var gunObject = GameObject.Instantiate(currentGun.prefab, gunPosition);
         gunObject.transform.position = gunPosition.position;
         SetLayerRecursive(gunObject, bulletHolder.gameObject.layer);
+
+        bulletHolderLayer = bulletHolder.gameObject.layer;
 
         GenerateBullets();
     }
@@ -57,7 +67,9 @@ public class PlayerShooting
 
             var bulletComponent = gameObject.GetComponent<Gun>();
             bulletComponent.UponHit = OnObjectHit;
-            bulletComponent.playerLayer = bulletHolder.gameObject.layer;
+            bulletComponent.playerLayer = bulletHolderLayer;
+
+            bulletComponent.OnStart();
 
             objectPool.PoolObject(gameObject);
         }
@@ -78,10 +90,10 @@ public class PlayerShooting
         if ( !canShoot )
             return;
 
-        Shoot();
+        owner.StartCoroutine(Shoot());
     }
 
-    private async void Shoot ()
+    private IEnumerator Shoot ()
     {
         canShoot = false;
 
@@ -92,31 +104,31 @@ public class PlayerShooting
 
             if ( bullet == null )
             {
-                bullet = GameObject.Instantiate(currentGun.projectTilePrefab, bulletHolder);
+                bullet = UnityEngine.Object.Instantiate(currentGun.projectTilePrefab, bulletHolder);
                 instantiated = true;
             }
 
             bullet.SetActive(true);
-
-            var meshForward = meshTransform.forward;
-            var newPos = meshTransform.position + meshForward;
-            bullet.transform.position = newPos;
-            bullet.transform.forward = (meshForward + new Vector3(Random.Range(currentGun.spreadOffset.x, currentGun.spreadOffset.y), 0.0f, Random.Range(currentGun.spreadOffset.x, currentGun.spreadOffset.y))).normalized;
-
             var gunComponent = bullet.GetComponent<Gun>();
 
             if ( instantiated )
             {
                 gunComponent.UponHit = OnObjectHit;
-                gunComponent.playerLayer = bulletHolder.gameObject.layer;
+                gunComponent.playerLayer = bulletHolderLayer;
+                gunComponent.OnStart();
             }
 
             gunComponent.Damage = currentGun.damageProjectileLifeTimeSpeed & 255;
             gunComponent.Speed = (currentGun.damageProjectileLifeTimeSpeed >> 8) & 255;
             gunComponent.ProjectileLifeTime = (currentGun.damageProjectileLifeTimeSpeed >> 16) & 255;
+
+            var meshForward = meshTransform.forward;
+            var newPos = meshTransform.position + meshForward;
+            gunComponent.Transform.position = newPos;
+            gunComponent.Transform.forward = (meshForward + new Vector3(Random.Range(currentGun.spreadOffset.x, currentGun.spreadOffset.y), 0.0f, Random.Range(currentGun.spreadOffset.x, currentGun.spreadOffset.y))).normalized;
         }
 
-        await Awaitable.WaitForSecondsAsync(currentGun.attackSpeed);
+        yield return new WaitForSeconds(currentGun.attackSpeed);
 
         canShoot = true;
     }

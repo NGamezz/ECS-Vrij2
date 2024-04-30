@@ -38,19 +38,6 @@ public class PlayerCameraHandling : MonoBehaviour
         lookVector = ctx.ReadValue<Vector2>();
     }
 
-    private RaycastHit[] hits = new RaycastHit[1];
-    private (bool succes, Vector3 position) GetMousePosition ()
-    {
-        var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-
-        if ( Physics.RaycastNonAlloc(ray, hits, float.MaxValue, ~(1 << playerLayerMask)) == 0 )
-        {
-            return (false, Vector3.zero);
-        }
-
-        return (true, hits[0].point);
-    }
-
     //Should be improved.
     private void ApplyLookDirection ()
     {
@@ -60,13 +47,12 @@ public class PlayerCameraHandling : MonoBehaviour
         {
             var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
 
-            if ( Physics.RaycastNonAlloc(ray, hits, float.MaxValue, ~(1 << playerLayerMask)) == 0 )
+            if ( !Physics.Raycast(ray, out var hit, float.MaxValue, ~(1 << playerLayerMask)) )
             {
-                direction = meshTransform.forward;
                 return;
             }
 
-            direction = hits[0].point - meshTransform.position;
+            direction = hit.point - meshTransform.position;
             direction.y = 0.0f;
         }
         else

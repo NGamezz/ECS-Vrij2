@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
@@ -7,7 +8,7 @@ using UnityEngine.Events;
 
 public class CollectionPointHybrid : MonoBehaviour
 {
-    [SerializeField] private float range = 5.0f;
+    [SerializeField] private int range = 15;
 
     [SerializeField] private bool gizmos = true;
 
@@ -19,27 +20,29 @@ public class CollectionPointHybrid : MonoBehaviour
 
     private EntityManager entityManager;
 
-    private PlayerShootingSystem shootingSystem;
-
-    private void OnShoot ( object entity, EventArgs args )
+    private async void OnShoot ( object entity )
     {
+        Debug.Log("Shoot");
+
         var localTransform = entityManager.GetComponentData<LocalTransform>((Entity)entity);
-
         Vector3 entityPos = localTransform.Position;
-
         var direction = entityPos - transform.position;
 
         var lenght = math.length(direction);
+        Debug.Log(lenght);
 
         if ( lenght < range )
             AddSoul();
 
         if ( souls >= amountToTrigger )
         {
-            eventToTrigger?.Invoke();
-            Debug.Log("Triggered Event.");
-            shootingSystem.OnShoot -= OnShoot;
-            this.enabled = false;
+            WorldManager.RemoveGridListener(transform.position, OnShoot, CellEventType.OnEntityDeath);
+
+            if ( eventToTrigger != null )
+            {
+                await Awaitable.MainThreadAsync();
+                eventToTrigger?.Invoke();
+            }
         }
     }
 
@@ -50,11 +53,15 @@ public class CollectionPointHybrid : MonoBehaviour
 
     void Start ()
     {
+        Vector3 position = transform.position;
+
+        Task.Run(() =>
+        {
+            WorldManager.AddGridListener(position, OnShoot, CellEventType.OnEntityDeath);
+        }).ConfigureAwait(false);
+
         var world = World.DefaultGameObjectInjectionWorld;
         entityManager = world.EntityManager;
-
-        shootingSystem = world.GetExistingSystemManaged<PlayerShootingSystem>();
-        shootingSystem.OnShoot += OnShoot;
     }
 
     private void OnDrawGizmos ()

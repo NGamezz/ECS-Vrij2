@@ -9,7 +9,11 @@ public class PlayerManager : MonoBehaviour, IDamageable
     [SerializeField]
     private PlayerShooting playerShooting = new();
 
+    private bool dead;
+
     [SerializeField] private PlayerStats playerStats;
+
+    public bool IsDead () => dead; 
 
     public void AfflictDamage ( float amount )
     {
@@ -35,7 +39,7 @@ public class PlayerManager : MonoBehaviour, IDamageable
     {
         playerMovement.playerStats = playerStats;
         playerMovement.OnStart();
-        playerShooting.OnStart(transform);
+        playerShooting.OnStart(transform, this);
     }
 
     private void Update ()

@@ -1,7 +1,9 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Unity.Mathematics;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -18,17 +20,23 @@ public class EnemyManager : MonoBehaviour
 
     [SerializeField] private float2 spawnRange = new(5.0f, 15.0f);
 
+    [SerializeField] private float maxDistanceToPlayer;
+
     private ObjectPool<GameObject> objectPool = new();
 
     private DifficultyGrade currentDifficultyGrade;
 
     [SerializeField] private Transform playerTransform;
 
+    private Vector3 ownPosition;
+
     private void Start ()
     {
         currentDifficultyGrade = difficultyGrades[0];
 
         enemyTarget.target = playerTransform;
+
+        ownPosition = transform.position;
 
         GenerateObjects();
         SpawnEnemies();
@@ -37,19 +45,18 @@ public class EnemyManager : MonoBehaviour
     private void RemoveEnemy ( Enemy sender )
     {
         activeEnemies.Remove(sender);
-        sender.OnDeath -= OnEnemyDeath;
         sender.gameObject.SetActive(false);
         objectPool.PoolObject(sender.gameObject);
     }
 
     private void OnEnemyDeath ( Enemy sender )
     {
-        Vector3 position = sender.Position;
+        Vector3 position = sender.Transform.position;
 
         Task.Run(() =>
         {
             WorldManager.InvokeCellEvent(CellEventType.OnEntityDeath, position, position);
-        });
+        }).ConfigureAwait(false);
 
         RemoveEnemy(sender);
     }
@@ -60,36 +67,54 @@ public class EnemyManager : MonoBehaviour
         {
             var gameObject = Instantiate(currentDifficultyGrade.enemyPrefabs[0], transform);
             gameObject.SetActive(false);
-            gameObject.AddComponent<Enemy>();
+            var enemy = gameObject.AddComponent<Enemy>();
+            enemy.OnDeath += OnEnemyDeath;
             objectPool.PoolObject(gameObject);
         }
     }
 
     private async void SpawnEnemies ()
     {
+        Vector3 playerPos = playerTransform.position;
+
         for ( int i = 0; i < currentDifficultyGrade.enemyStats.enemiesPerBatch; i++ )
         {
-            var position = playerTransform.position + (UnityEngine.Random.insideUnitSphere.normalized * UnityEngine.Random.Range(spawnRange.x, spawnRange.y));
-            position.y = transform.position.y;
+            var position = playerPos + (UnityEngine.Random.insideUnitSphere.normalized * UnityEngine.Random.Range(spawnRange.x, spawnRange.y));
+            position.y = ownPosition.y;
 
-            var gameObject = objectPool.GetPooledObject() ?? Instantiate(currentDifficultyGrade.enemyPrefabs[0], transform);
-            gameObject.SetActive(true);
+            bool instantiated = false;
 
+            var gameObject = objectPool.GetPooledObject();
+
+            if ( gameObject == null )
+            {
+                gameObject = Instantiate(currentDifficultyGrade.enemyPrefabs[0], transform);
+                instantiated = true;
+            }
+
+            //Needs to be done on main.
             if ( !gameObject.TryGetComponent(out NavMeshAgent agent) )
             {
                 agent = gameObject.AddComponent<NavMeshAgent>();
             }
             agent.Warp(position);
 
+            gameObject.SetActive(true);
+
             if ( !gameObject.TryGetComponent<Enemy>(out var enemy) )
             {
                 enemy = gameObject.AddComponent<Enemy>();
             }
+            enemy.Dead = false;
+
+            //Can be done outside of main.
+            if ( instantiated )
+            {
+                enemy.OnDeath += OnEnemyDeath;
+            }
 
             enemy.OnStart(currentDifficultyGrade.enemyStats, enemyTarget);
-            enemy.OnDeath += OnEnemyDeath;
             enemy.UpdateStats(currentDifficultyGrade.enemyStats);
-            enemy.Dead = false;
 
             activeEnemies.Add(enemy);
         }
@@ -99,20 +124,52 @@ public class EnemyManager : MonoBehaviour
         SpawnEnemies();
     }
 
+    //Need to add proper disposal.
+    private void OnDisable ()
+    {
+        foreach ( var enemy in activeEnemies )
+        {
+            enemy.OnDeath -= OnEnemyDeath;
+        }
+    }
+
     private void Update ()
     {
+        if ( activeEnemies.Count < 1 )
+            return;
+
         foreach ( var enemy in activeEnemies )
         {
             enemy.OnUpdate();
         }
     }
 
+    private void CleanUpLostEnemies ()
+    {
+        List<Enemy> enemies = activeEnemies;
+        Vector3 playerPos = playerTransform.position;
+
+        for ( int i = 0; i < enemies.Count; i++ )
+        {
+            if ( Vector3.Distance(enemies[i].Transform.position, playerPos) > maxDistanceToPlayer )
+            {
+                var enemy = enemies[i];
+                RemoveEnemy(enemy);
+            }
+        }
+    }
+
     private void FixedUpdate ()
     {
+        if ( activeEnemies.Count < 1 )
+            return;
+
         foreach ( var enemy in activeEnemies )
         {
             enemy.OnFixedUpdate();
         }
+
+        CleanUpLostEnemies();
     }
 }
 

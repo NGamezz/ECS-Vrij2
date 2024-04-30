@@ -35,8 +35,6 @@ public partial class PlayerShootingSystem : SystemBase
 
         var playerRotation = requestPlayerRotation.Invoke();
 
-        SpawnCubesConfig config = SystemAPI.GetSingleton<SpawnCubesConfig>();
-
         EntityCommandBuffer buffer = new(Unity.Collections.Allocator.Temp);
 
         foreach ( var localTransform in SystemAPI.Query<RefRO<LocalTransform>>().WithAll<Player>().WithDisabled<Stunned>() )
@@ -63,10 +61,13 @@ public partial class PlayerShootingSystem : SystemBase
                 continue;
             }
 
+            Debug.Log(closestHit.Position);
+
             buffer.SetComponentEnabled<Stunned>(closestHit.Entity, true);
             buffer.SetComponentEnabled<SoulHarvest>(closestHit.Entity, true);
 
-            OnShoot?.Invoke(closestHit.Position, EventArgs.Empty);
+            WorldManager.InvokeCellEvent(CellEventType.OnEntityDeath, closestHit.Position, closestHit.Entity);
+            //OnShoot?.Invoke(closestHit.Position, EventArgs.Empty);
         }
 
         buffer.Playback(EntityManager);

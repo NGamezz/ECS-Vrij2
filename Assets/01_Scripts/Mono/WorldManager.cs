@@ -5,13 +5,13 @@ using System.Collections.Concurrent;
 
 public static class WorldManager
 {
-    public static int2 cellSize = new(30, 30);
-    private static ConcurrentDictionary<int2, Cell> grid = new();
+    public static int cellSize = 20;
+    private static readonly ConcurrentDictionary<int2, Cell> grid = new();
 
     public static void AddGridListener ( Vector3 fPosition, Action<object> action, CellEventType type )
     {
-        int x = (int)SnapFloatToGrid(fPosition.x, cellSize.x);
-        int y = (int)SnapFloatToGrid(fPosition.z, cellSize.y);
+        int x = (int)SnapFloatToGrid(fPosition.x, cellSize);
+        int y = (int)SnapFloatToGrid(fPosition.z, cellSize);
 
         int2 position = new(x, y);
 
@@ -26,8 +26,8 @@ public static class WorldManager
 
     public static void InvokeCellEvent ( CellEventType type, Vector3 fPosition, object input )
     {
-        int x = (int)SnapFloatToGrid(fPosition.x, cellSize.x);
-        int y = (int)SnapFloatToGrid(fPosition.z, cellSize.y);
+        int x = (int)SnapFloatToGrid(fPosition.x, cellSize);
+        int y = (int)SnapFloatToGrid(fPosition.z, cellSize);
 
         int2 position = new(x, y);
 
@@ -39,8 +39,8 @@ public static class WorldManager
 
     public static void RemoveGridListener ( Vector3 fPosition, Action<object> action, CellEventType type )
     {
-        int x = (int)SnapFloatToGrid(fPosition.x, cellSize.x);
-        int y = (int)SnapFloatToGrid(fPosition.z, cellSize.y);
+        int x = (int)SnapFloatToGrid(fPosition.x, cellSize);
+        int y = (int)SnapFloatToGrid(fPosition.z, cellSize);
 
         int2 position = new(x, y);
 
@@ -67,23 +67,9 @@ public static class WorldManager
         grid.Clear();
     }
 
-    private static float SnapFloatToGrid ( float value, float interval )
+    private static float SnapFloatToGrid ( float value, float cellSize )
     {
-        float rem = value % interval;
-
-        float halfInterval = interval / 2f;
-
-        if ( rem > halfInterval )
-        {
-            float remDif = interval - rem;
-            value += remDif;
-        }
-        else
-        {
-            value -= rem;
-        }
-
-        return value;
+        return (float)Math.Round(value / cellSize) * cellSize;
     }
 }
 
@@ -94,9 +80,9 @@ public enum CellEventType
 
 public class Cell
 {
-    private ConcurrentDictionary<CellEventType, Action<object>> events = new();
+    private readonly ConcurrentDictionary<CellEventType, Action<object>> events = new();
 
-    public Cell(CellEventType type, Action<object> action)
+    public Cell ( CellEventType type, Action<object> action )
     {
         if ( events.ContainsKey(type) )
         {

@@ -1,10 +1,14 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 public class Gun : MonoBehaviour
 {
     public float Damage;
     public float Speed;
+
+    public Transform Transform;
+    public GameObject GameObject;
 
     public int playerLayer;
 
@@ -17,39 +21,51 @@ public class Gun : MonoBehaviour
 
     public Action<bool, GameObject> UponHit;
 
-    private void OnTriggerEnter(Collider other)
+    public void OnStart ()
     {
-        if (other.gameObject.layer == playerLayer || other.gameObject.layer == gameObject.layer)
+        Transform = transform;
+        GameObject = gameObject;
+    }
+
+    private void OnTriggerEnter ( Collider other )
+    {
+        var layer = other.gameObject.layer;
+        if ( layer == playerLayer || layer == GameObject.layer )
         {
             return;
         }
 
-        if (!other.TryGetComponent<IDamageable>(out var damagable))
+        if ( !other.TryGetComponent<IDamageable>(out var damagable) )
         {
-            gameObject.SetActive(false);
-            UponHit?.Invoke(false, gameObject);
+            GameObject.SetActive(false);
+            UponHit?.Invoke(false, GameObject);
+            return;
+        }
+        GameObject.SetActive(false);
+
+        if ( damagable.IsDead() )
+        {
             return;
         }
 
         damagable.AfflictDamage(Damage);
-        gameObject.SetActive(false);
-        UponHit?.Invoke(true, gameObject);
+        UponHit?.Invoke(true, GameObject);
     }
 
     private float currentLifeTime = 0.0f;
 
-    private void Update()
+    private void Update ()
     {
-        if (!gameObject.activeInHierarchy)
+        if ( !GameObject.activeInHierarchy )
             return;
 
         currentLifeTime -= Time.deltaTime;
-        transform.Translate(Speed * Time.deltaTime * transform.forward, Space.World);
+        Transform.Translate(Speed * Time.deltaTime * Transform.forward, Space.World);
 
-        if (currentLifeTime <= 0)
+        if ( currentLifeTime <= 0 )
         {
-            UponHit?.Invoke(false, gameObject);
-            gameObject.SetActive(false);
+            UponHit?.Invoke(false, GameObject);
+            GameObject.SetActive(false);
         }
     }
 }

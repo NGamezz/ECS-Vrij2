@@ -402,15 +402,12 @@ MonoBehaviour:
   DrawColliders: 0
   DrawColliderEdges: 0
   DrawColliderAabbs: 0
-  DrawMassProperties: 0
   DrawBroadphase: 0
+  DrawMassProperties: 0
   DrawContacts: 0
   DrawCollisionEvents: 0
   DrawTriggerEvents: 0
   DrawJoints: 0
-  ColliderDisplayMode: 0
-  ColliderEdgesDisplayMode: 0
-  ColliderAabbDisplayMode: 0
 --- !u!4 &837209415
 Transform:
   m_ObjectHideFlags: 0
@@ -791,6 +788,10 @@ PrefabInstance:
     - target: {fileID: 8164389968050778720, guid: 93fa18c27d0a68845a7ca50c03559a4c, type: 3}
       propertyPath: m_Name
       value: CollectionPoint
+      objectReference: {fileID: 0}
+    - target: {fileID: 8164389968050778720, guid: 93fa18c27d0a68845a7ca50c03559a4c, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8164389968050778720, guid: 93fa18c27d0a68845a7ca50c03559a4c, type: 3}
       propertyPath: m_StaticEditorFlags

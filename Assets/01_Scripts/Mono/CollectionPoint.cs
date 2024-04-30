@@ -5,7 +5,7 @@ using UnityEngine.Events;
 
 public class CollectionPoint : MonoBehaviour
 {
-    [SerializeField] private float range = 5.0f;
+    [SerializeField] private int range = 15;
 
     [SerializeField] private bool gizmos = true;
 
@@ -18,12 +18,17 @@ public class CollectionPoint : MonoBehaviour
     private Vector3 ownPosition;
 
     Vector3 currentEntityPosition = Vector3.zero;
+
     private void CalculateOnDeath ( object entity )
     {
-        Task.Run(async () =>
+        Task.Run(() =>
         {
             currentEntityPosition = (Vector3)entity;
-            OnEnemyDeath(currentEntityPosition);
+
+            var lenght = math.length(currentEntityPosition - ownPosition);
+
+            if ( lenght < range )
+                AddSoul(1);
 
             if ( souls >= amountToTrigger )
             {
@@ -31,19 +36,13 @@ public class CollectionPoint : MonoBehaviour
 
                 if ( eventToTrigger != null )
                 {
-                    await Awaitable.MainThreadAsync();
-                    eventToTrigger?.Invoke();
+                    GameManager.MainThreadActionQueue.Enqueue(() =>
+                    {
+                        eventToTrigger?.Invoke();
+                    });
                 }
             }
-        });
-    }
-
-    private void OnEnemyDeath ( Vector3 position )
-    {
-        var lenght = math.length(position - ownPosition);
-
-        if ( lenght < range )
-            AddSoul(1);
+        }).ConfigureAwait(false);
     }
 
     private void Start ()
@@ -51,9 +50,9 @@ public class CollectionPoint : MonoBehaviour
         ownPosition = transform.position;
 
         Task.Run(() =>
-        {
-            WorldManager.AddGridListener(ownPosition, CalculateOnDeath, CellEventType.OnEntityDeath);
-        });
+            {
+                WorldManager.AddGridListener(ownPosition, CalculateOnDeath, CellEventType.OnEntityDeath);
+            }).ConfigureAwait(false);
     }
 
     private void OnDisable ()
@@ -61,7 +60,7 @@ public class CollectionPoint : MonoBehaviour
         Task.Run(() =>
         {
             WorldManager.RemoveGridListener(ownPosition, CalculateOnDeath, CellEventType.OnEntityDeath);
-        });
+        }).Wait();
     }
 
     private void AddSoul ( int amount )

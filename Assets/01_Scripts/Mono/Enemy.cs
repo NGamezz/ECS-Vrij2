@@ -4,18 +4,23 @@ public class Enemy : Soulable, IDamageable
 {
     public bool Dead = false;
 
-    public Vector3 Position => transform.position;
+    private Transform cachedTransform;
+    public Transform Transform { get => cachedTransform; }
 
     private MoveToTarget moveToTarget;
 
     private float health;
 
-    public void OnStart ( EnemyStats stats , MoveTarget moveTarget)
-    {
-        moveToTarget = new();
-        moveToTarget.OnStart(moveTarget, gameObject.transform);
+    public bool IsDead () => Dead;
 
+    public void OnStart ( EnemyStats stats, MoveTarget moveTarget )
+    {
+        cachedTransform = transform;
+        moveToTarget = new();
+
+        moveToTarget.OnStart(moveTarget, cachedTransform);
         UpdateStats(stats);
+        moveToTarget.Enable();
     }
 
     public void UpdateStats ( EnemyStats stats )
