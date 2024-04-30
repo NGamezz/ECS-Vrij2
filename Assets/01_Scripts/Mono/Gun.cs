@@ -43,7 +43,7 @@ public class Gun : MonoBehaviour
         }
         GameObject.SetActive(false);
 
-        if ( damagable.IsDead() )
+        if ( damagable.IsDead )
         {
             return;
         }

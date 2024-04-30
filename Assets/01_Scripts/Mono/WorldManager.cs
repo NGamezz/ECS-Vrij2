@@ -24,7 +24,7 @@ public static class WorldManager
         grid[position].AddListener(type, action);
     }
 
-    public static void InvokeCellEvent ( CellEventType type, Vector3 fPosition, object input )
+    public static bool InvokeCellEvent ( CellEventType type, Vector3 fPosition, object input )
     {
         int x = (int)SnapFloatToGrid(fPosition.x, cellSize);
         int y = (int)SnapFloatToGrid(fPosition.z, cellSize);
@@ -32,9 +32,10 @@ public static class WorldManager
         int2 position = new(x, y);
 
         if ( !grid.ContainsKey(position) )
-            return;
+            return false;
 
         grid[position].InvokeEvent(type, input);
+        return true;
     }
 
     public static void RemoveGridListener ( Vector3 fPosition, Action<object> action, CellEventType type )

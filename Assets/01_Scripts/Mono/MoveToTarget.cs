@@ -34,10 +34,7 @@ public class MoveToTarget
 
     public void OnStart ( MoveTarget target, Transform ownTransform )
     {
-        if ( !ownTransform.TryGetComponent(out agent) )
-        {
-            agent = ownTransform.AddComponent<NavMeshAgent>();
-        }
+        agent = ownTransform.GetOrAddComponent<NavMeshAgent>();
 
         moveTarget = target;
         this.ownTransform = ownTransform;

@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -27,6 +26,8 @@ public class PlayerCameraHandling : MonoBehaviour
 
     private bool updateCameraPosition = false;
 
+    private Resolution screenRes;
+
     private Camera mainCamera;
 
     [Tooltip("For arrow keys aiming for instance.")]
@@ -38,6 +39,8 @@ public class PlayerCameraHandling : MonoBehaviour
         lookVector = ctx.ReadValue<Vector2>();
     }
 
+    private readonly RaycastHit[] hits = new RaycastHit[1];
+
     //Should be improved.
     private void ApplyLookDirection ()
     {
@@ -47,12 +50,12 @@ public class PlayerCameraHandling : MonoBehaviour
         {
             var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
 
-            if ( !Physics.Raycast(ray, out var hit, float.MaxValue, ~(1 << playerLayerMask)) )
+            if ( Physics.RaycastNonAlloc(ray, hits, float.MaxValue, ~(1 << playerLayerMask)) == 0 )
             {
                 return;
             }
 
-            direction = hit.point - meshTransform.position;
+            direction = hits[0].point - meshTransform.position;
             direction.y = 0.0f;
         }
         else
@@ -70,10 +73,9 @@ public class PlayerCameraHandling : MonoBehaviour
     {
         var meshPos = meshTransform.position;
         var meshScreenPos = mainCamera.WorldToScreenPoint(meshPos);
-        var res = Screen.currentResolution;
 
-        var withinSafeZone = meshScreenPos.x <= res.width - distanceFromBorder.x
-            && meshScreenPos.y <= res.height - distanceFromBorder.y
+        var withinSafeZone = meshScreenPos.x <= screenRes.width - distanceFromBorder.x
+            && meshScreenPos.y <= screenRes.height - distanceFromBorder.y
             && meshScreenPos.y >= distanceFromBorder.y
             && meshScreenPos.x >= distanceFromBorder.x;
 
@@ -102,6 +104,7 @@ public class PlayerCameraHandling : MonoBehaviour
     private void Start ()
     {
         mainCamera = Camera.main;
+        screenRes = Screen.currentResolution;
         //SetScalingForBorderDeadZone();
     }
 

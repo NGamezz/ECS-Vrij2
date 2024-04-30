@@ -6,6 +6,7 @@ public enum EventType
     UponRequestPlayerPosition = 0,
     UponRequestPlayerRotation = 1,
     UponDesiredSoulsAmount = 2,
+    UponHarvestSoul = 3,
 }
 
 public static class EventManager
@@ -55,7 +56,6 @@ public static class EventManager
         events.Clear();
     }
 }
-
 
 public static class EventManagerGeneric<T>
 {

@@ -3,11 +3,19 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Events;
 
+public enum CollectionPointMode
+{
+    Standard = 0,
+    Manual = 1,
+}
+
 public class CollectionPoint : MonoBehaviour
 {
     [SerializeField] private int range = 15;
 
     [SerializeField] private bool gizmos = true;
+
+    [SerializeField] private CollectionPointMode mode = CollectionPointMode.Standard;
 
     [SerializeField] private int souls = 0;
 
@@ -23,26 +31,50 @@ public class CollectionPoint : MonoBehaviour
     {
         Task.Run(() =>
         {
-            currentEntityPosition = (Vector3)entity;
+            var mode = this.mode;
 
-            var lenght = math.length(currentEntityPosition - ownPosition);
-
-            if ( lenght < range )
-                AddSoul(1);
-
-            if ( souls >= amountToTrigger )
+            switch ( mode )
             {
-                WorldManager.RemoveGridListener(ownPosition, CalculateOnDeath, CellEventType.OnEntityDeath);
-
-                if ( eventToTrigger != null )
-                {
-                    GameManager.MainThreadActionQueue.Enqueue(() =>
+                case CollectionPointMode.Standard:
                     {
-                        eventToTrigger?.Invoke();
-                    });
-                }
+                        StandardCollection(entity);
+                        break;
+                    }
+                case CollectionPointMode.Manual:
+                    {
+                        EventManagerGeneric<int>.InvokeEvent(EventType.UponHarvestSoul, 1);
+                        break;
+                    }
             }
         }).ConfigureAwait(false);
+    }
+
+    private void StandardCollection(object entity)
+    {
+        currentEntityPosition = (Vector3)entity;
+
+        var lenght = math.length(currentEntityPosition - ownPosition);
+
+        if ( lenght < range )
+            AddSoul(1);
+
+        if ( lenght > range )
+        {
+            EventManagerGeneric<int>.InvokeEvent(EventType.UponHarvestSoul, 1);
+        }
+
+        if ( souls >= amountToTrigger )
+        {
+            WorldManager.RemoveGridListener(ownPosition, CalculateOnDeath, CellEventType.OnEntityDeath);
+
+            if ( eventToTrigger != null )
+            {
+                GameManager.MainThreadActionQueue.Enqueue(() =>
+                {
+                    eventToTrigger?.Invoke();
+                });
+            }
+        }
     }
 
     private void Start ()

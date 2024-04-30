@@ -1,9 +1,7 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Unity.Mathematics;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -55,7 +53,10 @@ public class EnemyManager : MonoBehaviour
 
         Task.Run(() =>
         {
-            WorldManager.InvokeCellEvent(CellEventType.OnEntityDeath, position, position);
+            if(!WorldManager.InvokeCellEvent(CellEventType.OnEntityDeath, position, position))
+            {
+                EventManagerGeneric<int>.InvokeEvent(EventType.UponHarvestSoul, 1);
+            }
         }).ConfigureAwait(false);
 
         RemoveEnemy(sender);
@@ -138,9 +139,13 @@ public class EnemyManager : MonoBehaviour
         if ( activeEnemies.Count < 1 )
             return;
 
+        var target = enemyTarget.target;
+        var targetPos = target.position;
+
         foreach ( var enemy in activeEnemies )
         {
             enemy.OnUpdate();
+            enemy.CheckAttackRange(target, targetPos);
         }
     }
 

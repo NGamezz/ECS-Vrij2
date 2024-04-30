@@ -661,6 +661,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2395464484768575222, guid: 33433553ed57bdc4aa52c8fc54ee27cd, type: 3}
+      propertyPath: mode
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2578221032556716366, guid: 33433553ed57bdc4aa52c8fc54ee27cd, type: 3}
       propertyPath: m_Name
       value: CollectionPoint
