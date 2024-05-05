@@ -20,7 +20,7 @@ public class EnemyManager : MonoBehaviour
 
     [SerializeField] private float maxDistanceToPlayer;
 
-    private ObjectPool<GameObject> objectPool = new();
+    private ObjectPool<Enemy> objectPool = new();
 
     private DifficultyGrade currentDifficultyGrade;
 
@@ -44,7 +44,7 @@ public class EnemyManager : MonoBehaviour
     {
         activeEnemies.Remove(sender);
         sender.gameObject.SetActive(false);
-        objectPool.PoolObject(sender.gameObject);
+        objectPool.PoolObject(sender);
     }
 
     private void OnEnemyDeath ( Enemy sender )
@@ -53,7 +53,7 @@ public class EnemyManager : MonoBehaviour
 
         Task.Run(() =>
         {
-            if(!WorldManager.InvokeCellEvent(CellEventType.OnEntityDeath, position, position))
+            if ( !WorldManager.InvokeCellEvent(CellEventType.OnEntityDeath, position, position) )
             {
                 EventManagerGeneric<int>.InvokeEvent(EventType.UponHarvestSoul, 1);
             }
@@ -69,11 +69,13 @@ public class EnemyManager : MonoBehaviour
             var gameObject = Instantiate(currentDifficultyGrade.enemyPrefabs[0], transform);
             gameObject.SetActive(false);
             var enemy = gameObject.AddComponent<Enemy>();
+            enemy.OnStart(currentDifficultyGrade.enemyStats, enemyTarget, gameObject.transform.position);
             enemy.OnDeath += OnEnemyDeath;
-            objectPool.PoolObject(gameObject);
+            objectPool.PoolObject(enemy);
         }
     }
 
+    //Still to be improved.
     private async void SpawnEnemies ()
     {
         Vector3 playerPos = playerTransform.position;
@@ -85,7 +87,9 @@ public class EnemyManager : MonoBehaviour
 
             bool instantiated = false;
 
-            var gameObject = objectPool.GetPooledObject();
+            var enemy = objectPool.GetPooledObject();
+
+            var gameObject = enemy.GameObject;
 
             if ( gameObject == null )
             {
@@ -93,29 +97,23 @@ public class EnemyManager : MonoBehaviour
                 instantiated = true;
             }
 
-            //Needs to be done on main.
-            if ( !gameObject.TryGetComponent(out NavMeshAgent agent) )
-            {
-                agent = gameObject.AddComponent<NavMeshAgent>();
-            }
-            agent.Warp(position);
-
             gameObject.SetActive(true);
 
-            if ( !gameObject.TryGetComponent<Enemy>(out var enemy) )
+            if ( enemy == null )
             {
                 enemy = gameObject.AddComponent<Enemy>();
             }
             enemy.Dead = false;
 
-            //Can be done outside of main.
             if ( instantiated )
             {
                 enemy.OnDeath += OnEnemyDeath;
+                enemy.OnStart(currentDifficultyGrade.enemyStats, enemyTarget, position);
             }
-
-            enemy.OnStart(currentDifficultyGrade.enemyStats, enemyTarget);
-            enemy.UpdateStats(currentDifficultyGrade.enemyStats);
+            else
+            {
+                enemy.OnReuse(currentDifficultyGrade.enemyStats, position);
+            }
 
             activeEnemies.Add(enemy);
         }

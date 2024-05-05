@@ -32,9 +32,16 @@ public class MoveToTarget
         CancelPath();
     }
 
-    public void OnStart ( MoveTarget target, Transform ownTransform )
+    public void OnUpdate(Vector3 startPosition)
+    {
+        agent.Warp(startPosition);
+    }
+
+    public void OnStart ( MoveTarget target, Transform ownTransform, Vector3 startPosition )
     {
         agent = ownTransform.GetOrAddComponent<NavMeshAgent>();
+
+        agent.Warp(startPosition);
 
         moveTarget = target;
         this.ownTransform = ownTransform;
@@ -66,6 +73,7 @@ public class MoveToTarget
     {
         if ( agent == null || agent.isOnNavMesh == false || agent.isActiveAndEnabled == false )
             return;
+        started = false;
         agent.isStopped = true;
         agent.ResetPath();
     }

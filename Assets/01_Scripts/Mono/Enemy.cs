@@ -1,5 +1,6 @@
 using System.Collections;
 using Unity.Mathematics;
+using Unity.VisualScripting.Antlr3.Runtime.Misc;
 using UnityEngine;
 
 public class Enemy : Soulable, IDamageable
@@ -10,7 +11,10 @@ public class Enemy : Soulable, IDamageable
 
     private Transform cachedTransform;
 
+    private GameObject cachedGameObject;
+
     public Transform Transform { get => cachedTransform; }
+    public GameObject GameObject { get => cachedGameObject; }
 
     private MoveToTarget moveToTarget;
 
@@ -20,13 +24,23 @@ public class Enemy : Soulable, IDamageable
 
     private EnemyStats enemyStats;
 
-    public void OnStart ( EnemyStats stats, MoveTarget moveTarget )
+    public void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition )
     {
         enemyStats = stats;
         cachedTransform = transform;
+        cachedGameObject = gameObject;
         moveToTarget = new();
 
-        moveToTarget.OnStart(moveTarget, cachedTransform);
+        moveToTarget.OnStart(moveTarget, cachedTransform, startPosition);
+        UpdateStats(stats);
+        moveToTarget.Enable();
+    }
+
+    public void OnReuse(EnemyStats stats, Vector3 startPosition)
+    {
+        enemyStats = stats;
+
+        moveToTarget.OnUpdate(startPosition);
         UpdateStats(stats);
         moveToTarget.Enable();
     }
