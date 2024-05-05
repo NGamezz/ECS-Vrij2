@@ -19,7 +19,7 @@ public class Gun : MonoBehaviour
         set { projectileLifeTime = value; currentLifeTime = value; }
     }
 
-    public Action<bool, GameObject> UponHit;
+    public Action<bool, Gun> UponHit;
 
     public void OnStart ()
     {
@@ -38,7 +38,7 @@ public class Gun : MonoBehaviour
         if ( !other.TryGetComponent<IDamageable>(out var damagable) )
         {
             GameObject.SetActive(false);
-            UponHit?.Invoke(false, GameObject);
+            UponHit?.Invoke(false, this);
             return;
         }
         GameObject.SetActive(false);
@@ -49,7 +49,7 @@ public class Gun : MonoBehaviour
         }
 
         damagable.AfflictDamage(Damage);
-        UponHit?.Invoke(true, GameObject);
+        UponHit?.Invoke(true, this);
     }
 
     private float currentLifeTime = 0.0f;
@@ -64,7 +64,7 @@ public class Gun : MonoBehaviour
 
         if ( currentLifeTime <= 0 )
         {
-            UponHit?.Invoke(false, GameObject);
+            UponHit?.Invoke(false, this);
             GameObject.SetActive(false);
         }
     }

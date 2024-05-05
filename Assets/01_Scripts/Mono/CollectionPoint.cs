@@ -69,7 +69,7 @@ public class CollectionPoint : MonoBehaviour
 
             if ( eventToTrigger != null )
             {
-                GameManager.MainThreadActionQueue.Enqueue(() =>
+                GameManager.Instance.Enqueue(() =>
                 {
                     eventToTrigger?.Invoke();
                 });
