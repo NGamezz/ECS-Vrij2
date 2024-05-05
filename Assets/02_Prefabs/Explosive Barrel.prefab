@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4876064665180284361}
   - component: {fileID: 5549253952919118789}
+  - component: {fileID: 6201775027737473861}
   m_Layer: 0
   m_Name: Explosive Barrel
   m_TagString: Untagged
@@ -48,12 +49,26 @@ SphereCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
   m_Radius: 4.5
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &6201775027737473861
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2369463994340729213}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fecf6f6c5419a6648b05036fa4a8c9f5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  radius: 4.5
+  damage: 100
 --- !u!1 &3569129818568075965
 GameObject:
   m_ObjectHideFlags: 0

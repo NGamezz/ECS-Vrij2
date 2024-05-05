@@ -32,7 +32,7 @@ public class MoveToTarget
         CancelPath();
     }
 
-    public void OnUpdate(Vector3 startPosition)
+    public void OnUpdate ( Vector3 startPosition )
     {
         agent.Warp(startPosition);
     }
@@ -73,7 +73,7 @@ public class MoveToTarget
     {
         if ( agent == null || agent.isOnNavMesh == false || agent.isActiveAndEnabled == false )
             return;
-        started = false;
+        
         agent.isStopped = true;
         agent.ResetPath();
     }

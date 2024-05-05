@@ -1,6 +1,5 @@
 using System.Collections;
 using Unity.Mathematics;
-using Unity.VisualScripting.Antlr3.Runtime.Misc;
 using UnityEngine;
 
 public class Enemy : Soulable, IDamageable
@@ -42,7 +41,6 @@ public class Enemy : Soulable, IDamageable
 
         moveToTarget.OnUpdate(startPosition);
         UpdateStats(stats);
-        moveToTarget.Enable();
     }
 
     public void UpdateStats ( EnemyStats stats )
