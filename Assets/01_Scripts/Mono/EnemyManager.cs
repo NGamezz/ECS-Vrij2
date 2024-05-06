@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.AI;
 
 public class EnemyManager : MonoBehaviour
 {
@@ -149,14 +148,14 @@ public class EnemyManager : MonoBehaviour
 
     private void CleanUpLostEnemies ()
     {
-        List<Enemy> enemies = activeEnemies;
         Vector3 playerPos = playerTransform.position;
 
-        for ( int i = 0; i < enemies.Count; i++ )
+        for ( int i = 0; i < activeEnemies.Count; i++ )
         {
-            if ( Vector3.Distance(enemies[i].Transform.position, playerPos) > maxDistanceToPlayer )
+            var ownPos = activeEnemies[i].Transform.position;
+            if ( Vector3.Distance(ownPos, playerPos) > maxDistanceToPlayer )
             {
-                var enemy = enemies[i];
+                var enemy = activeEnemies[i];
                 RemoveEnemy(enemy);
             }
         }

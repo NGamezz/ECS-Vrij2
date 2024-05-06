@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7724375178536459661}
   - component: {fileID: 7537370017512554632}
   - component: {fileID: 6502294657863666357}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Capsule
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -58,6 +58,8 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -95,7 +97,7 @@ GameObject:
   - component: {fileID: 287197017240531402}
   - component: {fileID: 3093846164595945894}
   - component: {fileID: 1448095830344234588}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Enemy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
