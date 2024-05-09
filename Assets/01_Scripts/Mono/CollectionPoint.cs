@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Unity.Mathematics;
 using UnityEngine;
@@ -18,6 +19,8 @@ public class CollectionPoint : MonoBehaviour
     [SerializeField] private CollectionPointMode mode = CollectionPointMode.Standard;
 
     [SerializeField] private int souls = 0;
+
+    [SerializeField] private List<int2> cellPositions = new();
 
     [SerializeField] private int amountToTrigger = 10;
 
@@ -49,7 +52,7 @@ public class CollectionPoint : MonoBehaviour
         }).ConfigureAwait(false);
     }
 
-    private void StandardCollection(object entity)
+    private void StandardCollection ( object entity )
     {
         currentEntityPosition = (Vector3)entity;
 
@@ -65,7 +68,7 @@ public class CollectionPoint : MonoBehaviour
 
         if ( souls >= amountToTrigger )
         {
-            WorldManager.RemoveGridListener(ownPosition, CalculateOnDeath, CellEventType.OnEntityDeath);
+            WorldManager.RemoveGridListener(ownPosition, range, CalculateOnDeath, CellEventType.OnEntityDeath);
 
             if ( eventToTrigger != null )
             {
@@ -82,16 +85,16 @@ public class CollectionPoint : MonoBehaviour
         ownPosition = transform.position;
 
         Task.Run(() =>
-            {
-                WorldManager.AddGridListener(ownPosition, CalculateOnDeath, CellEventType.OnEntityDeath);
-            }).ConfigureAwait(false);
+        {
+            cellPositions = WorldManager.AddGridListener(ownPosition, range, CalculateOnDeath, CellEventType.OnEntityDeath);
+        }).ConfigureAwait(false);
     }
 
     private void OnDisable ()
     {
         Task.Run(() =>
         {
-            WorldManager.RemoveGridListener(ownPosition, CalculateOnDeath, CellEventType.OnEntityDeath);
+            WorldManager.RemoveGridListener(ownPosition, range, CalculateOnDeath, CellEventType.OnEntityDeath);
         }).Wait();
     }
 
@@ -105,6 +108,14 @@ public class CollectionPoint : MonoBehaviour
         if ( !gizmos )
             return;
 
-        Gizmos.DrawWireSphere(ownPosition, range / 2.0f);
+        Gizmos.DrawWireSphere(ownPosition, range);
+
+        if ( cellPositions.Count < 1 )
+            return;
+
+        foreach ( var cellPos in cellPositions )
+        {
+            Gizmos.DrawWireCube(new(cellPos.x, 0.0f, cellPos.y), Vector3.one * WorldManager.CellSize);
+        }
     }
 }

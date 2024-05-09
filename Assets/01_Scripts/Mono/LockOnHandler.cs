@@ -1,15 +1,15 @@
-using NaughtyAttributes;
 using UnityEngine;
 using UnityEngine.Events;
 
 public class LockOnHandler : MonoBehaviour
 {
-    [Layer]
-    [SerializeField] private int targetLayer;
+    private const int regularEnemyLayer = 9;
+    private const int specialEnemyLayer = 8;
 
     [SerializeField] private UnityEvent<Transform> UponTargetSelection;
+    [SerializeField] private UnityEvent<Transform> UponSpecialTargetSelection;
 
-    RaycastHit[] hits = new RaycastHit[1];
+    [SerializeField] private UnityEvent UponTargetDeselection;
 
     private Camera mainCamera;
 
@@ -18,18 +18,39 @@ public class LockOnHandler : MonoBehaviour
         mainCamera = Camera.main;
     }
 
-    void Update ()
+    public void OnActivate ()
     {
         var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
 
-        if ( Physics.RaycastNonAlloc(ray, hits, float.MaxValue, (1 << targetLayer)) == 0 )
+        var hasHit = Physics.Raycast(ray, out var hits, 5000.0f);
+
+        if ( !hasHit )
         {
+            UponTargetDeselection?.Invoke();
             return;
         }
 
-        UponTargetSelection?.Invoke(hits[0].collider.transform);
+        var transform = hits.transform;
+        var layer = transform.gameObject.layer;
 
-        ClearArray(ref hits);
+        switch ( layer )
+        {
+            case specialEnemyLayer:
+                {
+                    UponSpecialTargetSelection?.Invoke(transform);
+                    break;
+                }
+            case regularEnemyLayer:
+                {
+                    UponTargetSelection?.Invoke(transform);
+                    break;
+                }
+            default:
+                {
+                    UponTargetDeselection?.Invoke();
+                    return;
+                }
+        }
     }
 
     private void ClearArray<T> ( ref T[] array )

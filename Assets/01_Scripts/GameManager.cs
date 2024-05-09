@@ -2,6 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Unity.Burst;
+using Unity.Collections;
+using Unity.Jobs;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -46,6 +49,26 @@ public class GameManager : MonoBehaviour
                 actionQueue.Dequeue().Invoke();
             }
         }
+    }
+
+    //Testing Purposes.
+    private IEnumerator HandleJobData ()
+    {
+        NativeArray<int> result = new(10000, Allocator.Persistent);
+        TestJob testJob = new()
+        {
+            results = result,
+        };
+
+        JobHandle jobHandle = testJob.Schedule(10000, 64);
+
+        yield return new WaitUntil(() => { return jobHandle.IsCompleted; });
+
+        jobHandle.Complete();
+
+        Debug.Log(testJob.results.Length);
+
+        testJob.results.Dispose();
     }
 
     /// <summary>
@@ -99,26 +122,61 @@ public class GameManager : MonoBehaviour
         Enqueue(ActionWrapper(Action));
         return src.Task;
     }
-    
+
     public void Enqueue ( Action action )
     {
         Enqueue(ActionWrapper(action));
     }
 
-    public void Enqueue ( IEnumerator action )
+    public async void Enqueue ( IEnumerator action )
     {
-        lock ( actionQueue )
+        while ( !_Enqueue(action) )
         {
-            actionQueue.Enqueue(() =>
-            {
-                StartCoroutine(action);
-            });
+            await Task.Yield();
         }
+    }
+
+    private bool _Enqueue ( IEnumerator action )
+    {
+        try
+        {
+            lock ( actionQueue )
+            {
+                actionQueue.Enqueue(() =>
+                {
+                    StartCoroutine(action);
+                });
+            }
+        }
+        catch ( Exception )
+        {
+            return false;
+        }
+        return true;
     }
 
     private IEnumerator ActionWrapper ( Action action )
     {
         yield return null;
         action();
+    }
+}
+
+[BurstCompile]
+public struct TestJob : IJobParallelFor
+{
+    public NativeArray<int> results;
+
+    public void Execute ( int index )
+    {
+        int value = 0;
+        for ( int x = 0; x < 10000; x++ )
+        {
+            int result = x * index;
+            int newResult = result * x;
+            int newResultB = newResult * x;
+            value = newResult * newResultB;
+        }
+        results[index] = value;
     }
 }

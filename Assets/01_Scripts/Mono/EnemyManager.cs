@@ -52,11 +52,13 @@ public class EnemyManager : MonoBehaviour
 
         Task.Run(() =>
         {
+            Debug.Log(position);
+
             if ( !WorldManager.InvokeCellEvent(CellEventType.OnEntityDeath, position, position) )
             {
                 EventManagerGeneric<int>.InvokeEvent(EventType.UponHarvestSoul, 1);
             }
-        }).ConfigureAwait(false);
+        });
 
         RemoveEnemy(sender);
     }
