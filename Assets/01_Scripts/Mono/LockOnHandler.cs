@@ -9,6 +9,8 @@ public class LockOnHandler : MonoBehaviour
     [SerializeField] private UnityEvent<Transform> UponTargetSelection;
     [SerializeField] private UnityEvent<Transform> UponSpecialTargetSelection;
 
+    [SerializeField] private CharacterData characterData;
+
     [SerializeField] private UnityEvent UponTargetDeselection;
 
     private Camera mainCamera;
@@ -37,27 +39,22 @@ public class LockOnHandler : MonoBehaviour
         {
             case specialEnemyLayer:
                 {
+                    characterData.TargetedTransform = transform;
                     UponSpecialTargetSelection?.Invoke(transform);
                     break;
                 }
             case regularEnemyLayer:
                 {
+                    characterData.TargetedTransform = transform;
                     UponTargetSelection?.Invoke(transform);
                     break;
                 }
             default:
                 {
+                    characterData.TargetedTransform = null;
                     UponTargetDeselection?.Invoke();
                     return;
                 }
-        }
-    }
-
-    private void ClearArray<T> ( ref T[] array )
-    {
-        for ( int i = 0; i < array.Length; i++ )
-        {
-            array[i] = default;
         }
     }
 }

@@ -70,6 +70,8 @@ public class CollectionPoint : MonoBehaviour
         {
             WorldManager.RemoveGridListener(ownPosition, range, CalculateOnDeath, CellEventType.OnEntityDeath);
 
+            EventManager.InvokeEvent(EventType.UponDesiredSoulsAmount);
+
             if ( eventToTrigger != null )
             {
                 GameManager.Instance.Enqueue(() =>
@@ -80,7 +82,7 @@ public class CollectionPoint : MonoBehaviour
         }
     }
 
-    private void Start ()
+    public void OnStart ()
     {
         ownPosition = transform.position;
 
@@ -100,6 +102,9 @@ public class CollectionPoint : MonoBehaviour
 
     private void AddSoul ( int amount )
     {
+        if ( amount < 0 )
+            return;
+
         souls += amount;
     }
 

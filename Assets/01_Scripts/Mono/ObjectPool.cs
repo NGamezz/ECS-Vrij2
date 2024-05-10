@@ -18,6 +18,11 @@ public class ObjectPool<T> where T : class
         return inactiveObjectsConcurrent.ToArray();
     }
 
+    public void ClearPool()
+    {
+        inactiveObjectsConcurrent.Clear();
+    }
+
     public void PoolObject ( T item )
     {
         if ( item == null )

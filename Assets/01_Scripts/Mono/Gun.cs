@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using UnityEngine;
 
 public class Gun : MonoBehaviour
@@ -43,7 +42,7 @@ public class Gun : MonoBehaviour
         }
         GameObject.SetActive(false);
 
-        if ( damagable.IsDead )
+        if ( damagable.Dead )
         {
             return;
         }
