@@ -21,7 +21,7 @@ public class EnemyManager : MonoBehaviour
 
     [SerializeField] private float maxDistanceToPlayer;
 
-    private ObjectPool<Enemy> objectPool = new();
+    private readonly ObjectPool<Enemy> objectPool = new();
 
     private DifficultyGrade currentDifficultyGrade;
 
@@ -29,20 +29,36 @@ public class EnemyManager : MonoBehaviour
 
     private bool spawnEnemies = false;
 
+    public bool SpawnEnemies
+    {
+        get => spawnEnemies;
+        set
+        {
+            spawnEnemies = value;
+            if ( !value )
+                StopRoutine();
+        }
+    }
+
     private Vector3 ownPosition;
+
+    public void StopRoutine ()
+    {
+        StopAllCoroutines();
+    }
 
     private void Start ()
     {
         currentDifficultyGrade = difficultyGrades[0];
 
         enemyTarget.target = playerTransform;
-
         ownPosition = transform.position;
 
         GenerateObjects();
 
-        spawnEnemies = true;
+        SpawnEnemies = true;
         StartCoroutine(SpawnEnemiesIE());
+        StartCoroutine(CleanUpLostEnemies());
     }
 
     private void RemoveEnemy ( Enemy sender )
@@ -127,6 +143,8 @@ public class EnemyManager : MonoBehaviour
         }
         objectPool.ClearPool();
         activeEnemies.Clear();
+
+        StopAllCoroutines();
     }
 
     private void Update ()
@@ -147,21 +165,26 @@ public class EnemyManager : MonoBehaviour
         }
     }
 
-    private void CleanUpLostEnemies ()
+    private IEnumerator CleanUpLostEnemies ()
     {
-        Vector3 playerPos = playerTransform.position;
-
-        for ( int i = 0; i < activeEnemies.Count; i++ )
+        while ( spawnEnemies )
         {
-            var enemy = activeEnemies[i];
-            if ( enemy == null )
-                continue;
+            Vector3 playerPos = playerTransform.position;
 
-            var ownPos = enemy.Transform.position;
-            if ( Vector3.Distance(ownPos, playerPos) > maxDistanceToPlayer )
+            for ( int i = 0; i < activeEnemies.Count; i++ )
             {
-                RemoveEnemy(enemy);
+                var enemy = activeEnemies[i];
+                if ( enemy == null )
+                    continue;
+
+                var ownPos = enemy.Transform.position;
+                if ( Vector3.Distance(ownPos, playerPos) > maxDistanceToPlayer )
+                {
+                    RemoveEnemy(enemy);
+                }
             }
+
+            yield return Utility.Yielders.FixedUpdate;
         }
     }
 
@@ -177,8 +200,6 @@ public class EnemyManager : MonoBehaviour
 
             enemy.OnFixedUpdate();
         }
-
-        CleanUpLostEnemies();
     }
 }
 

@@ -1,3 +1,4 @@
+using System.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -20,6 +21,8 @@ public class PlayerCameraHandling : MonoBehaviour
     [Tooltip("Distance from the border of the screen before the camera moves.")]
     [SerializeField] private int2 distanceFromBorder = new(200, 200);
 
+    [SerializeField] private int2 scalingResolution = new(2560, 1440);
+
     private Vector3 velocity = Vector3.zero;
 
     private Vector2 lookVector;
@@ -29,6 +32,8 @@ public class PlayerCameraHandling : MonoBehaviour
     private Resolution screenRes;
 
     private Camera mainCamera;
+
+    private bool running = true;
 
     [Tooltip("For arrow keys aiming for instance.")]
     public void OnLook ( InputAction.CallbackContext ctx )
@@ -85,49 +90,64 @@ public class PlayerCameraHandling : MonoBehaviour
         updateCameraPosition = true;
     }
 
-    private void UpdatePosition ()
+    private static WaitUntil waitUntilUpdateCam;
+
+    private IEnumerator UpdateCameraPositionIE ()
     {
-        var cameraPos = cameraTransform.position;
-        var meshPos = meshTransform.position;
-
-        var newPos = new Vector3(meshPos.x, cameraPos.y, meshPos.z);
-        cameraPos = Vector3.SmoothDamp(cameraPos, newPos, ref velocity, smoothTime);
-
-        if ( Vector3.Distance(cameraPos, newPos) < cameraRecenterDeadzone )
+        while ( running )
         {
-            updateCameraPosition = false;
-        }
+            yield return waitUntilUpdateCam;
 
-        cameraTransform.position = cameraPos;
+            while ( updateCameraPosition )
+            {
+                var cameraPos = cameraTransform.position;
+                var meshPos = meshTransform.position;
+
+                var newPos = new Vector3(meshPos.x, cameraPos.y, meshPos.z);
+                cameraPos = Vector3.SmoothDamp(cameraPos, newPos, ref velocity, smoothTime);
+
+                if ( Vector3.Distance(cameraPos, newPos) < cameraRecenterDeadzone )
+                {
+                    updateCameraPosition = false;
+                }
+
+                cameraTransform.position = cameraPos;
+                yield return null;
+            }
+        }
     }
 
     private void Start ()
     {
         mainCamera = Camera.main;
-        screenRes = Screen.currentResolution;
-        //SetScalingForBorderDeadZone();
+        waitUntilUpdateCam ??= new(() => updateCameraPosition);
+
+        StartCoroutine(UpdateCameraPositionIE());
+        SetScalingForBorderDeadZone();
     }
 
-    //Needs to be redone.
     private void SetScalingForBorderDeadZone ()
     {
-        var scalingA = distanceFromBorder.x / 2560;
-        var scalingB = distanceFromBorder.y / 1440;
-
         var mainDisplay = Display.main;
 
-        distanceFromBorder = new(scalingA * mainDisplay.renderingWidth, scalingB * mainDisplay.renderingHeight);
+        int height = mainDisplay.renderingHeight;
+        int width = mainDisplay.renderingWidth;
+
+        float scalingA = width / (scalingResolution.x * 1.0f);
+        float scalingB = height / (scalingResolution.y * 1.0f);
+
+        screenRes = new()
+        {
+            width = width,
+            height = height
+        };
+
+        distanceFromBorder = new((int)(distanceFromBorder.x * scalingA), (int)(distanceFromBorder.y * scalingB));
     }
 
     private void Update ()
     {
         ApplyLookDirection();
         CheckForPositionChange();
-    }
-
-    private void LateUpdate ()
-    {
-        if ( updateCameraPosition )
-            UpdatePosition();
     }
 }

@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 using Unity.Jobs;
 using Unity.Collections;
 using System.Threading;
+using AOT;
+using static UnityEngine.InputManagerEntry;
+using UnityEngine.UIElements;
 
 [BurstCompile]
 public static class WorldManager
@@ -251,6 +254,7 @@ public static class WorldManager
     {
         NativeArray<PositionHolder> jobList = new(49, Allocator.Persistent);
         List<int2> positions = new();
+
         try
         {
             const int indexOffSet = -3;
