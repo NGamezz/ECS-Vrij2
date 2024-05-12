@@ -20,7 +20,8 @@ public class CharacterData : ScriptableObject
 
     public MoveTarget MoveTarget { get; set; }
 
-    public int Souls { get; set; }
+    [SerializeField] private int souls;
+    public int Souls { get => souls; set => souls = value; }
 
     public float Health { get; set; }
     public float Stamina { get; set; }

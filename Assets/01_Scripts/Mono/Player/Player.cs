@@ -1,10 +1,13 @@
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilityOwner
 {
-    public int Souls  { get => characterData.Souls; }
+    public int Souls { get => characterData.Souls; }
 
     public bool Dead { get; private set; }
 

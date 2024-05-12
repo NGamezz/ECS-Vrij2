@@ -58,13 +58,13 @@ public class CollectionPoint : MonoBehaviour
 
         var lenght = math.length(currentEntityPosition - ownPosition);
 
-        if ( lenght < range )
-            AddSoul(1);
-
         if ( lenght > range )
         {
             EventManagerGeneric<int>.InvokeEvent(EventType.UponHarvestSoul, 1);
+            return;
         }
+
+        AddSoul(1);
 
         if ( souls >= amountToTrigger )
         {
@@ -86,9 +86,9 @@ public class CollectionPoint : MonoBehaviour
     {
         ownPosition = transform.position;
 
-        Task.Run(() =>
+        Task.Run(async () =>
         {
-            cellPositions = WorldManager.AddGridListener(ownPosition, range, CalculateOnDeath, CellEventType.OnEntityDeath);
+            cellPositions = await WorldManager.AddGridListenerParallelJob(ownPosition, range, CalculateOnDeath, CellEventType.OnEntityDeath);
         }).ConfigureAwait(false);
     }
 

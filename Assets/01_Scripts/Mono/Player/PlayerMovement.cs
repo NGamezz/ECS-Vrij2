@@ -9,14 +9,12 @@ public class PlayerMovement
     [SerializeField] private float dashCooldown = 0.2f;
 
     [SerializeField] private GameObject meshObject;
+    private Transform cachedMeshTransform;
 
     [SerializeField] private int groundLayerMask = 4;
 
     [SerializeField] private float sprintStaminaCost = 2.0f;
-
     [SerializeField] private float staminaRegenSpeed = 1.0f;
-
-    //public PlayerStats playerStats;
 
     public CharacterData characterData;
 
@@ -26,7 +24,6 @@ public class PlayerMovement
     private Vector2 inputVector;
 
     private bool canJump = true;
-
     private Rigidbody rb;
 
     public void OnMove ( InputAction.CallbackContext ctx )
@@ -34,16 +31,15 @@ public class PlayerMovement
         inputVector = ctx.ReadValue<Vector2>();
     }
 
+    private readonly Collider[] results = new Collider[5];
     public void OnDash ()
     {
-        if ( !canJump || !Physics.SphereCast(meshObject.transform.position, 0.5f, -meshObject.transform.up, out _, 2.0f, (1 << groundLayerMask)) || characterData.Stamina < characterData.MaxStamina / 2.0f )
+        if ( !canJump || Physics.OverlapSphereNonAlloc(cachedMeshTransform.position - (Vector3.one * 0.5f), 0.5f, results, (1 << groundLayerMask)) == 0 || characterData.Stamina < characterData.MaxStamina / 2.0f )
             return;
 
         var direction = inputVector.magnitude == 0 ? rb.transform.forward : new(inputVector.x, 0.0f, inputVector.y);
 
         characterData.Stamina -= characterData.MaxStamina / 2.0f;
-
-        Debug.Log("Dash");
 
         canJump = false;
         rb.AddForce((characterData.Speed * 1.5f) * direction, ForceMode.Impulse);
@@ -63,25 +59,25 @@ public class PlayerMovement
         rb = meshObject.GetComponent<Rigidbody>();
         rb = rb != null ? rb : meshObject.AddComponent<Rigidbody>();
         characterData.Stamina = characterData.MaxStamina;
+        cachedMeshTransform = meshObject.transform;
     }
 
     private void HandleInput ()
     {
         if ( Input.GetKeyDown(KeyCode.LeftShift) && characterData.Stamina - sprintStaminaCost > 0 )
         {
-            characterData.Speed += characterData.SpeedMultiplier;
-            isRunning = true;
-            pressedKey = true;
+            SetSprint(true);
             Debug.Log("Activate Sprint.");
         }
         if ( Input.GetKeyUp(KeyCode.LeftShift) && pressedKey )
         {
-            characterData.Speed -= characterData.SpeedMultiplier;
-            pressedKey = false;
-            isRunning = false;
+            SetSprint(false);
             Debug.Log("Deactivate Sprint.");
         }
+    }
 
+    private void CheckStamina ()
+    {
         if ( !isRunning && characterData.Stamina + staminaRegenSpeed <= characterData.MaxStamina )
         {
             characterData.Stamina += staminaRegenSpeed * Time.deltaTime;
@@ -92,17 +88,23 @@ public class PlayerMovement
         }
         else if ( isRunning && characterData.Stamina - sprintStaminaCost <= 0 )
         {
-            pressedKey = false;
-            characterData.Speed -= characterData.SpeedMultiplier;
-            isRunning = false;
+            SetSprint(false);
         }
+    }
+
+    private void SetSprint ( bool state )
+    {
+        pressedKey = state;
+        var speed = characterData.Speed;
+        characterData.Speed = state ? speed + characterData.SpeedMultiplier : speed - characterData.SpeedMultiplier;
+        isRunning = state;
     }
 
     private void VelocityLimiting ()
     {
         var vel = rb.velocity;
         var flatVel = new Vector3(vel.x, 0.0f, vel.z);
-        if ( flatVel.magnitude > characterData.Speed)
+        if ( flatVel.magnitude > characterData.Speed )
         {
             flatVel.Normalize();
             rb.velocity = flatVel * characterData.Speed;
@@ -117,6 +119,7 @@ public class PlayerMovement
     public void OnUpdate ()
     {
         HandleInput();
+        CheckStamina();
     }
 
     public void OnFixedUpdate ()

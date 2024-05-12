@@ -30,6 +30,23 @@ public static class WorldManager
         AddListener(cellPos, action, type);
     }
 
+    public static async Task<List<int2>> AddGridListenerParallelJob ( float3 position, float radius, Action<object> action, CellEventType type )
+    {
+        var cellPositions = await CalculatePositionsParallelJobbed(position, radius, cellSize);
+
+        foreach ( var cellPos in cellPositions )
+        {
+            if ( !grid.ContainsKey(cellPos) )
+            {
+                grid.TryAdd(cellPos, new Cell(type, action));
+                continue;
+            }
+            AddListener(cellPos, action, type);
+        }
+
+        return cellPositions;
+    }
+
     public static List<int2> AddGridListener ( float3 fPosition, float radius, Action<object> action, CellEventType type )
     {
         List<int2> cellPositions = new();
@@ -47,6 +64,25 @@ public static class WorldManager
         }
 
         return cellPositions;
+    }
+
+    //Work in Progress.
+    public static async Task<bool> InvokeCellEvent ( CellEventType type, float3 position, object input, float radius )
+    {
+        var positions = await CalculatePositionsParallelJobbed(position, radius, cellSize);
+
+        foreach ( var pos in positions )
+        {
+            if ( !grid.ContainsKey(pos) )
+            {
+                continue;
+            }
+
+            InvokeEvent(pos, type, input);
+            return true;
+        }
+
+        return false;
     }
 
     public static bool InvokeCellEvent ( CellEventType type, Vector3 fPosition, object input )
@@ -70,10 +106,9 @@ public static class WorldManager
         RemoveListener(cellPos, action, type);
     }
 
-    public static void RemoveGridListener ( float3 fPosition, float radius, Action<object> action, CellEventType type )
+    public async static void RemoveGridListener ( float3 fPosition, float radius, Action<object> action, CellEventType type )
     {
-        List<int2> cellPositions = new();
-        CalculateCellPositions(fPosition, radius, cellSize, ref cellPositions);
+        var cellPositions = await CalculatePositionsParallelJobbed(fPosition, radius, cellSize);
 
         foreach ( var cellPos in cellPositions )
         {
@@ -118,7 +153,7 @@ public static class WorldManager
         {
             grid[position].AddListener(type, action);
         }
-        catch ( Exception e)
+        catch ( Exception e )
         {
             UnityEngine.Debug.LogException(e);
             return false;
@@ -211,10 +246,59 @@ public static class WorldManager
         }
     }
 
-    //Work in Progress.
-    private static async Task<List<int2>> CalculeCellPositionsJobbed ( float3 position, float radius, int cellSize)
+    //Work in progress.
+    private static async Task<List<int2>> CalculatePositionsParallelJobbed ( float3 position, float radius, int cellSize )
     {
-        NativeList<int2> jobList = new(Allocator.TempJob);
+        NativeArray<PositionHolder> jobList = new(49, Allocator.Persistent);
+        List<int2> positions = new();
+        try
+        {
+            const int indexOffSet = -3;
+            const int iterations = 4;
+
+            CalculateIntersectinCellPositionsParallelJob job = new()
+            {
+                indexOffset = indexOffSet,
+                position = position,
+                radius = radius,
+                cellSize = cellSize,
+                positions = jobList
+            };
+
+            JobHandle handle = job.Schedule(-indexOffSet + iterations, 64);
+
+            await Utility.Async.WaitWhileAsync(CancellationToken.None, () => { return handle.IsCompleted == false; });
+            handle.Complete();
+
+            for ( int i = 0; i < job.positions.Length; i++ )
+            {
+                var pos = job.positions[i];
+
+                if ( pos.PositionSet == false )
+                    continue;
+
+                if ( positions.Contains(pos.Position) )
+                    continue;
+
+                positions.Add(pos.Position);
+            }
+        }
+        catch ( Exception e )
+        {
+            UnityEngine.Debug.LogException(e);
+        }
+        finally
+        {
+            jobList.Dispose();
+        }
+
+        return positions;
+    }
+
+    //Work in Progress.
+    private static async Task<List<int2>> CalculeCellPositionsJobbed ( float3 position, float radius, int cellSize )
+    {
+        NativeList<int2> jobList = new(Allocator.Persistent);
 
         CalculateIntersectingCellPositionsJob job = new()
         {
@@ -226,7 +310,9 @@ public static class WorldManager
 
         JobHandle handle = job.Schedule();
 
-        await Utility.Async.WaitWhileAsync(CancellationToken.None, ()=> { return handle.IsCompleted == false; });
+        await Utility.Async.WaitWhileAsync(CancellationToken.None, () => { return handle.IsCompleted == false; });
+
+        handle.Complete();
 
         List<int2> positions = new();
 
@@ -241,6 +327,64 @@ public static class WorldManager
     }
 
     private static int SnapFloatToGrid ( float value, int cellSize )
+    {
+        return (int)(math.round(value / cellSize) * cellSize);
+    }
+}
+
+public struct PositionHolder
+{
+    public bool PositionSet;
+    public int2 Position;
+
+    public PositionHolder ( int2 pos, bool set )
+    {
+        Position = pos;
+        PositionSet = set;
+    }
+}
+
+[BurstCompile]
+public struct CalculateIntersectinCellPositionsParallelJob : IJobParallelFor
+{
+    [ReadOnly] public int indexOffset;
+
+    [ReadOnly] public int cellSize;
+    [ReadOnly] public float radius;
+    [ReadOnly] public float3 position;
+
+    [NativeDisableParallelForRestriction]
+    [WriteOnly] public NativeArray<PositionHolder> positions;
+
+    [BurstCompile]
+    public void Execute ( int index )
+    {
+        index += indexOffset;
+
+        var halfCelSize = cellSize / 2;
+        var radiusSquared = (radius + halfCelSize) * (radius + halfCelSize);
+
+        int posX = (int)math.round(position.x);
+        int posY = (int)math.round(position.z);
+
+        for ( int t = -3; t < 4; t++ )
+        {
+            int x = SnapFloatToGrid(position.x + (index * cellSize), cellSize);
+            int y = SnapFloatToGrid(position.z + (t * cellSize), cellSize);
+            int2 result = new(x, y);
+
+            int dx = x - posX;
+            int dy = y - posY;
+
+            if ( dx * dx + dy * dy <= radiusSquared )
+            {
+                positions[((index - indexOffset) * 7) + (t + 3)] = new(result, true);
+            }
+        }
+    }
+
+    [BurstCompile]
+    private readonly int SnapFloatToGrid ( float value, int cellSize )
     {
         return (int)(math.round(value / cellSize) * cellSize);
     }

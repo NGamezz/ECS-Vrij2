@@ -7,7 +7,7 @@ public class ReapAbility : Ability
 
     public override void Execute ( object context )
     {
-        if ( context == null || characterData.TargetedTransform == null )
+        if ( characterData.TargetedTransform == null )
             return;
 
         var enemyTransform = characterData.TargetedTransform;

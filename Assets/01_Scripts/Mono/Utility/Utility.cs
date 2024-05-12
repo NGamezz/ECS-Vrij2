@@ -50,11 +50,14 @@ namespace Utility
             }
         }
 
-        public static void QuickFor ( int iterations, Action<int> actions )
+        public static void QuickFor ( int start, int iterations, Action<int> actions )
         {
             Queue<(int index, Exception e)> exceptions = new();
 
-            for ( int i = 0; i < iterations; i++ )
+            if ( start > iterations )
+                return;
+
+            for ( int i = start; i < iterations; i++ )
             {
                 try
                 {
