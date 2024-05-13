@@ -26,15 +26,15 @@ public class PlayerMovement
     private bool canJump = true;
     private Rigidbody rb;
 
-    public void OnMove ( InputAction.CallbackContext ctx )
+    public void OnMove(InputAction.CallbackContext ctx)
     {
         inputVector = ctx.ReadValue<Vector2>();
     }
 
     private readonly Collider[] results = new Collider[5];
-    public void OnDash ()
+    public void OnDash()
     {
-        if ( !canJump || Physics.OverlapSphereNonAlloc(cachedMeshTransform.position - (Vector3.one * 0.5f), 0.5f, results, (1 << groundLayerMask)) == 0 || characterData.Stamina < characterData.MaxStamina / 2.0f )
+        if (!canJump || Physics.OverlapSphereNonAlloc(cachedMeshTransform.position - (Vector3.one * 0.5f), 0.5f, results, (1 << groundLayerMask)) == 0 || characterData.Stamina < characterData.MaxStamina / 2.0f)
             return;
 
         var direction = inputVector.magnitude == 0 ? rb.transform.forward : new(inputVector.x, 0.0f, inputVector.y);
@@ -47,14 +47,14 @@ public class PlayerMovement
         ResetDashCooldown();
     }
 
-    private async void ResetDashCooldown ()
+    private async void ResetDashCooldown()
     {
         canJump = false;
         await Awaitable.WaitForSecondsAsync(dashCooldown);
         canJump = true;
     }
 
-    public void OnStart ()
+    public void OnStart()
     {
         rb = meshObject.GetComponent<Rigidbody>();
         rb = rb != null ? rb : meshObject.AddComponent<Rigidbody>();
@@ -62,37 +62,37 @@ public class PlayerMovement
         cachedMeshTransform = meshObject.transform;
     }
 
-    private void HandleInput ()
+    private void HandleInput()
     {
-        if ( Input.GetKeyDown(KeyCode.LeftShift) && characterData.Stamina - sprintStaminaCost > 0 )
+        if (Input.GetKeyDown(KeyCode.LeftShift) && characterData.Stamina - sprintStaminaCost > 0)
         {
             SetSprint(true);
-            Debug.Log("Activate Sprint.");
+            Utility.Utility.Log("Activate Sprint.");
         }
-        if ( Input.GetKeyUp(KeyCode.LeftShift) && pressedKey )
+        if (Input.GetKeyUp(KeyCode.LeftShift) && pressedKey)
         {
             SetSprint(false);
-            Debug.Log("Deactivate Sprint.");
+            Utility.Utility.Log("Activate Sprint.");
         }
     }
 
-    private void CheckStamina ()
+    private void CheckStamina()
     {
-        if ( !isRunning && characterData.Stamina + staminaRegenSpeed <= characterData.MaxStamina )
+        if (!isRunning && characterData.Stamina + staminaRegenSpeed <= characterData.MaxStamina)
         {
             characterData.Stamina += staminaRegenSpeed * Time.deltaTime;
         }
-        if ( isRunning && characterData.Stamina - sprintStaminaCost > 0 )
+        if (isRunning && characterData.Stamina - sprintStaminaCost > 0)
         {
             characterData.Stamina -= sprintStaminaCost * Time.deltaTime;
         }
-        else if ( isRunning && characterData.Stamina - sprintStaminaCost <= 0 )
+        else if (isRunning && characterData.Stamina - sprintStaminaCost <= 0)
         {
             SetSprint(false);
         }
     }
 
-    private void SetSprint ( bool state )
+    private void SetSprint(bool state)
     {
         pressedKey = state;
         var speed = characterData.Speed;
@@ -100,29 +100,29 @@ public class PlayerMovement
         isRunning = state;
     }
 
-    private void VelocityLimiting ()
+    private void VelocityLimiting()
     {
         var vel = rb.velocity;
         var flatVel = new Vector3(vel.x, 0.0f, vel.z);
-        if ( flatVel.magnitude > characterData.Speed )
+        if (flatVel.magnitude > characterData.Speed)
         {
             flatVel.Normalize();
             rb.velocity = flatVel * characterData.Speed;
         }
     }
 
-    private void ApplyForce ()
+    private void ApplyForce()
     {
         rb.AddForce(new float3(inputVector.x, 0.0f, inputVector.y) * characterData.Speed, ForceMode.Force);
     }
 
-    public void OnUpdate ()
+    public void OnUpdate()
     {
         HandleInput();
         CheckStamina();
     }
 
-    public void OnFixedUpdate ()
+    public void OnFixedUpdate()
     {
         ApplyForce();
         VelocityLimiting();

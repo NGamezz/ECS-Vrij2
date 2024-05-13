@@ -74,6 +74,13 @@ public class PlayerCameraHandling : MonoBehaviour
         meshTransform.forward = direction.normalized;
     }
 
+    private void OnDisable ()
+    {
+        StopAllCoroutines();
+        updateCameraPosition = false;
+        waitUntilUpdateCam = null;
+    }
+
     private void CheckForPositionChange ()
     {
         var meshPos = meshTransform.position;
@@ -120,7 +127,7 @@ public class PlayerCameraHandling : MonoBehaviour
     private void Start ()
     {
         mainCamera = Camera.main;
-        waitUntilUpdateCam ??= new(() => updateCameraPosition);
+        waitUntilUpdateCam = new(() => updateCameraPosition);
 
         StartCoroutine(UpdateCameraPositionIE());
         SetScalingForBorderDeadZone();

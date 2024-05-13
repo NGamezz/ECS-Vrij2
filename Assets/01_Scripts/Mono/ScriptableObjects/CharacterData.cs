@@ -2,12 +2,20 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+[Flags]
+public enum CharacterStatusEffect
+{
+    Default = 0,
+    Stunned = 1,
+}
+
 [CreateAssetMenu]
 public class CharacterData : ScriptableObject
 {
-    public Transform CharacterTransform { get; set; }
-    public Transform TargetedTransform { get; set; }
-    public Rigidbody Rigidbody { get; set; }
+    [NonSerialized] public Transform CharacterTransform;
+    [NonSerialized] public Transform TargetedTransform;
+    [NonSerialized] public Rigidbody Rigidbody;
+    [NonSerialized] public MoveTarget MoveTarget;
 
     private List<Type> ownedAbilityTypes;
     public List<Type> OwnedAbilityTypes
@@ -18,33 +26,24 @@ public class CharacterData : ScriptableObject
         }
     }
 
-    public MoveTarget MoveTarget { get; set; }
+    public int Souls;
 
-    [SerializeField] private int souls;
-    public int Souls { get => souls; set => souls = value; }
+    public float Health;
+    public float Stamina;
 
-    public float Health { get; set; }
-    public float Stamina { get; set; }
+    public float MaxStamina;
 
-    [SerializeField] private float maxStamina;
-    public float MaxStamina { get => maxStamina; set => maxStamina = value; }
+    public float MaxHealth;
 
-    [SerializeField] private float maxHealth;
-    public float MaxHealth { get => maxHealth; set => maxHealth = value; }
+    public float Speed;
 
-    [SerializeField] private float speed;
-    public float Speed { get => speed; set => speed = value; }
+    public float DamageMultiplier;
 
-    [SerializeField] private float damageMultiplier;
-    public float DamageMultiplier { get => damageMultiplier; set => damageMultiplier = value; }
+    public float SpeedMultiplier;
 
-    [SerializeField] private float speedMultiplier;
-    public float SpeedMultiplier { get => speedMultiplier; set => speedMultiplier = value; }
+    public float Armour;
 
-    [SerializeField] private float armour;
-    public float Armour { get => armour; set => armour = value; }
-
-    public bool Stunned { get; set; }
+    public CharacterStatusEffect StatusEffects = CharacterStatusEffect.Default;
 
     public event Action OnStunned
     {
@@ -56,9 +55,10 @@ public class CharacterData : ScriptableObject
     {
         ownedAbilityTypes?.Clear();
 
+        StatusEffects = CharacterStatusEffect.Default;
+
         Stamina = MaxStamina;
         Health = MaxHealth;
-        Stunned = false;
         Souls = 0;
     }
 }

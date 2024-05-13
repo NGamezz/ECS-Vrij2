@@ -24,6 +24,8 @@ public class ReapAbility : Ability
 
         var ability = iAbilityOwner.HarvestAbility();
 
+        characterData.Souls -= (int)ActivationCost;
+
         if ( characterData.OwnedAbilityTypes.Contains(ability.GetType()) )
         {
             return;
@@ -41,6 +43,6 @@ public class ReapAbility : Ability
 
     public override bool Trigger ()
     {
-        return Input.GetKeyDown(KeyCode.R) && characterData.Souls >= ActivationCost;
+        return Input.GetKeyDown(KeyCode.E) && characterData.Souls >= ActivationCost;
     }
 }

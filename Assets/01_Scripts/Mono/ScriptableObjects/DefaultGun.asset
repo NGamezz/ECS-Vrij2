@@ -13,12 +13,15 @@ MonoBehaviour:
   m_Name: DefaultGun
   m_EditorClassIdentifier: 
   attackSpeed: 0.2
+  GunType: 0
   damage: 30
   projectileLifeTime: 3
   projectileSpeed: 10
   spreadOffset:
     x: -0.3
     y: 0.3
+  CurrentAmmo: 0
+  MagSize: 0
   amountOfBulletsPer: 3
   damageProjectileLifeTimeSpeed: 199198
   prefab: {fileID: 4120230577132574208, guid: 99345b48c7a11944d82e5bf97126101f, type: 3}

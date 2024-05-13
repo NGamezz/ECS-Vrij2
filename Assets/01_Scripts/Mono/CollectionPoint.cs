@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Unity.Mathematics;
@@ -68,17 +69,24 @@ public class CollectionPoint : MonoBehaviour
 
         if ( souls >= amountToTrigger )
         {
-            WorldManager.RemoveGridListener(ownPosition, range, CalculateOnDeath, CellEventType.OnEntityDeath);
-
-            EventManager.InvokeEvent(EventType.UponDesiredSoulsAmount);
-
             if ( eventToTrigger != null )
             {
-                GameManager.Instance.Enqueue(() =>
+                try
                 {
-                    eventToTrigger?.Invoke();
-                });
+                    GameManager.Instance.Enqueue(() =>
+                    {
+                        Debug.Log("Trigger Event.");
+                        eventToTrigger?.Invoke();
+                    });
+                }
+                catch ( Exception e )
+                {
+                    Debug.LogException(e);
+                }
             }
+
+            WorldManager.RemoveGridListener(ownPosition, range, CalculateOnDeath, CellEventType.OnEntityDeath);
+            EventManager.InvokeEvent(EventType.UponDesiredSoulsAmount);
         }
     }
 
@@ -98,6 +106,9 @@ public class CollectionPoint : MonoBehaviour
         {
             WorldManager.RemoveGridListener(ownPosition, range, CalculateOnDeath, CellEventType.OnEntityDeath);
         }).Wait();
+
+        souls = 0;
+        cellPositions.Clear();
     }
 
     private void AddSoul ( int amount )

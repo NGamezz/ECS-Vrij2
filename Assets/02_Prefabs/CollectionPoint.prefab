@@ -47,7 +47,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   range: 15
   gizmos: 1
+  mode: 0
   souls: 0
+  cellPositions: []
   amountToTrigger: 10
   eventToTrigger:
     m_PersistentCalls:
@@ -128,7 +130,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 871bdd056be0ea34a824ca4c7b1cec5b, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

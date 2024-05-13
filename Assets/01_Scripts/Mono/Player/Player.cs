@@ -1,18 +1,29 @@
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Unity.Mathematics;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilityOwner
 {
-    public int Souls { get => characterData.Souls; }
+    public int Souls
+    {
+        get
+        {
+            return characterData.Souls;
+        }
+        set
+        {
+            characterData.Souls = value;
+            soulsUiText.SetText($"Amount of Souls = {characterData.Souls}");
+        }
+    }
 
     public bool Dead { get; private set; }
 
     [SerializeField]
     private PlayerMovement playerMovement;
+
+    [SerializeField] TMP_Text soulsUiText;
 
     [SerializeField] private CharacterData characterData;
 
@@ -33,9 +44,9 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
             gameObject.SetActive(false);
     }
 
-    public void OnShoot ()
+    public void OnShoot ( InputAction.CallbackContext context )
     {
-        playerShooting.OnShoot();
+        playerShooting.OnShoot(context);
     }
 
     public void OnMove ( InputAction.CallbackContext ctx )
@@ -57,13 +68,18 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
     {
         EventManagerGeneric<int>.RemoveListener(EventType.UponHarvestSoul, Collect);
         characterData.Reset();
+        abilities.Clear();
+        StopAllCoroutines();
     }
 
     private void Start ()
     {
+        characterData.Reset();
         playerMovement.characterData = characterData;
         playerMovement.OnStart();
         playerShooting.OnStart(transform, this);
+
+        Souls = 0;
 
         ReapAbility reapAbility = new();
         reapAbility.Initialize(this, characterData);
@@ -100,7 +116,7 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
 
     public void Collect ( int amount )
     {
-        characterData.Souls += amount;
+        Souls += amount;
     }
 
     public void AcquireAbility ( Ability ability )

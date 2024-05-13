@@ -8,9 +8,6 @@ using System.Threading.Tasks;
 using Unity.Jobs;
 using Unity.Collections;
 using System.Threading;
-using AOT;
-using static UnityEngine.InputManagerEntry;
-using UnityEngine.UIElements;
 
 [BurstCompile]
 public static class WorldManager
@@ -109,6 +106,7 @@ public static class WorldManager
         RemoveListener(cellPos, action, type);
     }
 
+    //Improve the grid listener removal.
     public async static void RemoveGridListener ( float3 fPosition, float radius, Action<object> action, CellEventType type )
     {
         var cellPositions = await CalculatePositionsParallelJobbed(fPosition, radius, cellSize);

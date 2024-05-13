@@ -29,6 +29,10 @@ public class CollectionPointManager : MonoBehaviour
     private void OnDisable ()
     {
         EventManager.RemoveListener(EventType.UponDesiredSoulsAmount, ActivateCompletion);
+
+        foreach(var point in collectionPoints)
+        {
+        }
     }
 
     private void Start ()

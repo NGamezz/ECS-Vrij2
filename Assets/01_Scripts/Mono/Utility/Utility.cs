@@ -4,6 +4,7 @@ using System.Threading;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using System.Diagnostics;
 
 namespace Utility
 {
@@ -34,14 +35,6 @@ namespace Utility
 
     public class Utility : MonoBehaviour
     {
-        public static void BatchPrint<T> ( params T[] items )
-        {
-            foreach ( var item in items )
-            {
-                Debug.Log(item);
-            }
-        }
-
         public static void SetArrayValuesToDefault<T> ( ref T[] array )
         {
             for ( int i = 0; i < array.Length; i++ )
@@ -75,8 +68,8 @@ namespace Utility
                 {
                     var (index, e) = exceptions.Dequeue();
 
-                    Debug.LogWarning($"Exception Thrown At Index : {index}");
-                    Debug.LogException(e);
+                    LogWarning($"Exception Thrown At Index : {index}");
+                    LogException(e);
                 }
             }
         }
@@ -89,6 +82,24 @@ namespace Utility
         public static void MultiAddNonDuplicateElementsToList<T> ( ref List<T> list, params T[] elements )
         {
             list.AddRange(elements.Distinct());
+        }
+
+        [Conditional("ENABLE_LOGS")]
+        public static void Log (string msg)
+        {
+            UnityEngine.Debug.Log(msg);
+        }
+
+        [Conditional("ENABLE_LOGS")]
+        public static void LogWarning( string msg )
+        {
+            UnityEngine.Debug.LogWarning(msg);
+        }
+
+        [Conditional("ENABLE_LOGS")]
+        public static void LogException ( Exception e)
+        {
+            UnityEngine.Debug.LogException(e);
         }
     }
 

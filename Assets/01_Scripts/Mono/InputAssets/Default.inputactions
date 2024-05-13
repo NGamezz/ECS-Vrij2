@@ -39,7 +39,7 @@
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
-                    "initialStateCheck": false
+                    "initialStateCheck": true
                 },
                 {
                     "name": "LockOn",
@@ -176,7 +176,7 @@
                 {
                     "name": "",
                     "id": "9943e42d-31db-4836-90d6-170bee619274",
-                    "path": "<Keyboard>/e",
+                    "path": "<Mouse>/leftButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -187,7 +187,7 @@
                 {
                     "name": "",
                     "id": "ae54fb0f-2ecd-49b0-87e9-5a350626e50b",
-                    "path": "<Mouse>/leftButton",
+                    "path": "<Keyboard>/g",
                     "interactions": "",
                     "processors": "",
                     "groups": "",

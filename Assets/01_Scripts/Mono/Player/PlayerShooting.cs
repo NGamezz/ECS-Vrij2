@@ -1,7 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using Random = UnityEngine.Random;
 
 public enum ProjectileType
@@ -32,11 +35,21 @@ public class PlayerShooting
 
     private Transform bulletHolder;
 
+    private bool shootHeld = false;
+
     private int bulletHolderLayer;
+
+    private WaitUntil waitUntilShoot;
+
+    private bool running = false;
+
+    private Coroutine shootRoutine;
 
     public void OnStart ( Transform bulletHolder, MonoBehaviour owner )
     {
         this.bulletHolder = bulletHolder;
+
+        waitUntilShoot = new WaitUntil(() => shootHeld);
 
         this.owner = owner;
 
@@ -49,8 +62,10 @@ public class PlayerShooting
         SetLayerRecursive(gunObject, bulletHolder.gameObject.layer);
 
         bulletHolderLayer = bulletHolder.gameObject.layer;
-
         GenerateBullets();
+
+        running = true;
+        shootRoutine = owner.StartCoroutine(Shoot());
     }
 
     private void SetLayerRecursive ( GameObject objectToSect, int layer )
@@ -81,7 +96,9 @@ public class PlayerShooting
 
     private void SelectGun ( GunStats gun )
     {
+        owner.StopCoroutine(shootRoutine);
         currentGun = gun;
+        shootRoutine = owner.StartCoroutine(Shoot());
     }
 
     private void OnObjectHit ( bool succes, Gun objectToPool )
@@ -89,54 +106,108 @@ public class PlayerShooting
         objectPool.PoolObject(objectToPool);
     }
 
-    public void OnShoot ()
+    public void OnShoot ( InputAction.CallbackContext context )
     {
-        if ( !canShoot )
-            return;
-
-        owner.StartCoroutine(Shoot());
+        shootHeld = context.ReadValueAsButton();
     }
 
     private IEnumerator Shoot ()
     {
-        canShoot = false;
+        while ( running )
+        {
+            yield return waitUntilShoot;
 
+            while ( shootHeld )
+            {
+                CheckShootType();
+
+                if ( currentGun.GunType == GunType.Burst )
+                    yield return Utility.Yielders.Get(currentGun.attackSpeed);
+
+                yield return Utility.Yielders.Get(currentGun.attackSpeed);
+            }
+        }
+    }
+
+    private void CheckShootType ()
+    {
+        switch ( currentGun.GunType )
+        {
+            case GunType.Default:
+                {
+                    RegularShoot();
+                    break;
+                }
+            case GunType.Burst:
+                {
+                    BurstFire();
+                    break;
+                }
+            case GunType.AssaultRifle:
+                {
+                    RegularShoot();
+                    break;
+                }
+            case GunType.Melee:
+                {
+                    Melee();
+                    break;
+                }
+        }
+    }
+
+    private void RegularShoot ()
+    {
         for ( int i = 0; i < currentGun.amountOfBulletsPer; i++ )
         {
-            bool instantiated = false;
-            var bullet = objectPool.GetPooledObject();
+            ShootBody();
+        }
+    }
 
-            if ( bullet == null )
-            {
-                var gameObject = UnityEngine.Object.Instantiate(currentGun.projectTilePrefab, bulletHolder);
-                instantiated = true;
-                gameObject.SetActive(true);
-                bullet = gameObject.GetComponent<Gun>();
-            }
-            else
-            {
-                bullet.GameObject.SetActive(true);
-            }
+    private async void BurstFire ()
+    {
+        for ( int i = 0; i < currentGun.amountOfBulletsPer; i++ )
+        {
+            ShootBody();
+            await Task.Delay(75);
+        }
+    }
 
-            if ( instantiated )
-            {
-                bullet.UponHit = OnObjectHit;
-                bullet.playerLayer = bulletHolderLayer;
-                bullet.OnStart();
-            }
+    private void ShootBody ()
+    {
+        bool instantiated = false;
+        var bullet = objectPool.GetPooledObject();
 
-            bullet.Damage = currentGun.damageProjectileLifeTimeSpeed & 255;
-            bullet.Speed = (currentGun.damageProjectileLifeTimeSpeed >> 8) & 255;
-            bullet.ProjectileLifeTime = (currentGun.damageProjectileLifeTimeSpeed >> 16) & 255;
-
-            var meshForward = meshTransform.forward;
-            var newPos = meshTransform.position + meshForward;
-            bullet.Transform.position = newPos;
-            bullet.Transform.forward = (meshForward + new Vector3(Random.Range(currentGun.spreadOffset.x, currentGun.spreadOffset.y), 0.0f, Random.Range(currentGun.spreadOffset.x, currentGun.spreadOffset.y))).normalized;
+        if ( bullet == null )
+        {
+            var gameObject = UnityEngine.Object.Instantiate(currentGun.projectTilePrefab, bulletHolder);
+            instantiated = true;
+            gameObject.SetActive(true);
+            bullet = gameObject.GetComponent<Gun>();
+        }
+        else
+        {
+            bullet.GameObject.SetActive(true);
         }
 
-        yield return Utility.Yielders.Get(currentGun.attackSpeed);
+        if ( instantiated )
+        {
+            bullet.UponHit = OnObjectHit;
+            bullet.playerLayer = bulletHolderLayer;
+            bullet.OnStart();
+        }
 
-        canShoot = true;
+        bullet.Damage = currentGun.damageProjectileLifeTimeSpeed & 255;
+        bullet.Speed = (currentGun.damageProjectileLifeTimeSpeed >> 8) & 255;
+        bullet.ProjectileLifeTime = (currentGun.damageProjectileLifeTimeSpeed >> 16) & 255;
+
+        var meshForward = meshTransform.forward;
+        var newPos = meshTransform.position + meshForward;
+        bullet.Transform.position = newPos;
+        bullet.Transform.forward = (meshForward + new Vector3(Random.Range(currentGun.spreadOffset.x, currentGun.spreadOffset.y), 0.0f, Random.Range(currentGun.spreadOffset.x, currentGun.spreadOffset.y))).normalized;
+    }
+
+    private void Melee ()
+    {
     }
 }

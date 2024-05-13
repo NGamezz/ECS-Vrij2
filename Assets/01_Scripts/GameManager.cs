@@ -9,20 +9,16 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager Instance { get; private set; }
+    public static GameManager Instance { get; set; }
 
-    private static readonly Queue<Action> actionQueue = new Queue<Action>();
+    private static readonly Queue<Action> actionQueue = new();
 
     private void Awake ()
     {
-        if ( Instance == null )
-        {
-            Instance = this;
-        }
-        else if ( Instance != null && Instance != this )
-        {
-            Destroy(this);
-        }
+        if ( Instance != null )
+            Destroy(Instance);
+
+        Instance = this;
     }
 
     private void OnDisable ()
@@ -128,31 +124,15 @@ public class GameManager : MonoBehaviour
         Enqueue(ActionWrapper(action));
     }
 
-    public async void Enqueue ( IEnumerator action )
+    public void Enqueue ( IEnumerator action )
     {
-        while ( !_Enqueue(action) )
+        lock ( actionQueue )
         {
-            await Task.Yield();
-        }
-    }
-
-    private bool _Enqueue ( IEnumerator action )
-    {
-        try
-        {
-            lock ( actionQueue )
+            actionQueue.Enqueue(() =>
             {
-                actionQueue.Enqueue(() =>
-                {
-                    StartCoroutine(action);
-                });
-            }
+                StartCoroutine(action);
+            });
         }
-        catch ( Exception )
-        {
-            return false;
-        }
-        return true;
     }
 
     private IEnumerator ActionWrapper ( Action action )
