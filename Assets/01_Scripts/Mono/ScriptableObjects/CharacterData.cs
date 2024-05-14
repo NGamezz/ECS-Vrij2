@@ -17,28 +17,30 @@ public class CharacterData : ScriptableObject
     [NonSerialized] public Rigidbody Rigidbody;
     [NonSerialized] public MoveTarget MoveTarget;
 
-    private List<Type> ownedAbilityTypes;
-    public List<Type> OwnedAbilityTypes
+    public HashSet<Type> OwnedAbilitiesHash = new();
+
+    [SerializeField] private int souls;
+    public int Souls
     {
-        get
+        get => souls;
+        set
         {
-            return ownedAbilityTypes ??= new();
+            souls = value;
+            UponSoulValueChanged?.Invoke();
         }
     }
 
-    public int Souls;
+    [NonSerialized] public Action UponSoulValueChanged;
 
     public float Health;
     public float Stamina;
 
     public float MaxStamina;
-
     public float MaxHealth;
 
     public float Speed;
 
     public float DamageMultiplier;
-
     public float SpeedMultiplier;
 
     public float Armour;
@@ -51,9 +53,30 @@ public class CharacterData : ScriptableObject
         remove => OnStunned -= value;
     }
 
+    public void ApplyStatusEffect ( CharacterStatusEffect effect, float duration )
+    {
+        TimedStatusEffect(duration, effect);
+    }
+
+    private async void TimedStatusEffect ( float duration, CharacterStatusEffect effect )
+    {
+        StatusEffects |= effect;
+        await Awaitable.WaitForSecondsAsync(duration);
+        StatusEffects &= ~(effect);
+    }
+
+    public void Initialize ( Action uponSoulChanged )
+    {
+        Reset();
+        UponSoulValueChanged = uponSoulChanged;
+    }
+
     public void Reset ()
     {
-        ownedAbilityTypes?.Clear();
+        Souls = 0;
+        OwnedAbilitiesHash?.Clear();
+
+        UponSoulValueChanged = null;
 
         StatusEffects = CharacterStatusEffect.Default;
 

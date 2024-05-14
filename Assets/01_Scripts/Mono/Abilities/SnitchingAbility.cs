@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class SnitchingAbility : Ability
@@ -10,10 +11,5 @@ public class SnitchingAbility : Ability
     public override void Initialize ( IAbilityOwner owner, CharacterData context )
     {
         Debug.Log("Intialize Snitch.");
-    }
-
-    public override bool Trigger ()
-    {
-        return Input.GetKeyDown(KeyCode.V);
     }
 }

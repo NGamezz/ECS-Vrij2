@@ -2,9 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Unity.Burst;
-using Unity.Collections;
-using Unity.Jobs;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -19,21 +16,29 @@ public class GameManager : MonoBehaviour
             Destroy(Instance);
 
         Instance = this;
+
+#if UNITY_EDITOR
+        Debug.unityLogger.logEnabled = true;
+#else
+        Debug.unityLogger.logEnabled = false;
+#endif
     }
 
     private void OnDisable ()
     {
-        if ( Instance == this )
-        {
-            Instance = null;
-        }
-
         if ( actionQueue.Count > 0 )
         {
             actionQueue.Clear();
         }
 
         WorldManager.ClearAllEvents();
+        
+        if ( Instance == this )
+        {
+            var instance = Instance;
+            Instance = null;
+            Destroy(instance);
+        }
     }
 
     private void Update ()
@@ -45,26 +50,6 @@ public class GameManager : MonoBehaviour
                 actionQueue.Dequeue().Invoke();
             }
         }
-    }
-
-    //Testing Purposes.
-    private IEnumerator HandleJobData ()
-    {
-        NativeArray<int> result = new(10000, Allocator.Persistent);
-        TestJob testJob = new()
-        {
-            results = result,
-        };
-
-        JobHandle jobHandle = testJob.Schedule(10000, 64);
-
-        yield return new WaitUntil(() => { return jobHandle.IsCompleted; });
-
-        jobHandle.Complete();
-
-        Debug.Log(testJob.results.Length);
-
-        testJob.results.Dispose();
     }
 
     /// <summary>
@@ -139,24 +124,5 @@ public class GameManager : MonoBehaviour
     {
         yield return null;
         action();
-    }
-}
-
-[BurstCompile]
-public struct TestJob : IJobParallelFor
-{
-    public NativeArray<int> results;
-
-    public void Execute ( int index )
-    {
-        int value = 0;
-        for ( int x = 0; x < 10000; x++ )
-        {
-            int result = x * index;
-            int newResult = result * x;
-            int newResultB = newResult * x;
-            value = newResult * newResultB;
-        }
-        results[index] = value;
     }
 }

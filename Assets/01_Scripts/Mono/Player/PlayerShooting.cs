@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -28,8 +29,6 @@ public class PlayerShooting
     private MonoBehaviour owner;
 
     private GunStats currentGun;
-
-    private bool canShoot = true;
 
     private ObjectPool<Gun> objectPool = new();
 
@@ -81,16 +80,11 @@ public class PlayerShooting
     {
         for ( int i = 0; i < defaultAmountOfPooledObjects; i++ )
         {
-            var gameObject = UnityEngine.Object.Instantiate(currentGun.projectTilePrefab, bulletHolder);
-            gameObject.SetActive(false);
+            var bullet = CreateBulletObject(currentGun.projectTilePrefab, OnObjectHit, playerLayer, bulletHolder);
 
-            var bulletComponent = gameObject.GetComponent<Gun>();
-            bulletComponent.UponHit = OnObjectHit;
-            bulletComponent.playerLayer = bulletHolderLayer;
+            bullet.GameObject.SetActive(false);
 
-            bulletComponent.OnStart();
-
-            objectPool.PoolObject(bulletComponent);
+            objectPool.PoolObject(bullet);
         }
     }
 
@@ -148,11 +142,6 @@ public class PlayerShooting
                     RegularShoot();
                     break;
                 }
-            case GunType.Melee:
-                {
-                    Melee();
-                    break;
-                }
         }
     }
 
@@ -175,39 +164,42 @@ public class PlayerShooting
 
     private void ShootBody ()
     {
-        bool instantiated = false;
-        var bullet = objectPool.GetPooledObject();
+        var bullet = objectPool.GetPooledObject(out var succes);
 
-        if ( bullet == null )
+        if ( !succes )
         {
-            var gameObject = UnityEngine.Object.Instantiate(currentGun.projectTilePrefab, bulletHolder);
-            instantiated = true;
-            gameObject.SetActive(true);
-            bullet = gameObject.GetComponent<Gun>();
+            bullet = CreateBulletObject(currentGun.projectTilePrefab, OnObjectHit, playerLayer, bulletHolder);
         }
         else
         {
             bullet.GameObject.SetActive(true);
         }
 
-        if ( instantiated )
-        {
-            bullet.UponHit = OnObjectHit;
-            bullet.playerLayer = bulletHolderLayer;
-            bullet.OnStart();
-        }
+        UpdateBulletStats(ref bullet, currentGun, meshTransform);
+    }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void UpdateBulletStats ( ref Gun bullet, GunStats currentGun, Transform ownerTransform )
+    {
         bullet.Damage = currentGun.damageProjectileLifeTimeSpeed & 255;
         bullet.Speed = (currentGun.damageProjectileLifeTimeSpeed >> 8) & 255;
         bullet.ProjectileLifeTime = (currentGun.damageProjectileLifeTimeSpeed >> 16) & 255;
 
-        var meshForward = meshTransform.forward;
-        var newPos = meshTransform.position + meshForward;
+        var meshForward = ownerTransform.forward;
+        var newPos = ownerTransform.position + meshForward;
         bullet.Transform.position = newPos;
         bullet.Transform.forward = (meshForward + new Vector3(Random.Range(currentGun.spreadOffset.x, currentGun.spreadOffset.y), 0.0f, Random.Range(currentGun.spreadOffset.x, currentGun.spreadOffset.y))).normalized;
     }
 
-    private void Melee ()
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private Gun CreateBulletObject ( GameObject prefab, Action<bool, Gun> uponHit, int playerLayer, Transform bulletHolder )
     {
+        var gameObject = UnityEngine.Object.Instantiate(prefab, bulletHolder);
+        var bullet = gameObject.GetOrAddComponent<Gun>();
+        bullet.UponHit = uponHit;
+        bullet.playerLayer = playerLayer;
+        bullet.OnStart();
+
+        return bullet;
     }
 }

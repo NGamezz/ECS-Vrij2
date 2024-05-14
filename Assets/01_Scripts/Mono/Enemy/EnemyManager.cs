@@ -1,6 +1,8 @@
+using NaughtyAttributes.Test;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Unity.Mathematics;
 using Unity.VisualScripting;
@@ -32,6 +34,7 @@ public class EnemyManager : MonoBehaviour
     public bool SpawnEnemies
     {
         get => spawnEnemies;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
             spawnEnemies = value;
@@ -68,16 +71,26 @@ public class EnemyManager : MonoBehaviour
         objectPool.PoolObject(sender);
     }
 
+    private CharacterData CreateEnemyDataObject ( EnemyType type )
+    {
+        CharacterData data = (CharacterData)ScriptableObject.CreateInstance(nameof(CharacterData));
+
+        return data;
+    }
+
     private void OnEnemyDeath ( Enemy sender )
     {
         Vector3 position = sender.Transform.position;
 
         Task.Run(() =>
         {
-            if ( !WorldManager.InvokeCellEvent(CellEventType.OnEntityDeath, position, position) )
+            var succes = WorldManager.InvokeCellEvent(CellEventType.OnEntityDeath, position, position);
+
+            if ( !succes )
             {
                 EventManagerGeneric<int>.InvokeEvent(EventType.UponHarvestSoul, 1);
             }
+
         }).ConfigureAwait(false);
 
         RemoveEnemy(sender);
@@ -87,13 +100,9 @@ public class EnemyManager : MonoBehaviour
     {
         for ( int i = 0; i < startingAmountOfPooledObjects; i++ )
         {
-            var gameObject = Instantiate(currentDifficultyGrade.enemyPrefabs[UnityEngine.Random.Range(0, currentDifficultyGrade.enemyPrefabs.Count)], transform);
-            gameObject.SetActive(false);
-            var enemy = gameObject.GetOrAddComponent<Enemy>();
+            var enemy = CreateEnemy(currentDifficultyGrade, RemoveEnemy, OnEnemyDeath, enemyTarget, ownPosition);
 
-            enemy.OnStart(currentDifficultyGrade.enemyStats, enemyTarget, gameObject.transform.position);
-            enemy.OnDeath += OnEnemyDeath;
-            enemy.OnDisabled += RemoveEnemy;
+            enemy.GameObject.SetActive(false);
 
             objectPool.PoolObject(enemy);
         }
@@ -111,16 +120,12 @@ public class EnemyManager : MonoBehaviour
                 var position = playerPos + (UnityEngine.Random.insideUnitSphere.normalized * UnityEngine.Random.Range(spawnRange.x, spawnRange.y));
                 position.y = ownPosition.y;
 
-                var enemy = objectPool.GetPooledObject();
+                var enemy = objectPool.GetPooledObject(out var succes);
                 var gameObject = enemy.GameObject;
 
-                if ( enemy == null )
+                if ( !succes )
                 {
-                    gameObject = Instantiate(currentDifficultyGrade.enemyPrefabs[UnityEngine.Random.Range(0, currentDifficultyGrade.enemyPrefabs.Count)], transform);
-                    enemy = gameObject.AddComponent<Enemy>();
-                    enemy.OnDisabled += RemoveEnemy;
-                    enemy.OnDeath += OnEnemyDeath;
-                    enemy.OnStart(currentDifficultyGrade.enemyStats, enemyTarget, position);
+                    enemy = CreateEnemy(currentDifficultyGrade, RemoveEnemy, OnEnemyDeath, enemyTarget, position);
                 }
                 else
                 {
@@ -133,6 +138,18 @@ public class EnemyManager : MonoBehaviour
 
             yield return Utility.Yielders.Get(currentEnemyStats.spawnSpeed);
         }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private Enemy CreateEnemy ( DifficultyGrade currentDifficultyGrade, Action<Enemy> onDisable, Action<Enemy> onDeath, MoveTarget enemyTarget, Vector3 position )
+    {
+        var gameObject = Instantiate(currentDifficultyGrade.enemyPrefabs[UnityEngine.Random.Range(0, currentDifficultyGrade.enemyPrefabs.Count)], transform);
+        var enemy = gameObject.GetOrAddComponent<Enemy>();
+        enemy.OnDisabled += onDisable;
+        enemy.OnDeath += onDeath;
+        var data = CreateEnemyDataObject(EnemyType.Default);
+        enemy.OnStart(currentDifficultyGrade.enemyStats, enemyTarget, position, data);
+        return enemy;
     }
 
     private void OnDisable ()
@@ -160,7 +177,7 @@ public class EnemyManager : MonoBehaviour
             if ( enemy == null )
                 continue;
 
-            enemy.OnUpdate();
+            //enemy.OnUpdate(); Not used Atm.
             enemy.CheckAttackRange(target, targetPos);
         }
     }
@@ -177,8 +194,7 @@ public class EnemyManager : MonoBehaviour
                 if ( enemy == null )
                     continue;
 
-                var ownPos = enemy.Transform.position;
-                if ( Vector3.Distance(ownPos, playerPos) > maxDistanceToPlayer )
+                if ( Vector3.Distance(enemy.Transform.position, playerPos) > maxDistanceToPlayer )
                 {
                     RemoveEnemy(enemy);
                 }

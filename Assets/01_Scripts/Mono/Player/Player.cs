@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -11,10 +12,16 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
         {
             return characterData.Souls;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
-            characterData.Souls = value;
-            soulsUiText.SetText($"Amount of Souls = {characterData.Souls}");
+            if ( characterData.Souls != value )
+            {
+                characterData.Souls = value;
+
+                //Kind of dirty but oh well.
+                UpdateSoulsUI();
+            }
         }
     }
 
@@ -34,7 +41,7 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
 
     [SerializeField] private float health;
 
-    private List<Ability> abilities = new();
+    private readonly List<Ability> abilities = new();
 
     public void AfflictDamage ( float amount )
     {
@@ -81,11 +88,22 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
 
         Souls = 0;
 
+        characterData.Initialize(UpdateSoulsUI);
+
         ReapAbility reapAbility = new();
         reapAbility.Initialize(this, characterData);
         abilities.Add(reapAbility);
 
         health = characterData.MaxHealth;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void UpdateSoulsUI ()
+    {
+        GameManager.Instance.Enqueue(() =>
+        {
+            soulsUiText.SetText($"Amount of Souls = {characterData.Souls}");
+        });
     }
 
     private void CheckAbilityTriggers ()
@@ -96,7 +114,7 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
             if ( ability == null )
                 continue;
 
-            if ( ability.Trigger() )
+            if ( ability.Trigger != null && ability.Trigger() )
             {
                 ability.Execute(characterData);
             }
@@ -121,12 +139,12 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
 
     public void AcquireAbility ( Ability ability )
     {
-        if ( characterData.OwnedAbilityTypes.Contains(ability.GetType()) )
+        if ( characterData.OwnedAbilitiesHash.Contains(ability.GetType()) )
         {
             return;
         }
 
-        characterData.OwnedAbilityTypes.Add(ability.GetType());
+        characterData.OwnedAbilitiesHash.Add(ability.GetType());
         ability.Initialize(this, characterData);
         abilities.Add(ability);
     }

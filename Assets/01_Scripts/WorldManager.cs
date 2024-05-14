@@ -8,11 +8,12 @@ using System.Threading.Tasks;
 using Unity.Jobs;
 using Unity.Collections;
 using System.Threading;
+using System.Runtime.CompilerServices;
 
 [BurstCompile]
 public static class WorldManager
 {
-    private static int cellSize = 15;
+    private static readonly int cellSize = 15;
     public static int CellSize { get => cellSize; }
 
     private static readonly ConcurrentDictionary<int2, Cell> grid = new();
@@ -41,6 +42,7 @@ public static class WorldManager
                 grid.TryAdd(cellPos, new Cell(type, action));
                 continue;
             }
+
             AddListener(cellPos, action, type);
         }
 
@@ -73,7 +75,7 @@ public static class WorldManager
 
         foreach ( var pos in positions )
         {
-            if ( !grid.ContainsKey(pos) )
+            if ( !grid.ContainsKey(pos) || grid[pos].IsEventEmpty(type) )
             {
                 continue;
             }
@@ -89,11 +91,16 @@ public static class WorldManager
     {
         int2 cellPos = CalculateCellPos(fPosition, cellSize);
 
-        if ( !grid.ContainsKey(cellPos) )
+        if ( !grid.ContainsKey(cellPos) || grid[cellPos].IsEventEmpty(type) )
             return false;
 
         InvokeEvent(cellPos, type, input);
         return true;
+    }
+
+    private static void InvokeEvent ( int2 cellPos, CellEventType type, object input )
+    {
+        grid[cellPos].InvokeEvent(type, input);
     }
 
     public static void RemoveGridListener ( Vector3 fPosition, Action<object> action, CellEventType type )
@@ -122,11 +129,22 @@ public static class WorldManager
         }
     }
 
+    private static void RemoveListener ( int2 cellPos, Action<object> action, CellEventType type )
+    {
+        grid[cellPos].RemoveListener(type, action);
+    }
+
+    private static void AddListener ( int2 cellPos, Action<object> action, CellEventType type )
+    {
+        grid[cellPos].AddListener(type, action);
+    }
+
     public static void ClearListeners ( int2 position )
     {
         grid[position].ClearEvents();
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void ClearAllEvents ()
     {
         foreach ( var cell in grid.Values )
@@ -137,72 +155,6 @@ public static class WorldManager
             cell.ClearEvents();
         }
         grid.Clear();
-    }
-
-    //Probably not needed.
-    private async static void AddListener ( int2 position, Action<object> action, CellEventType type )
-    {
-        while ( !_AddListener(position, action, type) )
-        {
-            await Task.Yield();
-        }
-    }
-
-    private static bool _AddListener ( int2 position, Action<object> action, CellEventType type )
-    {
-        try
-        {
-            grid[position].AddListener(type, action);
-        }
-        catch ( Exception e )
-        {
-            UnityEngine.Debug.LogException(e);
-            return false;
-        }
-
-        return true;
-    }
-
-    private async static void RemoveListener ( int2 position, Action<object> action, CellEventType type )
-    {
-        while ( !_RemoveListener(position, action, type) )
-        {
-            await Task.Yield();
-        }
-    }
-
-    private static bool _RemoveListener ( int2 position, Action<object> action, CellEventType type )
-    {
-        try
-        {
-            grid[position].RemoveListener(type, action);
-        }
-        catch ( Exception )
-        {
-            return false;
-        }
-        return true;
-    }
-
-    private async static void InvokeEvent ( int2 position, CellEventType type, object input )
-    {
-        while ( !_RemoveListener(position, type, input) )
-        {
-            await Task.Yield();
-        }
-    }
-
-    private static bool _RemoveListener ( int2 position, CellEventType type, object input )
-    {
-        try
-        {
-            grid[position].InvokeEvent(type, input);
-        }
-        catch ( Exception )
-        {
-            return false;
-        }
-        return true;
     }
 
     private static int2 CalculateCellPos ( float3 position, int cellSize )
@@ -328,6 +280,7 @@ public static class WorldManager
         return positions;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int SnapFloatToGrid ( float value, int cellSize )
     {
         return (int)(math.round(value / cellSize) * cellSize);
@@ -385,7 +338,7 @@ public struct CalculateIntersectinCellPositionsParallelJob : IJobParallelFor
         }
     }
 
-    [BurstCompile]
+    [BurstCompile, MethodImpl(MethodImplOptions.AggressiveInlining)]
     private readonly int SnapFloatToGrid ( float value, int cellSize )
     {
         return (int)(math.round(value / cellSize) * cellSize);
@@ -432,8 +385,8 @@ public struct CalculateIntersectingCellPositionsJob : IJob
         }
     }
 
-    [BurstCompile]
-    private int SnapFloatToGrid ( float value, int cellSize )
+    [BurstCompile, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private readonly int SnapFloatToGrid ( float value, int cellSize )
     {
         return (int)(math.round(value / cellSize) * cellSize);
     }
@@ -446,53 +399,74 @@ public enum CellEventType
 
 public class Cell
 {
-    private readonly ConcurrentDictionary<CellEventType, Action<object>> events = new();
+    private readonly Dictionary<CellEventType, Action<object>> events = new();
 
     public Cell ( CellEventType type, Action<object> action )
     {
-        if ( events.ContainsKey(type) )
+        lock ( events )
         {
-            events[type] += action;
-            return;
+            if ( events.ContainsKey(type) )
+            {
+                events[type] += action;
+                return;
+            }
+            events.TryAdd(type, action);
         }
-        events.TryAdd(type, action);
     }
 
     public void AddListener ( CellEventType type, Action<object> action )
     {
-        if ( events.ContainsKey(type) )
+        lock ( events )
         {
-            events[type] += action;
-            return;
+            if ( events.ContainsKey(type) )
+            {
+                events[type] += action;
+                return;
+            }
+            events.TryAdd(type, action);
         }
-        events.TryAdd(type, action);
     }
 
     public void RemoveListener ( CellEventType type, Action<object> action )
     {
-        if ( !events.ContainsKey(type) )
-            return;
+        lock ( events )
+        {
+            if ( !events.ContainsKey(type) )
+                return;
 
-        events[type] -= action;
+            events[type] -= action;
+        }
     }
 
     public void ClearEvents ()
     {
         int amount = Enum.GetValues(typeof(CellEventType)).Length;
 
-        for ( int i = amount - 1; i >= 0; i-- )
+        lock ( events )
         {
-            events[(CellEventType)i] = null;
-        }
+            for ( int i = amount - 1; i >= 0; i-- )
+            {
+                events[(CellEventType)i] = null;
+            }
 
-        events.Clear();
+            events.Clear();
+        }
+    }
+
+    public bool IsEventEmpty ( CellEventType type )
+    {
+        lock ( events )
+            return events[type] == null || events[type].GetInvocationList() == null;
     }
 
     public void InvokeEvent ( CellEventType type, object input )
     {
-        if ( !events.ContainsKey(type) )
-            return;
+        lock ( events )
+        {
+            if ( !events.ContainsKey(type) )
+                return;
 
-        events[type]?.Invoke(input);
+            events[type]?.Invoke(input);
+        }
     }
 }

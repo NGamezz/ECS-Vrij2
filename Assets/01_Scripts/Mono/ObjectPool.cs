@@ -4,12 +4,14 @@ public class ObjectPool<T> where T : class
 {
     private readonly ConcurrentStack<T> inactiveObjectsConcurrent = new();
 
-    public T GetPooledObject ()
+    public T GetPooledObject ( out bool succes )
     {
         if ( !inactiveObjectsConcurrent.TryPop(out T item) )
         {
+            succes = false;
             return null;
         }
+        succes = true;
         return item;
     }
 
@@ -18,7 +20,7 @@ public class ObjectPool<T> where T : class
         return inactiveObjectsConcurrent.ToArray();
     }
 
-    public void ClearPool()
+    public void ClearPool ()
     {
         inactiveObjectsConcurrent.Clear();
     }

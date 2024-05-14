@@ -3,15 +3,16 @@ using UnityEngine;
 //To be improved.
 public class ReapAbility : Ability
 {
-    private CharacterData characterData;
+    private CharacterData ownerData;
 
     public override void Execute ( object context )
     {
-        if ( characterData.TargetedTransform == null )
+        if ( ownerData.Souls < ActivationCost )
+            return;
+        if ( ownerData.TargetedTransform == null )
             return;
 
-        var enemyTransform = characterData.TargetedTransform;
-
+        var enemyTransform = ownerData.TargetedTransform;
         if ( enemyTransform.gameObject.activeInHierarchy == false )
             return;
 
@@ -23,10 +24,9 @@ public class ReapAbility : Ability
         }
 
         var ability = iAbilityOwner.HarvestAbility();
+        ownerData.Souls -= (int)ActivationCost;
 
-        characterData.Souls -= (int)ActivationCost;
-
-        if ( characterData.OwnedAbilityTypes.Contains(ability.GetType()) )
+        if ( ownerData.OwnedAbilitiesHash.Contains(ability.GetType()) )
         {
             return;
         }
@@ -37,12 +37,8 @@ public class ReapAbility : Ability
     public override void Initialize ( IAbilityOwner owner, CharacterData context )
     {
         Owner = owner;
-        characterData = context;
-        ActivationCost = 10;
-    }
-
-    public override bool Trigger ()
-    {
-        return Input.GetKeyDown(KeyCode.E) && characterData.Souls >= ActivationCost;
+        ownerData = context;
+        ActivationCost = 5;
+        Trigger = () => { return Input.GetKeyDown(KeyCode.E); };
     }
 }
