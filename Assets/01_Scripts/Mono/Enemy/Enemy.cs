@@ -7,6 +7,8 @@ public enum EnemyType
 {
     Default = 0,
     SnitchEnemy = 1,
+    ShockWaveEnemy = 2,
+    LieEnemy = 3,
 }
 
 public class Enemy : Soulable, IDamageable
@@ -14,6 +16,8 @@ public class Enemy : Soulable, IDamageable
     public bool Dead { get; private set; }
 
     public event Action<Enemy> OnDisabled;
+
+    public EnemyType EnemyType;
 
     private Transform cachedTransform;
 
@@ -30,9 +34,9 @@ public class Enemy : Soulable, IDamageable
 
     private float health;
 
-    private EnemyStats enemyStats;
+    protected EnemyStats enemyStats;
 
-    public void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, CharacterData characterData )
+    public virtual void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData )
     {
         enemyStats = stats;
         cachedTransform = transform;
@@ -41,11 +45,11 @@ public class Enemy : Soulable, IDamageable
 
         Dead = false;
 
-        this.characterData = characterData;
-
         moveToTarget.OnStart(moveTarget, cachedTransform, startPosition);
         UpdateStats(stats);
         moveToTarget.Enable();
+
+        this.characterData = characterData();
     }
 
     public void OnReuse ( EnemyStats stats, Vector3 startPosition )
@@ -75,9 +79,9 @@ public class Enemy : Soulable, IDamageable
     }
 
     //To be improved.
-    public void CheckAttackRange ( Transform target, Vector3 targetPos )
+    public virtual void CheckAttackRange ( Transform target, Vector3 targetPos )
     {
-        if ( !canAttack )
+        if ( !canAttack || !GameObject.activeInHierarchy)
             return;
 
         var distanceToTarget = math.length(targetPos - cachedTransform.position);

@@ -32,11 +32,11 @@ public class PlayerShooting
 
     private ObjectPool<Gun> objectPool = new();
 
+    private Rigidbody rb;
+
     private Transform bulletHolder;
 
     private bool shootHeld = false;
-
-    private int bulletHolderLayer;
 
     private WaitUntil waitUntilShoot;
 
@@ -55,12 +55,14 @@ public class PlayerShooting
         if ( guns.Count < 1 )
             return;
 
+        this.rb = (Rigidbody)meshTransform.GetComponent(typeof(Rigidbody));
+
         currentGun = guns[0];
         var gunObject = UnityEngine.Object.Instantiate(currentGun.prefab, gunPosition);
         gunObject.transform.position = gunPosition.position;
+        currentGun.CurrentAmmo = currentGun.MagSize;
         SetLayerRecursive(gunObject, bulletHolder.gameObject.layer);
 
-        bulletHolderLayer = bulletHolder.gameObject.layer;
         GenerateBullets();
 
         running = true;
@@ -92,7 +94,13 @@ public class PlayerShooting
     {
         owner.StopCoroutine(shootRoutine);
         currentGun = gun;
+        gun.CurrentAmmo = gun.MagSize;
         shootRoutine = owner.StartCoroutine(Shoot());
+    }
+
+    public void OnReload()
+    {
+        currentGun.CurrentAmmo = currentGun.MagSize;
     }
 
     private void OnObjectHit ( bool succes, Gun objectToPool )
@@ -164,7 +172,10 @@ public class PlayerShooting
 
     private void ShootBody ()
     {
-        var bullet = objectPool.GetPooledObject(out var succes);
+        if ( currentGun.CurrentAmmo - 1 < 0 )
+            return;
+        
+        var succes = objectPool.GetPooledObject(out var bullet);
 
         if ( !succes )
         {
@@ -176,6 +187,7 @@ public class PlayerShooting
         }
 
         UpdateBulletStats(ref bullet, currentGun, meshTransform);
+        currentGun.CurrentAmmo--;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -188,7 +200,9 @@ public class PlayerShooting
         var meshForward = ownerTransform.forward;
         var newPos = ownerTransform.position + meshForward;
         bullet.Transform.position = newPos;
-        bullet.Transform.forward = (meshForward + new Vector3(Random.Range(currentGun.spreadOffset.x, currentGun.spreadOffset.y), 0.0f, Random.Range(currentGun.spreadOffset.x, currentGun.spreadOffset.y))).normalized;
+        var direction = (meshForward + new Vector3(Random.Range(currentGun.spreadOffset.x, currentGun.spreadOffset.y), 0.0f, Random.Range(currentGun.spreadOffset.x, currentGun.spreadOffset.y))).normalized;
+        bullet.Transform.forward = direction;
+        rb.AddForce(-direction * currentGun.Recoil, ForceMode.Impulse);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -3,8 +3,9 @@ using UnityEngine;
 
 public class SnitchingAbility : Ability
 {
-    public override void Execute ( object context )
+    public override bool Execute ( object context )
     {
+        return false;
         //Debug.Log("Snitch Ability");
     }
 

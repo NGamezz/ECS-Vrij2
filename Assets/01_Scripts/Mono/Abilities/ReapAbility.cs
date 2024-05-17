@@ -5,39 +5,39 @@ public class ReapAbility : Ability
 {
     private CharacterData ownerData;
 
-    public override void Execute ( object context )
+    public override bool Execute ( object context )
     {
-        if ( ownerData.Souls < ActivationCost )
-            return;
-        if ( ownerData.TargetedTransform == null )
-            return;
+        if ( ownerData.Souls < ActivationCost || ownerData.TargetedTransform == null )
+            return false;
 
         var enemyTransform = ownerData.TargetedTransform;
         if ( enemyTransform.gameObject.activeInHierarchy == false )
-            return;
+            return false;
 
-        var isAbilityOwner = enemyTransform.gameObject.TryGetComponent(out IAbilityOwner iAbilityOwner);
-
-        if ( !isAbilityOwner )
+        var abilityOwner = (IAbilityOwner)enemyTransform.gameObject.GetComponent(typeof(IAbilityOwner));
+        if ( abilityOwner == null )
         {
-            return;
+            return false;
         }
 
-        var ability = iAbilityOwner.HarvestAbility();
+        var ability = abilityOwner.HarvestAbility();
         ownerData.Souls -= (int)ActivationCost;
 
         if ( ownerData.OwnedAbilitiesHash.Contains(ability.GetType()) )
         {
-            return;
+            return false;
         }
 
         Owner.AcquireAbility(ability);
+        return false;
     }
 
     public override void Initialize ( IAbilityOwner owner, CharacterData context )
     {
         Owner = owner;
         ownerData = context;
+
+        //Set the values, the trigger condition and the cost.
         ActivationCost = 5;
         Trigger = () => { return Input.GetKeyDown(KeyCode.E); };
     }

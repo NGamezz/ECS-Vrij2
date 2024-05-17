@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 
 [Flags]
@@ -9,6 +10,7 @@ public enum CharacterStatusEffect
     Stunned = 1,
 }
 
+//Should be reworked.
 [CreateAssetMenu]
 public class CharacterData : ScriptableObject
 {
@@ -16,6 +18,10 @@ public class CharacterData : ScriptableObject
     [NonSerialized] public Transform TargetedTransform;
     [NonSerialized] public Rigidbody Rigidbody;
     [NonSerialized] public MoveTarget MoveTarget;
+
+    public bool Player = false;
+
+    public float3 PlayerMousePosition; 
 
     public HashSet<Type> OwnedAbilitiesHash = new();
 
@@ -34,6 +40,8 @@ public class CharacterData : ScriptableObject
 
     public float Health;
     public float Stamina;
+
+    [NonSerialized] public GameObject decoyPrefab;
 
     public float MaxStamina;
     public float MaxHealth;
@@ -69,6 +77,11 @@ public class CharacterData : ScriptableObject
     {
         Reset();
         UponSoulValueChanged = uponSoulChanged;
+    }
+
+    public void SetMousePosition(Vector3 pos)
+    {
+        PlayerMousePosition = pos;
     }
 
     public void Reset ()

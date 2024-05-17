@@ -341,6 +341,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sceneIndex: 2
   mode: 1
+--- !u!1 &373936615 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3376528096086967466, guid: 704285c1f157c114586304220728720b, type: 3}
+  m_PrefabInstance: {fileID: 841801432}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &400312038 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8338631827632641122, guid: d615be8ee0fc5284c8ee90eede10a88a, type: 3}
@@ -431,21 +436,57 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 1090521495402466660, guid: 704285c1f157c114586304220728720b, type: 3}
-      propertyPath: m_UiScaleMode
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1090521495402466660, guid: 704285c1f157c114586304220728720b, type: 3}
-      propertyPath: m_ReferenceResolution.x
-      value: 2560
-      objectReference: {fileID: 0}
-    - target: {fileID: 1090521495402466660, guid: 704285c1f157c114586304220728720b, type: 3}
-      propertyPath: m_ReferenceResolution.y
-      value: 1440
-      objectReference: {fileID: 0}
     - target: {fileID: 3376528096086967466, guid: 704285c1f157c114586304220728720b, type: 3}
       propertyPath: m_Name
       value: Player
+      objectReference: {fileID: 0}
+    - target: {fileID: 5163124172975904353, guid: 704285c1f157c114586304220728720b, type: 3}
+      propertyPath: decoyPrefab
+      value: 
+      objectReference: {fileID: 7582975548902922732, guid: 4832bc6465ae2c545a169e57fe19f78d, type: 3}
+    - target: {fileID: 5163124172975904353, guid: 704285c1f157c114586304220728720b, type: 3}
+      propertyPath: enemyMoveTarget
+      value: 
+      objectReference: {fileID: 11400000, guid: cf537a102348b1f41b091cefd49f7a09, type: 2}
+    - target: {fileID: 5495372135968517766, guid: 704285c1f157c114586304220728720b, type: 3}
+      propertyPath: m_ActionEvents.Array.size
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 5495372135968517766, guid: 704285c1f157c114586304220728720b, type: 3}
+      propertyPath: m_ActionEvents.Array.data[5].m_ActionId
+      value: 47983c88-7eec-49e0-8fa8-af4be427bb56
+      objectReference: {fileID: 0}
+    - target: {fileID: 5495372135968517766, guid: 704285c1f157c114586304220728720b, type: 3}
+      propertyPath: m_ActionEvents.Array.data[5].m_ActionName
+      value: 'Player/Reload[/Keyboard/r]'
+      objectReference: {fileID: 0}
+    - target: {fileID: 5495372135968517766, guid: 704285c1f157c114586304220728720b, type: 3}
+      propertyPath: m_ActionEvents.Array.data[5].m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5495372135968517766, guid: 704285c1f157c114586304220728720b, type: 3}
+      propertyPath: m_ActionEvents.Array.data[5].m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5495372135968517766, guid: 704285c1f157c114586304220728720b, type: 3}
+      propertyPath: m_ActionEvents.Array.data[5].m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1665160292}
+    - target: {fileID: 5495372135968517766, guid: 704285c1f157c114586304220728720b, type: 3}
+      propertyPath: m_ActionEvents.Array.data[5].m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5495372135968517766, guid: 704285c1f157c114586304220728720b, type: 3}
+      propertyPath: m_ActionEvents.Array.data[5].m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnReload
+      objectReference: {fileID: 0}
+    - target: {fileID: 5495372135968517766, guid: 704285c1f157c114586304220728720b, type: 3}
+      propertyPath: m_ActionEvents.Array.data[5].m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: PlayerManager, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 5495372135968517766, guid: 704285c1f157c114586304220728720b, type: 3}
+      propertyPath: m_ActionEvents.Array.data[5].m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     - target: {fileID: 6161982741623012984, guid: 704285c1f157c114586304220728720b, type: 3}
       propertyPath: m_LocalPosition.x
@@ -490,7 +531,13 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3376528096086967466, guid: 704285c1f157c114586304220728720b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1665160298}
+    - targetCorrespondingSourceObject: {fileID: 900773461955491389, guid: 704285c1f157c114586304220728720b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1875303062}
   m_SourcePrefab: {fileID: 100100000, guid: 704285c1f157c114586304220728720b, type: 3}
 --- !u!1 &842876184
 GameObject:
@@ -1244,6 +1291,68 @@ MonoBehaviour:
   m_DeselectOnBackgroundClick: 1
   m_PointerBehavior: 0
   m_CursorLockBehavior: 0
+--- !u!114 &1665160292 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5163124172975904353, guid: 704285c1f157c114586304220728720b, type: 3}
+  m_PrefabInstance: {fileID: 841801432}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 373936615}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e6cd9ac82bf4a2479081068aa38b140, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1665160295 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6977412382383002167, guid: 704285c1f157c114586304220728720b, type: 3}
+  m_PrefabInstance: {fileID: 841801432}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 373936615}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2dce54df55f6e39419f46e1c116c6625, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1665160298
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 373936615}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7fdb5493fe21ec4ba1f2bffddc3ab90, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  uponMouseSelection:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 11400000, guid: 1ea490321fae9314dbd18d05918a95a8, type: 2}
+        m_TargetAssemblyTypeName: CharacterData, Assembly-CSharp
+        m_MethodName: SetMousePosition
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1665160295}
+        m_TargetAssemblyTypeName: PlayerCameraHandling, Assembly-CSharp
+        m_MethodName: UpdateMouseWorldPosition
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  ignoredLayers: 6
 --- !u!1 &1736819501
 GameObject:
   m_ObjectHideFlags: 0
@@ -1387,6 +1496,38 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1805953488}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1875303057 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 900773461955491389, guid: 704285c1f157c114586304220728720b, type: 3}
+  m_PrefabInstance: {fileID: 841801432}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1875303062
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1875303057}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2dc315e0869d08b4596b8c6426ad8407, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  uponDamageAffliction:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1665160292}
+        m_TargetAssemblyTypeName: PlayerManager, Assembly-CSharp
+        m_MethodName: AfflictDamage
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &1943367869
 GameObject:
   m_ObjectHideFlags: 0
@@ -1653,12 +1794,56 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6540933391698174886, guid: d14f0bb21b13b0d4db47bc3767e21270, type: 3}
       propertyPath: difficultyGrades.Array.data[0].enemyPrefabs.Array.size
-      value: 2
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 6540933391698174886, guid: d14f0bb21b13b0d4db47bc3767e21270, type: 3}
       propertyPath: 'difficultyGrades.Array.data[0].enemyPrefabs.Array.data[1]'
       value: 
       objectReference: {fileID: 6018911413005679971, guid: 43af7adc1aeedc14ab18553aacedf053, type: 3}
+    - target: {fileID: 6540933391698174886, guid: d14f0bb21b13b0d4db47bc3767e21270, type: 3}
+      propertyPath: difficultyGrades.Array.data[0].enemyPrefabs.Array.data[0].type
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6540933391698174886, guid: d14f0bb21b13b0d4db47bc3767e21270, type: 3}
+      propertyPath: difficultyGrades.Array.data[0].enemyPrefabs.Array.data[2].type
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6540933391698174886, guid: d14f0bb21b13b0d4db47bc3767e21270, type: 3}
+      propertyPath: difficultyGrades.Array.data[0].enemyPrefabs.Array.data[3].type
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 6540933391698174886, guid: d14f0bb21b13b0d4db47bc3767e21270, type: 3}
+      propertyPath: difficultyGrades.Array.data[0].enemyPrefabs.Array.data[0].meshPrefab
+      value: 
+      objectReference: {fileID: 6018911413005679971, guid: 43af7adc1aeedc14ab18553aacedf053, type: 3}
+    - target: {fileID: 6540933391698174886, guid: d14f0bb21b13b0d4db47bc3767e21270, type: 3}
+      propertyPath: difficultyGrades.Array.data[0].enemyPrefabs.Array.data[1].meshPrefab
+      value: 
+      objectReference: {fileID: 6107277973651376024, guid: eb9577278958c6f4783a4c5085f516d2, type: 3}
+    - target: {fileID: 6540933391698174886, guid: d14f0bb21b13b0d4db47bc3767e21270, type: 3}
+      propertyPath: difficultyGrades.Array.data[0].enemyPrefabs.Array.data[2].meshPrefab
+      value: 
+      objectReference: {fileID: 5639215074042341115, guid: 7b771d5add09c344aa7ff230b0e42829, type: 3}
+    - target: {fileID: 6540933391698174886, guid: d14f0bb21b13b0d4db47bc3767e21270, type: 3}
+      propertyPath: difficultyGrades.Array.data[0].enemyPrefabs.Array.data[3].meshPrefab
+      value: 
+      objectReference: {fileID: 8612197945513794166, guid: 0bb05a899dfb4cf42b77eff08cec48c4, type: 3}
+    - target: {fileID: 6540933391698174886, guid: d14f0bb21b13b0d4db47bc3767e21270, type: 3}
+      propertyPath: difficultyGrades.Array.data[0].enemyPrefabs.Array.data[0].defaultStats
+      value: 
+      objectReference: {fileID: 11400000, guid: c09a9b3c07adeec4abeac6f328e31e1f, type: 2}
+    - target: {fileID: 6540933391698174886, guid: d14f0bb21b13b0d4db47bc3767e21270, type: 3}
+      propertyPath: difficultyGrades.Array.data[0].enemyPrefabs.Array.data[1].defaultStats
+      value: 
+      objectReference: {fileID: 11400000, guid: c09a9b3c07adeec4abeac6f328e31e1f, type: 2}
+    - target: {fileID: 6540933391698174886, guid: d14f0bb21b13b0d4db47bc3767e21270, type: 3}
+      propertyPath: difficultyGrades.Array.data[0].enemyPrefabs.Array.data[2].defaultStats
+      value: 
+      objectReference: {fileID: 11400000, guid: c09a9b3c07adeec4abeac6f328e31e1f, type: 2}
+    - target: {fileID: 6540933391698174886, guid: d14f0bb21b13b0d4db47bc3767e21270, type: 3}
+      propertyPath: difficultyGrades.Array.data[0].enemyPrefabs.Array.data[3].defaultStats
+      value: 
+      objectReference: {fileID: 11400000, guid: c09a9b3c07adeec4abeac6f328e31e1f, type: 2}
     - target: {fileID: 7357071502332606103, guid: d14f0bb21b13b0d4db47bc3767e21270, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

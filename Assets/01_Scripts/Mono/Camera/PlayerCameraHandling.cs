@@ -46,6 +46,12 @@ public class PlayerCameraHandling : MonoBehaviour
 
     private readonly RaycastHit[] hits = new RaycastHit[1];
 
+    private Vector3 mousePosition = Vector3.zero;
+    public void UpdateMouseWorldPosition ( Vector3 pos )
+    {
+        mousePosition = pos;
+    }
+
     //Should be improved.
     private void ApplyLookDirection ()
     {
@@ -53,14 +59,14 @@ public class PlayerCameraHandling : MonoBehaviour
 
         if ( lookAtMouse )
         {
-            var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+            //var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
 
-            if ( Physics.RaycastNonAlloc(ray, hits, float.MaxValue, ~(1 << playerLayerMask)) == 0 )
-            {
-                return;
-            }
+            //if ( Physics.RaycastNonAlloc(ray, hits, float.MaxValue, ~(1 << playerLayerMask)) == 0 )
+            //{
+            //    return;
+            //}
 
-            direction = hits[0].point - meshTransform.position;
+            direction = mousePosition - meshTransform.position;
             direction.y = 0.0f;
         }
         else

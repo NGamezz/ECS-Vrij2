@@ -34,21 +34,26 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
 
     [SerializeField] private CharacterData characterData;
 
+    [SerializeField] private MoveTarget enemyMoveTarget;
+
+    [SerializeField] private GameObject decoyPrefab;
+
     [SerializeField]
     private PlayerShooting playerShooting = new();
 
     [Space(2)]
 
-    [SerializeField] private float health;
-
-    private readonly List<Ability> abilities = new();
+    [SerializeField] private List<Ability> abilities = new();
 
     public void AfflictDamage ( float amount )
     {
-        health -= amount;
+        characterData.Health -= amount;
 
-        if ( health <= 0 )
+        if ( characterData.Health <= 0 )
+        {
+            Debug.Log("You Died.");
             gameObject.SetActive(false);
+        }
     }
 
     public void OnShoot ( InputAction.CallbackContext context )
@@ -64,6 +69,11 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
     public void OnDash ()
     {
         playerMovement.OnDash();
+    }
+
+    public void OnReload ()
+    {
+        playerShooting.OnReload();
     }
 
     private void OnEnable ()
@@ -82,11 +92,18 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
     private void Start ()
     {
         characterData.Reset();
+        characterData.CharacterTransform = transform;
+
+        characterData.Player = true;
+
         playerMovement.characterData = characterData;
         playerMovement.OnStart();
         playerShooting.OnStart(transform, this);
 
         Souls = 0;
+
+        characterData.decoyPrefab = decoyPrefab;
+        characterData.MoveTarget = enemyMoveTarget;
 
         characterData.Initialize(UpdateSoulsUI);
 
@@ -94,12 +111,19 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
         reapAbility.Initialize(this, characterData);
         abilities.Add(reapAbility);
 
-        health = characterData.MaxHealth;
+        LieAbility lieAbility = new();
+        lieAbility.Initialize(this, characterData);
+        abilities.Add(lieAbility);
+
+        characterData.Health = characterData.MaxHealth;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void UpdateSoulsUI ()
     {
+        if ( GameManager.Instance == null )
+            return;
+
         GameManager.Instance.Enqueue(() =>
         {
             soulsUiText.SetText($"Amount of Souls = {characterData.Souls}");
@@ -116,7 +140,11 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
 
             if ( ability.Trigger != null && ability.Trigger() )
             {
-                ability.Execute(characterData);
+                if ( ability.Execute(characterData) )
+                {
+                    abilities.Remove(ability);
+                    characterData.OwnedAbilitiesHash.Remove(ability.GetType());
+                }
             }
         }
     }
@@ -145,6 +173,7 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
         }
 
         characterData.OwnedAbilitiesHash.Add(ability.GetType());
+        characterData.TargetedTransform = null;
         ability.Initialize(this, characterData);
         abilities.Add(ability);
     }

@@ -52,6 +52,11 @@ public class EnemyManager : MonoBehaviour
 
     private void Start ()
     {
+        foreach ( var difficulty in difficultyGrades )
+        {
+            difficulty.InitializeDictionary();
+        }
+
         currentDifficultyGrade = difficultyGrades[0];
 
         enemyTarget.target = playerTransform;
@@ -71,9 +76,28 @@ public class EnemyManager : MonoBehaviour
         objectPool.PoolObject(sender);
     }
 
-    private CharacterData CreateEnemyDataObject ( EnemyType type )
+    private CharacterData CreateEnemyDataObject ( Enemy enemy )
     {
         CharacterData data = (CharacterData)ScriptableObject.CreateInstance(nameof(CharacterData));
+
+        var prefab = currentDifficultyGrade.RequestPrefab(enemy.EnemyType);
+        var defaultStats = prefab.defaultStats;
+
+        data.Speed = defaultStats.moveSpeed;
+        data.SpeedMultiplier = 1;
+        data.Souls = 0;
+        data.Stamina = 0;
+        data.DamageMultiplier = defaultStats.damage;
+        data.MaxHealth = defaultStats.maxHealth;
+
+        if ( enemy.EnemyType == EnemyType.LieEnemy )
+            data.decoyPrefab = currentDifficultyGrade.enemyPrefabs[UnityEngine.Random.Range(0, currentDifficultyGrade.enemyPrefabs.Count)].meshPrefab;
+
+        data.CharacterTransform = enemy.Transform;
+        data.Speed = currentDifficultyGrade.enemyStats.moveSpeed;
+
+        data.MoveTarget = enemyTarget;
+        data.Reset();
 
         return data;
     }
@@ -120,7 +144,7 @@ public class EnemyManager : MonoBehaviour
                 var position = playerPos + (UnityEngine.Random.insideUnitSphere.normalized * UnityEngine.Random.Range(spawnRange.x, spawnRange.y));
                 position.y = ownPosition.y;
 
-                var enemy = objectPool.GetPooledObject(out var succes);
+                var succes = objectPool.GetPooledObject(out var enemy);
                 var gameObject = enemy.GameObject;
 
                 if ( !succes )
@@ -143,12 +167,11 @@ public class EnemyManager : MonoBehaviour
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private Enemy CreateEnemy ( DifficultyGrade currentDifficultyGrade, Action<Enemy> onDisable, Action<Enemy> onDeath, MoveTarget enemyTarget, Vector3 position )
     {
-        var gameObject = Instantiate(currentDifficultyGrade.enemyPrefabs[UnityEngine.Random.Range(0, currentDifficultyGrade.enemyPrefabs.Count)], transform);
+        var gameObject = Instantiate(currentDifficultyGrade.enemyPrefabs[UnityEngine.Random.Range(0, currentDifficultyGrade.enemyPrefabs.Count)].meshPrefab, transform);
         var enemy = gameObject.GetOrAddComponent<Enemy>();
         enemy.OnDisabled += onDisable;
         enemy.OnDeath += onDeath;
-        var data = CreateEnemyDataObject(EnemyType.Default);
-        enemy.OnStart(currentDifficultyGrade.enemyStats, enemyTarget, position, data);
+        enemy.OnStart(currentDifficultyGrade.enemyStats, enemyTarget, position, () => CreateEnemyDataObject(enemy));
         return enemy;
     }
 
@@ -170,14 +193,14 @@ public class EnemyManager : MonoBehaviour
             return;
 
         var target = enemyTarget.target;
-        var targetPos = target.position;
+        var targetPos = target == null ? playerTransform.position : target.position;
 
-        foreach ( var enemy in activeEnemies )
+        for ( int i = 0; i < activeEnemies.Count; i++ )
         {
+            var enemy = activeEnemies[i];
             if ( enemy == null )
                 continue;
 
-            //enemy.OnUpdate(); Not used Atm.
             enemy.CheckAttackRange(target, targetPos);
         }
     }
@@ -198,6 +221,9 @@ public class EnemyManager : MonoBehaviour
                 {
                     RemoveEnemy(enemy);
                 }
+
+                if ( i % 10 == 0 )
+                    yield return null;
             }
 
             yield return Utility.Yielders.FixedUpdate;
@@ -209,8 +235,9 @@ public class EnemyManager : MonoBehaviour
         if ( activeEnemies.Count < 1 )
             return;
 
-        foreach ( var enemy in activeEnemies )
+        for ( int i = 0; i < activeEnemies.Count; i++ )
         {
+            var enemy = activeEnemies[i];
             if ( enemy == null )
                 continue;
 
@@ -222,7 +249,35 @@ public class EnemyManager : MonoBehaviour
 [Serializable]
 public class DifficultyGrade
 {
-    public List<GameObject> enemyPrefabs;
+    public List<EnemyPrefab> enemyPrefabs;
+
+    public Dictionary<EnemyType, EnemyPrefab> EnemyPrefabs;
 
     public EnemyStats enemyStats;
+
+    public EnemyPrefab RequestPrefab ( EnemyType type )
+    {
+        return EnemyPrefabs[type];
+    }
+
+    public void InitializeDictionary ()
+    {
+        EnemyPrefabs = new();
+
+        foreach ( var prefab in enemyPrefabs )
+        {
+            if ( !EnemyPrefabs.ContainsKey(prefab.type) )
+            {
+                EnemyPrefabs.Add(prefab.type, prefab);
+            }
+        }
+    }
+}
+
+[Serializable]
+public class EnemyPrefab
+{
+    public GameObject meshPrefab;
+    public EnemyStats defaultStats;
+    public EnemyType type;
 }

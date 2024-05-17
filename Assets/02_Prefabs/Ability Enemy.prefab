@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1253090434984373302}
   - component: {fileID: 6535328002347769591}
   - component: {fileID: 5264340760634730572}
-  - component: {fileID: 7104255728629006576}
+  - component: {fileID: 6355608535167836999}
   m_Layer: 8
   m_Name: Ability Enemy
   m_TagString: Untagged
@@ -108,7 +108,7 @@ CapsuleCollider:
   m_Height: 2.1047158
   m_Direction: 1
   m_Center: {x: 0, y: -0.034948587, z: 0.023540854}
---- !u!114 &7104255728629006576
+--- !u!114 &6355608535167836999
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -117,10 +117,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 6018911413005679971}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f59a1f47e2177a948864ba3560bc85a1, type: 3}
+  m_Script: {fileID: 11500000, guid: bc34545c0de43fe41a681921324bea53, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Dead: 0
+  EnemyType: 1
 --- !u!1 &9076463077428152315
 GameObject:
   m_ObjectHideFlags: 0
