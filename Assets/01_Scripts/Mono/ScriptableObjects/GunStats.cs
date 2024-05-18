@@ -18,6 +18,8 @@ public class GunStats : ScriptableObject
 
     public float2 spreadOffset;
 
+    public float ReloadSpeed = 1.0f;
+
     public float Recoil = 0;
 
     public int CurrentAmmo;

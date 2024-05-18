@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Unity.Mathematics;
 using UnityEngine;
@@ -7,31 +8,27 @@ public class LieAbility : Ability
 {
     //In ms.
     private readonly int abilityDuration = 2000;
-    
+
     private CharacterData ownerData;
     private float2 spawnRange = new(5.0f, 5.0f);
     private int activeCount = 0;
 
-    private async void ActivateDecoy (Vector3 refPos)
+    private async void ActivateDecoy ( Vector3 refPos, bool player, Action<CharacterData, Enemy> contextCallBackStart, Action<CharacterData, Enemy> contextCallBackFinish )
     {
-        var gameObject = Object.Instantiate(ownerData.decoyPrefab);
         refPos.y = ownerData.CharacterTransform.position.y;
-        gameObject.transform.position = refPos;
-
-        gameObject.name = ownerData.CharacterTransform.name + "Clone" + activeCount;
+        var enemy = EnemyManager.Instance.CreateEnemy(refPos);
+        contextCallBackStart(ownerData, enemy);
 
         activeCount++;
-        ownerData.MoveTarget.target = gameObject.transform;
 
         await Task.Delay(abilityDuration);
 
-        if ( ownerData.MoveTarget.target == null )
-            ownerData.MoveTarget.target = ownerData.CharacterTransform;
+        contextCallBackFinish(ownerData, enemy);
 
         activeCount--;
-        if ( gameObject != null )
+        if ( enemy != null )
         {
-            Object.Destroy(gameObject);
+            UnityEngine.Object.Destroy(enemy.GameObject);
         }
     }
 
@@ -54,14 +51,33 @@ public class LieAbility : Ability
             return false;
 
         ownerData.Souls -= (int)ActivationCost;
-        ActivateDecoy(ownerData.PlayerMousePosition);
+
+        var cachedTarget = ownerData.MoveTarget.target;
+        ActivateDecoy(ownerData.PlayerMousePosition, true, ( data, enemy ) =>
+        {
+            ownerData.MoveTarget.target = enemy.Transform;
+            return;
+        }, ( data, enemy ) =>
+        {
+            if ( ownerData.MoveTarget.target == null )
+                ownerData.MoveTarget.target = cachedTarget;
+            return;
+        });
         return false;
     }
 
     private bool EnemyBehaviour ()
     {
         var position = ownerData.CharacterTransform.position + (UnityEngine.Random.insideUnitSphere.normalized * UnityEngine.Random.Range(spawnRange.x, spawnRange.y));
-        ActivateDecoy(position);
+        ActivateDecoy(position, false, ( data, enemy ) =>
+        {
+            enemy.OnFixedUpdate();
+
+            return;
+        }, ( data, enemy ) =>
+        {
+            return;
+        });
         return true;
     }
 

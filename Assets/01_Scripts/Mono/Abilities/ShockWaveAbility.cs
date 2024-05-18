@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class ShockWaveAbility : Ability
@@ -10,13 +11,16 @@ public class ShockWaveAbility : Ability
 
     public override bool Execute ( object context )
     {
-        if ( !initialized)
+        if ( !initialized )
         { return false; }
-        
-        if(ownerData.Player && ownerData.Souls < ActivationCost)
+
+        if ( ownerData.Player && ownerData.Souls < ActivationCost )
         {
             return false;
         }
+
+        Debug.Log(ownerData);
+        Debug.Log(ownerData.CharacterTransform);
 
         var ownerPos = ownerData.CharacterTransform.position;
 
@@ -31,7 +35,7 @@ public class ShockWaveAbility : Ability
                 continue;
 
             var hit = (IDamageable)hits[i].GetComponent(typeof(IDamageable));
-            if ( hit == null)
+            if ( hit == null )
                 continue;
 
             hit.AfflictDamage(999999);

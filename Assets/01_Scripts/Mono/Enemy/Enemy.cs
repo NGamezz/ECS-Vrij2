@@ -25,6 +25,8 @@ public class Enemy : Soulable, IDamageable
 
     protected CharacterData characterData;
 
+    public bool Decoy = false;
+
     public Transform Transform { get => cachedTransform; }
     public GameObject GameObject { get => cachedGameObject; }
 
@@ -43,6 +45,8 @@ public class Enemy : Soulable, IDamageable
         cachedGameObject = gameObject;
         moveToTarget = new();
 
+        Debug.Log(moveToTarget);
+
         Dead = false;
 
         moveToTarget.OnStart(moveTarget, cachedTransform, startPosition);
@@ -50,6 +54,7 @@ public class Enemy : Soulable, IDamageable
         moveToTarget.Enable();
 
         this.characterData = characterData();
+        this.characterData.CharacterTransform = cachedTransform;
     }
 
     public void OnReuse ( EnemyStats stats, Vector3 startPosition )
@@ -79,7 +84,7 @@ public class Enemy : Soulable, IDamageable
     }
 
     //To be improved.
-    public virtual void CheckAttackRange ( Transform target, Vector3 targetPos )
+    public virtual void CheckAttackRange ( MoveTarget target, Vector3 targetPos )
     {
         if ( !canAttack || !GameObject.activeInHierarchy)
             return;
@@ -88,7 +93,10 @@ public class Enemy : Soulable, IDamageable
 
         if ( distanceToTarget < enemyStats.attackRange )
         {
-            var damagable = target.GetComponentInParent<IDamageable>();
+            if ( target == null )
+                return;
+
+            var damagable = (IDamageable)target.target.GetComponentInParent(typeof(IDamageable));
             if ( damagable == null )
             {
                 return;

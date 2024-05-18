@@ -10,6 +10,8 @@ using UnityEngine;
 
 public class EnemyManager : MonoBehaviour
 {
+    public static EnemyManager Instance;
+
     [SerializeField] private List<DifficultyGrade> difficultyGrades = new();
 
     [SerializeField] private MoveTarget enemyTarget;
@@ -50,6 +52,14 @@ public class EnemyManager : MonoBehaviour
         StopAllCoroutines();
     }
 
+    private void Awake ()
+    {
+        if ( Instance != null )
+            Destroy(Instance);
+
+        Instance = this;
+    }
+
     private void Start ()
     {
         foreach ( var difficulty in difficultyGrades )
@@ -79,6 +89,9 @@ public class EnemyManager : MonoBehaviour
     private CharacterData CreateEnemyDataObject ( Enemy enemy )
     {
         CharacterData data = (CharacterData)ScriptableObject.CreateInstance(nameof(CharacterData));
+
+        Debug.Log(enemy.EnemyType);
+        Debug.Log(enemy.name);
 
         var prefab = currentDifficultyGrade.RequestPrefab(enemy.EnemyType);
         var defaultStats = prefab.defaultStats;
@@ -175,6 +188,11 @@ public class EnemyManager : MonoBehaviour
         return enemy;
     }
 
+    public Enemy CreateEnemy (Vector3 position)
+    {
+        return CreateEnemy(currentDifficultyGrade, null, null, enemyTarget, position);
+    }
+
     private void OnDisable ()
     {
         foreach ( var enemy in activeEnemies )
@@ -201,7 +219,7 @@ public class EnemyManager : MonoBehaviour
             if ( enemy == null )
                 continue;
 
-            enemy.CheckAttackRange(target, targetPos);
+            enemy.CheckAttackRange(enemyTarget, targetPos);
         }
     }
 

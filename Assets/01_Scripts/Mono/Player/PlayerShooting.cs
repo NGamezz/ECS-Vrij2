@@ -17,32 +17,21 @@ public enum ProjectileType
 public class PlayerShooting
 {
     [SerializeField] private List<GunStats> guns = new();
-
     [SerializeField] private Transform gunPosition;
-
     [SerializeField] private Transform meshTransform;
-
     [SerializeField] private int defaultAmountOfPooledObjects = 25;
-
     [SerializeField] private int playerLayer;
 
     private MonoBehaviour owner;
-
     private GunStats currentGun;
-
-    private ObjectPool<Gun> objectPool = new();
-
+    private readonly ObjectPool<Gun> objectPool = new();
     private Rigidbody rb;
-
     private Transform bulletHolder;
-
     private bool shootHeld = false;
-
     private WaitUntil waitUntilShoot;
-
     private bool running = false;
-
     private Coroutine shootRoutine;
+    private bool reloading = false;
 
     public void OnStart ( Transform bulletHolder, MonoBehaviour owner )
     {
@@ -100,7 +89,16 @@ public class PlayerShooting
 
     public void OnReload()
     {
+        if ( !reloading )
+            owner.StartCoroutine(Reload());
+    }
+
+    private IEnumerator Reload()
+    {
+        reloading = true;
+        yield return Utility.Yielders.Get(currentGun.ReloadSpeed);
         currentGun.CurrentAmmo = currentGun.MagSize;
+        reloading = false;
     }
 
     private void OnObjectHit ( bool succes, Gun objectToPool )
@@ -119,7 +117,7 @@ public class PlayerShooting
         {
             yield return waitUntilShoot;
 
-            while ( shootHeld )
+            while ( shootHeld && !reloading)
             {
                 CheckShootType();
 

@@ -13,12 +13,13 @@ public class ShockWaveEnemy : Enemy, IAbilityOwner
 
     public override void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData )
     {
+        EnemyType = EnemyType.ShockWaveEnemy;
+        this.characterData = characterData();
         base.OnStart(stats, moveTarget, startPosition, characterData);
         ability.Initialize(this, this.characterData);
-        EnemyType = EnemyType.ShockWaveEnemy;
     }
 
-    public override void CheckAttackRange ( Transform target, Vector3 targetPos )
+    public override void CheckAttackRange ( MoveTarget target, Vector3 targetPos )
     {
         if ( !canUseAbility || !GameObject.activeInHierarchy )
             return;
@@ -27,7 +28,9 @@ public class ShockWaveEnemy : Enemy, IAbilityOwner
 
         if ( distanceToTarget < enemyStats.attackRange )
         {
-            var damagable = (IDamageable)target.GetComponentInParent(typeof(IDamageable));
+            Debug.Log(target);
+
+            var damagable = (IDamageable)target.target.GetComponentInParent(typeof(IDamageable));
             if ( damagable == null )
             {
                 return;

@@ -121,10 +121,10 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void UpdateSoulsUI ()
     {
-        if ( GameManager.Instance == null )
+        if ( MainThreadQueue.Instance == null )
             return;
 
-        GameManager.Instance.Enqueue(() =>
+        MainThreadQueue.Instance.Enqueue(() =>
         {
             soulsUiText.SetText($"Amount of Souls = {characterData.Souls}");
         });

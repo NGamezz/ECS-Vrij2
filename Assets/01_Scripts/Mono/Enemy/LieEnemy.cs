@@ -11,11 +11,12 @@ public class LieEnemy : Enemy, IAbilityOwner
 
     public override void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData )
     {
-        base.OnStart(stats, moveTarget, startPosition, characterData);
         EnemyType = EnemyType.LieEnemy;
+        base.OnStart(stats, moveTarget, startPosition, characterData);
+        ability.Initialize(this, characterData());
     }
 
-    public override void CheckAttackRange ( Transform target, Vector3 targetPos )
+    public override void CheckAttackRange ( MoveTarget target, Vector3 targetPos )
     {
         if ( !canUseAbility || !GameObject.activeInHierarchy )
             return;
@@ -24,8 +25,19 @@ public class LieEnemy : Enemy, IAbilityOwner
 
         if ( distanceToTarget < enemyStats.attackRange )
         {
-            var damagable = (IDamageable)target.GetComponentInParent(typeof(IDamageable));
-            if ( damagable == null )
+            var transform = target.target;
+
+            IDamageable damageable;
+            if ( transform.root == transform )
+            {
+                damageable = (IDamageable)transform.GetComponent(typeof(IDamageable));
+            }
+            else
+            {
+                damageable = (IDamageable)target.target.GetComponentInParent(typeof(IDamageable));
+            }
+
+            if ( damageable == null )
             {
                 return;
             }
