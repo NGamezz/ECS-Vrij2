@@ -1,11 +1,8 @@
-using System.Threading.Tasks;
 using UnityEngine;
 
 //To be improved.
 public class ReapAbility : Ability
 {
-    private CharacterData ownerData;
-
     public override bool Execute ( object context )
     {
         if ( ownerData.Souls < ActivationCost || ownerData.TargetedTransform == null )

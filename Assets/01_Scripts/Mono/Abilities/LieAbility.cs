@@ -9,7 +9,6 @@ public class LieAbility : Ability
     //In ms.
     private readonly int abilityDuration = 2000;
 
-    private CharacterData ownerData;
     private float2 spawnRange = new(5.0f, 5.0f);
     private int activeCount = 0;
 
@@ -63,7 +62,7 @@ public class LieAbility : Ability
                 ownerData.MoveTarget.target = cachedTarget;
             return;
         });
-        return false;
+        return true;
     }
 
     private bool EnemyBehaviour ()

@@ -111,9 +111,9 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
         reapAbility.Initialize(this, characterData);
         abilities.Add(reapAbility);
 
-        LieAbility lieAbility = new();
-        lieAbility.Initialize(this, characterData);
-        abilities.Add(lieAbility);
+        AttackBoostAbility boost = new();
+        boost.Initialize(this, characterData);
+        abilities.Add(boost);
 
         characterData.Health = characterData.MaxHealth;
     }

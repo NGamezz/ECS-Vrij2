@@ -1,4 +1,3 @@
-using NaughtyAttributes.Test;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -11,8 +10,6 @@ using UnityEngine;
 public class EnemyManager : MonoBehaviour
 {
     public static EnemyManager Instance;
-
-    [SerializeField] private List<DifficultyGrade> difficultyGrades = new();
 
     [SerializeField] private MoveTarget enemyTarget;
 
@@ -27,12 +24,19 @@ public class EnemyManager : MonoBehaviour
 
     private readonly ObjectPool<Enemy> objectPool = new();
 
-    private DifficultyGrade currentDifficultyGrade;
 
     [SerializeField] private Transform playerTransform;
 
-    private bool spawnEnemies = false;
+    [Header("Difficulty Scaling.")]
+    [SerializeField] private List<DifficultyGrade> difficultyGrades = new();
+    [SerializeField] private float currentDifficultyIndex = 0;
+    [SerializeField] private float difficultyIncreasePerSecond = 0.2f;
+    [SerializeField] private int gradeIndex = 0;
 
+    private DifficultyGrade currentDifficultyGrade;
+    private int requiredIndexForDifficultyAdvancement = 5;
+
+    private bool spawnEnemies = false;
     public bool SpawnEnemies
     {
         get => spawnEnemies;
@@ -44,7 +48,6 @@ public class EnemyManager : MonoBehaviour
                 StopRoutine();
         }
     }
-
     private Vector3 ownPosition;
 
     public void StopRoutine ()
@@ -67,7 +70,7 @@ public class EnemyManager : MonoBehaviour
             difficulty.InitializeDictionary();
         }
 
-        currentDifficultyGrade = difficultyGrades[0];
+        currentDifficultyGrade = difficultyGrades[gradeIndex];
 
         enemyTarget.target = playerTransform;
         ownPosition = transform.position;
@@ -188,7 +191,7 @@ public class EnemyManager : MonoBehaviour
         return enemy;
     }
 
-    public Enemy CreateEnemy (Vector3 position)
+    public Enemy CreateEnemy ( Vector3 position )
     {
         return CreateEnemy(currentDifficultyGrade, null, null, enemyTarget, position);
     }
@@ -203,6 +206,20 @@ public class EnemyManager : MonoBehaviour
         activeEnemies.Clear();
 
         StopAllCoroutines();
+    }
+
+    private void UpdateDifficultyIndex ()
+    {
+        currentDifficultyIndex += difficultyIncreasePerSecond * Time.deltaTime;
+
+        if ( currentDifficultyIndex >= requiredIndexForDifficultyAdvancement )
+        {
+            currentDifficultyIndex = 0;
+            if ( gradeIndex >= difficultyGrades.Count )
+                return;
+
+            currentDifficultyGrade = difficultyGrades[++gradeIndex];
+        }
     }
 
     private void Update ()
@@ -240,7 +257,7 @@ public class EnemyManager : MonoBehaviour
                     RemoveEnemy(enemy);
                 }
 
-                if ( i % 10 == 0 )
+                if ( i != 0 && i % 10 == 0 )
                     yield return null;
             }
 

@@ -9,6 +9,7 @@ public enum EnemyType
     SnitchEnemy = 1,
     ShockWaveEnemy = 2,
     LieEnemy = 3,
+    AngryEnemy = 4,
 }
 
 public class Enemy : Soulable, IDamageable

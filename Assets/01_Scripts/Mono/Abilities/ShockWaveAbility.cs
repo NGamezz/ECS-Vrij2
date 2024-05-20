@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class ShockWaveAbility : Ability
 {
-    private CharacterData ownerData;
     private bool initialized = false;
 
     private float shockWaveRadius;
