@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using UnityEngine;
 
 public class Gun : MonoBehaviour
@@ -35,15 +34,16 @@ public class Gun : MonoBehaviour
             return;
         }
 
-        if ( !other.TryGetComponent<IDamageable>(out var damagable) )
+        var damagable = (IDamageable)other.GetComponent(typeof(IDamageable));
+        if ( damagable == null )
         {
             GameObject.SetActive(false);
             UponHit?.Invoke(false, this);
             return;
         }
-        GameObject.SetActive(false);
 
-        if ( damagable.IsDead )
+        GameObject.SetActive(false);
+        if ( damagable.Dead )
         {
             return;
         }
@@ -56,11 +56,10 @@ public class Gun : MonoBehaviour
 
     private void Update ()
     {
-        if ( !GameObject.activeInHierarchy )
-            return;
+        float deltaTime = Time.deltaTime;
 
-        currentLifeTime -= Time.deltaTime;
-        Transform.Translate(Speed * Time.deltaTime * Transform.forward, Space.World);
+        currentLifeTime -= deltaTime;
+        Transform.Translate(Speed * deltaTime * Transform.forward, Space.World);
 
         if ( currentLifeTime <= 0 )
         {

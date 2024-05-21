@@ -7,6 +7,8 @@ public class ExplosiveBarrel : MonoBehaviour
 
     [SerializeField] private float damage;
 
+    private Collider[] results = new Collider[10];
+
     private void OnTriggerEnter ( Collider other )
     {
         if ( !other.TryGetComponent<IDamageable>(out var damageable) )
@@ -14,11 +16,13 @@ public class ExplosiveBarrel : MonoBehaviour
             return;
         }
 
-        var colliders = Physics.OverlapSphere(other.transform.position, radius);
+        var count = Physics.OverlapSphereNonAlloc(other.transform.position, radius, results);
 
-        foreach ( var coll in colliders )
+        for(int i = 0; i < count; i++ )
         {
-            if ( !coll.TryGetComponent<IDamageable>(out var dam) )
+            var dam  = (IDamageable)results[i].GetComponent(typeof(IDamageable));
+
+            if ( dam == null )
                 continue;
 
             dam.AfflictDamage(damage);

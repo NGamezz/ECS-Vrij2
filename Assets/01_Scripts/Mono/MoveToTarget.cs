@@ -1,5 +1,6 @@
 using Unity.Mathematics;
 using Unity.VisualScripting;
+using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -50,6 +51,9 @@ public class MoveToTarget
     public void OnFixedUpdate ()
     {
         if ( !started )
+            return;
+
+        if ( moveTarget.target == null )
             return;
 
         if ( !agent.hasPath && Vector3.Distance(ownTransform.position, moveTarget.target.position) > distanceToPlayer )

@@ -3,10 +3,8 @@ using System.Collections.Generic;
 
 public enum EventType
 {
-    UponRequestPlayerPosition = 0,
-    UponRequestPlayerRotation = 1,
-    UponDesiredSoulsAmount = 2,
-    UponHarvestSoul = 3,
+    UponDesiredSoulsAmount = 0,
+    UponHarvestSoul = 1,
 }
 
 public static class EventManager

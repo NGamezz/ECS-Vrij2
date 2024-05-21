@@ -1,21 +1,37 @@
+using System.Collections;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 public class ObjectPool<T> where T : class
 {
-    private readonly ConcurrentStack<T> inactiveObjectsConcurrent = new();
+    private readonly Stack<T> inactiveObjectsConcurrent = new();
 
-    public T GetPooledObject ()
+    public bool GetPooledObject ( out T succes )
     {
-        if ( !inactiveObjectsConcurrent.TryPop(out T item) )
+        lock ( inactiveObjectsConcurrent )
         {
-            return null;
+            if ( !inactiveObjectsConcurrent.TryPop(out succes) )
+            {
+                return false;
+            }
         }
-        return item;
+        return true;
     }
 
     public T[] GetAllPooledObjects ()
     {
-        return inactiveObjectsConcurrent.ToArray();
+        lock ( inactiveObjectsConcurrent )
+        {
+            return inactiveObjectsConcurrent.ToArray();
+        }
+    }
+
+    public void ClearPool ()
+    {
+        lock ( inactiveObjectsConcurrent )
+        {
+            inactiveObjectsConcurrent.Clear();
+        }
     }
 
     public void PoolObject ( T item )
@@ -23,6 +39,9 @@ public class ObjectPool<T> where T : class
         if ( item == null )
             return;
 
-        inactiveObjectsConcurrent.Push(item);
+        lock ( inactiveObjectsConcurrent )
+        {
+            inactiveObjectsConcurrent.Push(item);
+        }
     }
 }
