@@ -31,6 +31,7 @@ public class MoveToTarget
     public void OnDisable ()
     {
         CancelPath();
+        started = false;
     }
 
     public void OnUpdate ( Vector3 startPosition )

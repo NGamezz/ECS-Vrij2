@@ -14,20 +14,20 @@ public enum ProjectileType
 }
 
 [Serializable]
-public class PlayerShooting
+public class Shooting
 {
-    [SerializeField] private List<GunStats> guns = new();
+    public GunStats currentGun;
     [SerializeField] private Transform gunPosition;
+    [SerializeField] private List<GunStats> guns = new();
     [SerializeField] private Transform meshTransform;
     [SerializeField] private int defaultAmountOfPooledObjects = 25;
-    [SerializeField] private int playerLayer;
+    [SerializeField] private int ownLayer;
 
     private MonoBehaviour owner;
-    private GunStats currentGun;
     private readonly ObjectPool<Gun> objectPool = new();
     private Rigidbody rb;
     private Transform bulletHolder;
-    private bool shootHeld = false;
+    public bool shootHeld = false;
     private WaitUntil waitUntilShoot;
     private bool running = false;
     private Coroutine shootRoutine;
@@ -39,14 +39,12 @@ public class PlayerShooting
 
         waitUntilShoot = new WaitUntil(() => shootHeld);
 
-        this.owner = owner;
+        currentGun ??= guns[0];
 
-        if ( guns.Count < 1 )
-            return;
+        this.owner = owner;
 
         this.rb = (Rigidbody)meshTransform.GetComponent(typeof(Rigidbody));
 
-        currentGun = guns[0];
         var gunObject = UnityEngine.Object.Instantiate(currentGun.prefab, gunPosition);
         gunObject.transform.position = gunPosition.position;
         currentGun.CurrentAmmo = currentGun.MagSize;
@@ -71,7 +69,7 @@ public class PlayerShooting
     {
         for ( int i = 0; i < defaultAmountOfPooledObjects; i++ )
         {
-            var bullet = CreateBulletObject(currentGun.projectTilePrefab, OnObjectHit, playerLayer, bulletHolder);
+            var bullet = CreateBulletObject(currentGun.projectTilePrefab, OnObjectHit, ownLayer, bulletHolder);
 
             bullet.GameObject.SetActive(false);
 
@@ -79,7 +77,7 @@ public class PlayerShooting
         }
     }
 
-    private void SelectGun ( GunStats gun )
+    public void SelectGun ( GunStats gun )
     {
         owner.StopCoroutine(shootRoutine);
         currentGun = gun;
@@ -111,14 +109,25 @@ public class PlayerShooting
         shootHeld = context.ReadValueAsButton();
     }
 
+    public float recoilMultiplier = 1;
+
+    public void ShootSingle()
+    {
+        CheckShootType();
+    }
+
     private IEnumerator Shoot ()
     {
         while ( running )
         {
             yield return waitUntilShoot;
 
+            Debug.Log(shootHeld);
+
             while ( shootHeld && !reloading)
             {
+                Debug.Log("Shoot");
+
                 CheckShootType();
 
                 if ( currentGun.GunType == GunType.Burst )
@@ -177,7 +186,7 @@ public class PlayerShooting
 
         if ( !succes )
         {
-            bullet = CreateBulletObject(currentGun.projectTilePrefab, OnObjectHit, playerLayer, bulletHolder);
+            bullet = CreateBulletObject(currentGun.projectTilePrefab, OnObjectHit, ownLayer, bulletHolder);
         }
         else
         {
@@ -186,6 +195,9 @@ public class PlayerShooting
 
         UpdateBulletStats(ref bullet, currentGun, meshTransform);
         currentGun.CurrentAmmo--;
+
+        if ( currentGun.CurrentAmmo <= 0 )
+            OnReload();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -200,7 +212,7 @@ public class PlayerShooting
         bullet.Transform.position = newPos;
         var direction = (meshForward + new Vector3(Random.Range(currentGun.spreadOffset.x, currentGun.spreadOffset.y), 0.0f, Random.Range(currentGun.spreadOffset.x, currentGun.spreadOffset.y))).normalized;
         bullet.Transform.forward = direction;
-        rb.AddForce(-direction * currentGun.Recoil, ForceMode.Impulse);
+        rb.AddForce(-direction * currentGun.Recoil * recoilMultiplier, ForceMode.Impulse);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

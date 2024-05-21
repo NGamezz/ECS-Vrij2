@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Threading.Tasks;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -13,16 +14,20 @@ public class SnitchEnemy : Enemy, IAbilityOwner
     {
         EnemyType = EnemyType.SnitchEnemy;
         base.OnStart(stats, moveTarget, startPosition, characterData);
+        shooting.recoilMultiplier = 0;
     }
 
     public override void CheckAttackRange ( MoveTarget target, Vector3 targetPos )
     {
-        if ( !canUseAbility || !GameObject.activeInHierarchy )
+        if ( !GameObject.activeInHierarchy )
             return;
 
         var distanceToTarget = math.length(targetPos - Transform.position);
 
-        if ( distanceToTarget < enemyStats.attackRange )
+        if ( distanceToTarget > enemyStats.attackRange )
+            return;
+
+        if ( canUseAbility )
         {
             var damagable = (IDamageable)target.target.GetComponentInParent(typeof(IDamageable));
             if ( damagable == null )
@@ -34,6 +39,16 @@ public class SnitchEnemy : Enemy, IAbilityOwner
             ability.Execute(characterData);
             StartCoroutine(ResetAbilityCooldown());
         }
+
+        if ( canAttack )
+        {
+            shooting.ShootSingle();
+
+            canAttack = false;
+            StartCoroutine(ResetAttack());
+        }
+
+        Transform.forward = target.target.position - Transform.position;
     }
 
     private IEnumerator ResetAbilityCooldown ()

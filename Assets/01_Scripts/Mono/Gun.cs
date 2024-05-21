@@ -34,7 +34,12 @@ public class Gun : MonoBehaviour
             return;
         }
 
-        var damagable = (IDamageable)other.GetComponent(typeof(IDamageable));
+        IDamageable damagable;
+        if ( other.transform.root == other.transform )
+            damagable = (IDamageable)other.GetComponent(typeof(IDamageable));
+        else
+            damagable = (IDamageable)other.GetComponentInParent(typeof(IDamageable));
+
         if ( damagable == null )
         {
             GameObject.SetActive(false);

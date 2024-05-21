@@ -33,7 +33,12 @@ public class ShockWaveAbility : Ability
             if ( hits[i].transform == ownerData.CharacterTransform )
                 continue;
 
-            var hit = (IDamageable)hits[i].GetComponent(typeof(IDamageable));
+            IDamageable hit;
+            if ( hits[i].transform.root == hits[i].transform )
+                hit = (IDamageable)hits[i].GetComponent(typeof(IDamageable));
+            else
+                hit = (IDamageable)hits[i].GetComponentInParent(typeof(IDamageable));
+
             if ( hit == null )
                 continue;
 

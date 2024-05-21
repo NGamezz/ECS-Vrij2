@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.InputSystem;
 
 public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilityOwner
@@ -32,14 +33,20 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
 
     [SerializeField] TMP_Text soulsUiText;
 
+    [SerializeField] private ParticleSystem walkEffects;
+
+    [SerializeField] private UnityEvent OnReloadEvent;
+
     [SerializeField] private CharacterData characterData;
 
     [SerializeField] private MoveTarget enemyMoveTarget;
 
     [SerializeField] private GameObject decoyPrefab;
 
+    [SerializeField] private Transform meshTransform;
+
     [SerializeField]
-    private PlayerShooting playerShooting = new();
+    private Shooting playerShooting = new();
 
     [Space(2)]
 
@@ -63,7 +70,28 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
 
     public void OnMove ( InputAction.CallbackContext ctx )
     {
+        var inputVector = ctx.ReadValue<Vector2>();
+        OnMoving(inputVector != Vector2.zero);
         playerMovement.OnMove(ctx);
+    }
+
+    private void OnMoving ( bool state )
+    {
+        if ( walkEffects == null )
+            return;
+
+        if ( state && !walkEffects.isPlaying )
+        {
+            walkEffects.Play();
+            var main = walkEffects.main;
+            main.loop = true;
+        }
+        else if ( !state && walkEffects.isPlaying )
+        {
+            walkEffects.Stop();
+            var main = walkEffects.main;
+            main.loop = false;
+        }
     }
 
     public void OnDash ()
@@ -73,6 +101,7 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
 
     public void OnReload ()
     {
+        OnReloadEvent?.Invoke();
         playerShooting.OnReload();
     }
 
@@ -88,7 +117,7 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
         abilities.Clear();
         StopAllCoroutines();
     }
-
+     
     private void Start ()
     {
         characterData.Reset();
@@ -110,10 +139,6 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
         ReapAbility reapAbility = new();
         reapAbility.Initialize(this, characterData);
         abilities.Add(reapAbility);
-
-        AttackBoostAbility boost = new();
-        boost.Initialize(this, characterData);
-        abilities.Add(boost);
 
         characterData.Health = characterData.MaxHealth;
     }
@@ -160,6 +185,7 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
         playerMovement.OnFixedUpdate();
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Collect ( int amount )
     {
         Souls += amount;
