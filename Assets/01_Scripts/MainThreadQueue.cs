@@ -1,6 +1,6 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -8,7 +8,9 @@ public class MainThreadQueue : MonoBehaviour
 {
     public static MainThreadQueue Instance { get; set; }
 
-    private static readonly Queue<Action> actionQueue = new();
+    private static readonly ConcurrentQueue<Action> actionQueue = new();
+
+    private int queueCount = 0;
 
     private void Awake ()
     {
@@ -16,22 +18,14 @@ public class MainThreadQueue : MonoBehaviour
             Destroy(Instance);
 
         Instance = this;
-
-#if UNITY_EDITOR
-        Debug.unityLogger.logEnabled = true;
-#else
-        Debug.unityLogger.logEnabled = false;
-#endif
     }
 
     private void OnDisable ()
     {
-        if ( actionQueue.Count > 0 )
+        if ( queueCount > 0 )
         {
             actionQueue.Clear();
         }
-
-        WorldManager.ClearAllEvents();
 
         if ( Instance == this )
         {
@@ -43,11 +37,12 @@ public class MainThreadQueue : MonoBehaviour
 
     private void Update ()
     {
-        lock ( actionQueue )
+        while ( queueCount > 0 )
         {
-            while ( actionQueue.Count > 0 )
+            if ( actionQueue.TryDequeue(out var action) )
             {
-                actionQueue.Dequeue().Invoke();
+                action.Invoke();
+                Interlocked.Decrement(ref queueCount);
             }
         }
     }
@@ -74,7 +69,7 @@ public class MainThreadQueue : MonoBehaviour
             }
         }
 
-        Enqueue(ActionWrapper(Action));
+        Enqueue(Action);
         return src.Task;
     }
 
@@ -100,29 +95,13 @@ public class MainThreadQueue : MonoBehaviour
             }
         }
 
-        Enqueue(ActionWrapper(Action));
+        Enqueue(Action);
         return src.Task;
     }
 
     public void Enqueue ( Action action )
     {
-        Enqueue(ActionWrapper(action));
-    }
-
-    public void Enqueue ( IEnumerator action )
-    {
-        lock ( actionQueue )
-        {
-            actionQueue.Enqueue(() =>
-            {
-                StartCoroutine(action);
-            });
-        }
-    }
-
-    private IEnumerator ActionWrapper ( Action action )
-    {
-        yield return null;
-        action();
+        actionQueue.Enqueue(action);
+        Interlocked.Increment(ref queueCount);
     }
 }

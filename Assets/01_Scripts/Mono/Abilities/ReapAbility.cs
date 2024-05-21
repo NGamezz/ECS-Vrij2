@@ -5,7 +5,7 @@ public class ReapAbility : Ability
 {
     public override bool Execute ( object context )
     {
-        if ( ownerData.Souls < ActivationCost || ownerData.TargetedTransform == null )
+        if ( ownerData.TargetedTransform == null )
             return false;
 
         var enemyTransform = ownerData.TargetedTransform;
@@ -37,6 +37,6 @@ public class ReapAbility : Ability
 
         //Set the values, the trigger condition and the cost.
         ActivationCost = 5;
-        Trigger = () => { return Input.GetKeyDown(KeyCode.E); };
+        Trigger = () => { return InputHandler.IsKeyPressed(VirtualKeys.KeyE) && ownerData.Souls > ActivationCost; };
     }
 }

@@ -85,13 +85,13 @@ public class Shooting
         shootRoutine = owner.StartCoroutine(Shoot());
     }
 
-    public void OnReload()
+    public void OnReload ()
     {
         if ( !reloading )
             owner.StartCoroutine(Reload());
     }
 
-    private IEnumerator Reload()
+    private IEnumerator Reload ()
     {
         reloading = true;
         yield return Utility.Yielders.Get(currentGun.ReloadSpeed);
@@ -111,7 +111,7 @@ public class Shooting
 
     public float recoilMultiplier = 1;
 
-    public void ShootSingle()
+    public void ShootSingle ()
     {
         CheckShootType();
     }
@@ -122,12 +122,8 @@ public class Shooting
         {
             yield return waitUntilShoot;
 
-            Debug.Log(shootHeld);
-
-            while ( shootHeld && !reloading)
+            while ( shootHeld && !reloading )
             {
-                Debug.Log("Shoot");
-
                 CheckShootType();
 
                 if ( currentGun.GunType == GunType.Burst )
@@ -181,7 +177,7 @@ public class Shooting
     {
         if ( currentGun.CurrentAmmo - 1 < 0 )
             return;
-        
+
         var succes = objectPool.GetPooledObject(out var bullet);
 
         if ( !succes )

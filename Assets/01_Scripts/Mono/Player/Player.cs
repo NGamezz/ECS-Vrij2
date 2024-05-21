@@ -117,7 +117,7 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
         abilities.Clear();
         StopAllCoroutines();
     }
-     
+
     private void Start ()
     {
         characterData.Reset();
@@ -137,8 +137,10 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
         characterData.Initialize(UpdateSoulsUI);
 
         ReapAbility reapAbility = new();
-        reapAbility.Initialize(this, characterData);
-        abilities.Add(reapAbility);
+        AcquireAbility(reapAbility);
+
+        ShockWaveAbility shockWaveAbility = new();
+        AcquireAbility(shockWaveAbility);
 
         characterData.Health = characterData.MaxHealth;
     }
@@ -155,28 +157,8 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
         });
     }
 
-    private void CheckAbilityTriggers ()
-    {
-        for ( int i = 0; i < abilities.Count; i++ )
-        {
-            var ability = abilities[i];
-            if ( ability == null )
-                continue;
-
-            if ( ability.Trigger != null && ability.Trigger() )
-            {
-                if ( ability.Execute(characterData) )
-                {
-                    abilities.Remove(ability);
-                    characterData.OwnedAbilitiesHash.Remove(ability.GetType());
-                }
-            }
-        }
-    }
-
     private void Update ()
     {
-        CheckAbilityTriggers();
         playerMovement.OnUpdate();
     }
 
@@ -198,9 +180,19 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
             return;
         }
 
+        ability.Initialize(this, characterData);
+        InputHandler.Instance.BindCommand(ability.Trigger, () =>
+        {
+            if ( ability.Execute(characterData) )
+            {
+                abilities.Remove(ability);
+                characterData.OwnedAbilitiesHash.Remove(ability.GetType());
+            }
+        }, false, true);
+
         characterData.OwnedAbilitiesHash.Add(ability.GetType());
         characterData.TargetedTransform = null;
-        ability.Initialize(this, characterData);
+
         abilities.Add(ability);
     }
 

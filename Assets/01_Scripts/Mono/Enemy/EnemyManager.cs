@@ -24,7 +24,6 @@ public class EnemyManager : MonoBehaviour
 
     private readonly ObjectPool<Enemy> objectPool = new();
 
-
     [SerializeField] private Transform playerTransform;
 
     [Header("Difficulty Scaling.")]
@@ -92,9 +91,6 @@ public class EnemyManager : MonoBehaviour
     private CharacterData CreateEnemyDataObject ( Enemy enemy )
     {
         CharacterData data = (CharacterData)ScriptableObject.CreateInstance(nameof(CharacterData));
-
-        Debug.Log(enemy.EnemyType);
-        Debug.Log(enemy.name);
 
         var prefab = currentDifficultyGrade.RequestPrefab(enemy.EnemyType);
         var defaultStats = prefab.defaultStats;
