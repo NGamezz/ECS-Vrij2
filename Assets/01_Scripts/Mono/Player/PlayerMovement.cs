@@ -1,5 +1,7 @@
+using NaughtyAttributes.Editor;
 using System;
 using Unity.Mathematics;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -33,9 +35,12 @@ public class PlayerMovement
 
     public void OnDash ()
     {
-        float halfStamina = characterData.Stamina / 2;
-        if ( !canDash || characterData.Stamina < halfStamina || !Physics.CheckSphere(cachedMeshTransform.position - (Vector3.one * 0.5f), 0.5f, 1 << groundLayerMask) )
+        var ownPos = cachedMeshTransform.position;
+        var halfStamina = characterData.MaxStamina / 2.0f;
+        if ( !canDash || characterData.Stamina < halfStamina || !Physics.CheckSphere(ownPos - new Vector3(ownPos.x, ownPos.y + 0.25f, ownPos.z), 0.5f, 1 << groundLayerMask) )
             return;
+
+        Debug.Log("Dash");
 
         var direction = inputVector.magnitude == 0 ? rb.transform.forward : new(inputVector.x, 0.0f, inputVector.y);
         characterData.Stamina -= halfStamina;
@@ -45,7 +50,7 @@ public class PlayerMovement
 
         ResetDashCooldown();
     }
-    
+
     private async void ResetDashCooldown ()
     {
         canDash = false;
@@ -117,8 +122,6 @@ public class PlayerMovement
 
     public void OnUpdate ()
     {
-        HandleInput();
-        CheckStamina();
     }
 
     public void OnFixedUpdate ()

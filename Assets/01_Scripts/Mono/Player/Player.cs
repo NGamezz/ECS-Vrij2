@@ -136,11 +136,10 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
 
         characterData.Initialize(UpdateSoulsUI);
 
-        ReapAbility reapAbility = new();
-        AcquireAbility(reapAbility);
-
-        ShockWaveAbility shockWaveAbility = new();
-        AcquireAbility(shockWaveAbility);
+        AcquireAbility(new ReapAbility(), false);
+        AcquireAbility(new LieAbility());
+        AcquireAbility(new ShockWaveAbility());
+        AcquireAbility(new AttackBoostAbility());
 
         characterData.Health = characterData.MaxHealth;
     }
@@ -173,7 +172,7 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
         Souls += amount;
     }
 
-    public void AcquireAbility ( Ability ability )
+    public void AcquireAbility ( Ability ability, bool oneTimeUse = true )
     {
         if ( characterData.OwnedAbilitiesHash.Contains(ability.GetType()) )
         {
@@ -188,7 +187,7 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
                 abilities.Remove(ability);
                 characterData.OwnedAbilitiesHash.Remove(ability.GetType());
             }
-        }, false, true);
+        }, false, oneTimeUse);
 
         characterData.OwnedAbilitiesHash.Add(ability.GetType());
         characterData.TargetedTransform = null;

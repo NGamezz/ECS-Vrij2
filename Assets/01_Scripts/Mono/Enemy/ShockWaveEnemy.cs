@@ -48,7 +48,7 @@ public class ShockWaveEnemy : Enemy, IAbilityOwner
         canUseAbility = true;
     }
 
-    public void AcquireAbility ( Ability ability )
+    public void AcquireAbility ( Ability ability, bool singleUse = true )
     {
     }
 

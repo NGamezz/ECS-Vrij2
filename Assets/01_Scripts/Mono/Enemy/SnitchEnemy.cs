@@ -63,7 +63,7 @@ public class SnitchEnemy : Enemy, IAbilityOwner
         return ability;
     }
 
-    public void AcquireAbility ( Ability ability )
+    public void AcquireAbility ( Ability ability, bool singleUse = true )
     {
     }
 }

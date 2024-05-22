@@ -138,7 +138,7 @@ public class EnemyManager : MonoBehaviour
         {
             var enemy = CreateEnemy(currentDifficultyGrade, RemoveEnemy, OnEnemyDeath, enemyTarget, ownPosition);
 
-            enemy.gameObject.SetActive(false);
+            enemy.GameObject.SetActive(false);
 
             objectPool.PoolObject(enemy);
         }
@@ -157,7 +157,7 @@ public class EnemyManager : MonoBehaviour
                 position.y = ownPosition.y;
 
                 var succes = objectPool.GetPooledObject(out var enemy);
-                var gameObject = enemy.gameObject;
+                var gameObject = enemy.GameObject;
 
                 if ( !succes )
                 {

@@ -47,7 +47,7 @@ public class Enemy : Soulable, IDamageable
     public virtual void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData )
     {
         enemyStats = stats;
-        cachedGameObject = meshTransform.gameObject;
+        cachedGameObject = gameObject;
         moveToTarget = new();
 
         Dead = false;
