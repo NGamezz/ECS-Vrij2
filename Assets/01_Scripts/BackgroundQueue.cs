@@ -9,13 +9,10 @@ public class BackgroundQueue : MonoBehaviour
     public static BackgroundQueue Instance;
 
     private static readonly ConcurrentQueue<Action> actionQueue = new();
-    private static readonly ConcurrentQueue<Action> priorityQueue = new();
 
     private int queueCount = 0;
-    private int priorityQueueCount = 0;
 
     private Thread queueThread;
-    private Thread priorityQueueThread;
 
     private bool applicationRunning = false;
 
@@ -32,51 +29,21 @@ public class BackgroundQueue : MonoBehaviour
             IsBackground = true
         };
         queueThread.Start();
-
-        priorityQueueThread = new(OnPriorityUpdate)
-        {
-            IsBackground = true,
-            Priority = System.Threading.ThreadPriority.AboveNormal
-        };
-        priorityQueueThread.Start();
-
-#if UNITY_EDITOR
-        Debug.unityLogger.logEnabled = true;
-#else
-        Debug.unityLogger.logEnabled = false;
-#endif
     }
 
     private void OnDisable ()
     {
         actionQueue.Clear();
-        priorityQueue.Clear();
 
         applicationRunning = false;
 
         queueThread.Join();
-        priorityQueueThread.Join();
 
         if ( Instance == this )
         {
             var instance = Instance;
             Instance = null;
             Destroy(instance);
-        }
-    }
-
-    private void OnPriorityUpdate ()
-    {
-        while ( applicationRunning )
-        {
-            while ( priorityQueueCount > 0 )
-            {
-                if ( priorityQueue.TryDequeue(out var func) )
-                {
-                    func.Invoke();
-                    Interlocked.Decrement(ref priorityQueueCount);
-                }
-            }
         }
     }
 
@@ -101,7 +68,7 @@ public class BackgroundQueue : MonoBehaviour
     /// <typeparam name="T"></typeparam>
     /// <param name="action"></param>
     /// <returns></returns>
-    public Task<T> AsyncEnqueueFunc<T> ( Func<T> action, bool priority = false )
+    public Task<T> AsyncEnqueueFunc<T> ( Func<T> action)
     {
         var src = new TaskCompletionSource<T>();
 
@@ -117,7 +84,7 @@ public class BackgroundQueue : MonoBehaviour
             }
         }
 
-        Enqueue(Action, priority);
+        Enqueue(Action);
         return src.Task;
     }
 
@@ -126,7 +93,7 @@ public class BackgroundQueue : MonoBehaviour
     /// </summary>
     /// <param name="action"></param>
     /// <returns></returns>
-    public Task AsyncEnqueue ( Action action, bool priority = false )
+    public Task AsyncEnqueue ( Action action)
     {
         var src = new TaskCompletionSource<bool>();
 
@@ -143,21 +110,13 @@ public class BackgroundQueue : MonoBehaviour
             }
         }
 
-        Enqueue(Action, priority);
+        Enqueue(Action);
         return src.Task;
     }
 
-    public void Enqueue ( Action action, bool priority = false )
+    public void Enqueue ( Action action)
     {
-        if ( priority )
-        {
-            Interlocked.Increment(ref priorityQueueCount);
-            priorityQueue.Enqueue(action);
-        }
-        else
-        {
             Interlocked.Increment(ref queueCount);
             actionQueue.Enqueue(action);
-        }
     }
 }
