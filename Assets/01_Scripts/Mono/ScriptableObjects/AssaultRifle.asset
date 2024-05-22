@@ -15,15 +15,16 @@ MonoBehaviour:
   attackSpeed: 0.25
   GunType: 2
   damage: 5
-  projectileLifeTime: 1
-  projectileSpeed: 3
+  projectileLifeTime: 3
+  projectileSpeed: 5
   spreadOffset:
     x: -0.2
     y: 0.2
+  ReloadSpeed: 1
   Recoil: 1
-  CurrentAmmo: 0
+  CurrentAmmo: 50
   MagSize: 50
   amountOfBulletsPer: 1
-  damageProjectileLifeTimeSpeed: 66309
+  damageProjectileLifeTimeSpeed: 197893
   prefab: {fileID: 4120230577132574208, guid: 99345b48c7a11944d82e5bf97126101f, type: 3}
   projectTilePrefab: {fileID: 707548780560738199, guid: 1680428cdcdae8c4fa53fcafe2840dae, type: 3}

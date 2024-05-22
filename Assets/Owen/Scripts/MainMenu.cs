@@ -1,26 +1,24 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class MainMenu : MonoBehaviour
 {
-    public void onPlayButton()
+    public void OnPlayButton()
     {
         SceneManager.LoadScene(1);
     }
 
-    public void onCreditButton()
+    public void OnCreditButton()
     {
-        SceneManager.LoadScene("Credits");
+        //SceneManager.LoadScene("Credits");
     }
 
-    public void onSettingsButton()
+    public void OnSettingsButton()
     {
-        SceneManager.LoadScene("Settings");
+        //SceneManager.LoadScene("Settings");
     }
 
-    public void onQuitButton()
+    public void OnQuitButton()
     {
         Application.Quit();
     }

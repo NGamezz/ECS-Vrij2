@@ -18,26 +18,18 @@ public class LieEnemy : Enemy, IAbilityOwner
 
     public override void CheckAttackRange ( MoveTarget target, Vector3 targetPos )
     {
-        if ( !canUseAbility || !GameObject.activeInHierarchy )
+        if ( !GameObject.activeInHierarchy )
             return;
 
         var distanceToTarget = math.length(targetPos - Transform.position);
 
-        if ( distanceToTarget < enemyStats.attackRange )
+        if ( distanceToTarget > enemyStats.attackRange )
+            return;
+
+        if ( canUseAbility )
         {
-            var transform = target.target;
-
-            IDamageable damageable;
-            if ( transform.root == transform )
-            {
-                damageable = (IDamageable)transform.GetComponent(typeof(IDamageable));
-            }
-            else
-            {
-                damageable = (IDamageable)target.target.GetComponentInParent(typeof(IDamageable));
-            }
-
-            if ( damageable == null )
+            var damagable = (IDamageable)target.target.GetComponentInParent(typeof(IDamageable));
+            if ( damagable == null )
             {
                 return;
             }
@@ -46,6 +38,16 @@ public class LieEnemy : Enemy, IAbilityOwner
             ability.Execute(characterData);
             StartCoroutine(ResetAbilityCooldown());
         }
+
+        if ( canAttack )
+        {
+            shooting.ShootSingle();
+
+            canAttack = false;
+            StartCoroutine(ResetAttack());
+        }
+
+        Transform.forward = target.target.position - Transform.position;
     }
 
     private IEnumerator ResetAbilityCooldown ()

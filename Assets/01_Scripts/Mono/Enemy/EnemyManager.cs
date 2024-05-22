@@ -24,7 +24,6 @@ public class EnemyManager : MonoBehaviour
 
     private readonly ObjectPool<Enemy> objectPool = new();
 
-
     [SerializeField] private Transform playerTransform;
 
     [Header("Difficulty Scaling.")]
@@ -93,9 +92,6 @@ public class EnemyManager : MonoBehaviour
     {
         CharacterData data = (CharacterData)ScriptableObject.CreateInstance(nameof(CharacterData));
 
-        Debug.Log(enemy.EnemyType);
-        Debug.Log(enemy.name);
-
         var prefab = currentDifficultyGrade.RequestPrefab(enemy.EnemyType);
         var defaultStats = prefab.defaultStats;
 
@@ -142,7 +138,7 @@ public class EnemyManager : MonoBehaviour
         {
             var enemy = CreateEnemy(currentDifficultyGrade, RemoveEnemy, OnEnemyDeath, enemyTarget, ownPosition);
 
-            enemy.GameObject.SetActive(false);
+            enemy.gameObject.SetActive(false);
 
             objectPool.PoolObject(enemy);
         }
@@ -161,7 +157,7 @@ public class EnemyManager : MonoBehaviour
                 position.y = ownPosition.y;
 
                 var succes = objectPool.GetPooledObject(out var enemy);
-                var gameObject = enemy.GameObject;
+                var gameObject = enemy.gameObject;
 
                 if ( !succes )
                 {
@@ -169,8 +165,8 @@ public class EnemyManager : MonoBehaviour
                 }
                 else
                 {
-                    enemy.OnReuse(currentDifficultyGrade.enemyStats, position);
                     gameObject.SetActive(true);
+                    enemy.OnReuse(currentDifficultyGrade.enemyStats, position);
                 }
 
                 activeEnemies.Add(enemy);

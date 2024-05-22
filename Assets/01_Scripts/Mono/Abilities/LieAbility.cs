@@ -87,6 +87,6 @@ public class LieAbility : Ability
 
         ActivationCost = 10;
 
-        Trigger = () => { return Input.GetKeyDown(KeyCode.Q); };
+        Trigger = () => { return InputHandler.IsKeyPressed(VirtualKeys.KeyQ); };
     }
 }

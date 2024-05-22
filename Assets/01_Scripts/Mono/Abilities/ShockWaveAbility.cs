@@ -18,9 +18,6 @@ public class ShockWaveAbility : Ability
             return false;
         }
 
-        Debug.Log(ownerData);
-        Debug.Log(ownerData.CharacterTransform);
-
         var ownerPos = ownerData.CharacterTransform.position;
 
         var hitCount = Physics.OverlapSphereNonAlloc(ownerPos, shockWaveRadius, this.hits);
@@ -33,7 +30,12 @@ public class ShockWaveAbility : Ability
             if ( hits[i].transform == ownerData.CharacterTransform )
                 continue;
 
-            var hit = (IDamageable)hits[i].GetComponent(typeof(IDamageable));
+            IDamageable hit;
+            if ( hits[i].transform.root == hits[i].transform )
+                hit = (IDamageable)hits[i].GetComponent(typeof(IDamageable));
+            else
+                hit = (IDamageable)hits[i].GetComponentInParent(typeof(IDamageable));
+
             if ( hit == null )
                 continue;
 
@@ -50,6 +52,6 @@ public class ShockWaveAbility : Ability
         ActivationCost = 10;
         shockWaveRadius = 10;
 
-        Trigger = () => { return Input.GetKeyDown(KeyCode.Space); };
+        Trigger = () => { return InputHandler.IsKeyPressed(VirtualKeys.KeyO); };
     }
 }

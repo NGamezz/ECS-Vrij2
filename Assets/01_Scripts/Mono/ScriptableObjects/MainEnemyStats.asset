@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1ee5b5a585c857541be7213a3d5999d0, type: 3}
   m_Name: MainEnemyStats
   m_EditorClassIdentifier: 
+  EnemyType: 0
   maxHealth: 100
   moveSpeed: 5
   damage: 10
-  attackRange: 3
+  attackRange: 15
   spawnSpeed: 10
   attackSpeed: 1
   enemiesPerBatch: 10

@@ -36,7 +36,7 @@ public class AttackBoostAbility : Ability
         ownerData = context;
         Owner = owner;
 
-        Trigger = () => Input.GetKeyDown(KeyCode.B);
+        Trigger = () => InputHandler.IsKeyPressed(VirtualKeys.KeyB);
 
         if ( !ownerData.Player )
             ownerData.DamageMultiplier += damageMultiplierBoost;

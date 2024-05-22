@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.InputSystem;
 
 public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilityOwner
@@ -32,14 +33,20 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
 
     [SerializeField] TMP_Text soulsUiText;
 
+    [SerializeField] private ParticleSystem walkEffects;
+
+    [SerializeField] private UnityEvent OnReloadEvent;
+
     [SerializeField] private CharacterData characterData;
 
     [SerializeField] private MoveTarget enemyMoveTarget;
 
     [SerializeField] private GameObject decoyPrefab;
 
+    [SerializeField] private Transform meshTransform;
+
     [SerializeField]
-    private PlayerShooting playerShooting = new();
+    private Shooting playerShooting = new();
 
     [Space(2)]
 
@@ -63,7 +70,28 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
 
     public void OnMove ( InputAction.CallbackContext ctx )
     {
+        var inputVector = ctx.ReadValue<Vector2>();
+        OnMoving(inputVector != Vector2.zero);
         playerMovement.OnMove(ctx);
+    }
+
+    private void OnMoving ( bool state )
+    {
+        if ( walkEffects == null )
+            return;
+
+        if ( state && !walkEffects.isPlaying )
+        {
+            walkEffects.Play();
+            var main = walkEffects.main;
+            main.loop = true;
+        }
+        else if ( !state && walkEffects.isPlaying )
+        {
+            walkEffects.Stop();
+            var main = walkEffects.main;
+            main.loop = false;
+        }
     }
 
     public void OnDash ()
@@ -73,6 +101,7 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
 
     public void OnReload ()
     {
+        OnReloadEvent?.Invoke();
         playerShooting.OnReload();
     }
 
@@ -108,12 +137,10 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
         characterData.Initialize(UpdateSoulsUI);
 
         ReapAbility reapAbility = new();
-        reapAbility.Initialize(this, characterData);
-        abilities.Add(reapAbility);
+        AcquireAbility(reapAbility);
 
-        AttackBoostAbility boost = new();
-        boost.Initialize(this, characterData);
-        abilities.Add(boost);
+        ShockWaveAbility shockWaveAbility = new();
+        AcquireAbility(shockWaveAbility);
 
         characterData.Health = characterData.MaxHealth;
     }
@@ -130,28 +157,8 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
         });
     }
 
-    private void CheckAbilityTriggers ()
-    {
-        for ( int i = 0; i < abilities.Count; i++ )
-        {
-            var ability = abilities[i];
-            if ( ability == null )
-                continue;
-
-            if ( ability.Trigger != null && ability.Trigger() )
-            {
-                if ( ability.Execute(characterData) )
-                {
-                    abilities.Remove(ability);
-                    characterData.OwnedAbilitiesHash.Remove(ability.GetType());
-                }
-            }
-        }
-    }
-
     private void Update ()
     {
-        CheckAbilityTriggers();
         playerMovement.OnUpdate();
     }
 
@@ -160,6 +167,7 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
         playerMovement.OnFixedUpdate();
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Collect ( int amount )
     {
         Souls += amount;
@@ -172,9 +180,19 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
             return;
         }
 
+        ability.Initialize(this, characterData);
+        InputHandler.Instance.BindCommand(ability.Trigger, () =>
+        {
+            if ( ability.Execute(characterData) )
+            {
+                abilities.Remove(ability);
+                characterData.OwnedAbilitiesHash.Remove(ability.GetType());
+            }
+        }, false, true);
+
         characterData.OwnedAbilitiesHash.Add(ability.GetType());
         characterData.TargetedTransform = null;
-        ability.Initialize(this, characterData);
+
         abilities.Add(ability);
     }
 

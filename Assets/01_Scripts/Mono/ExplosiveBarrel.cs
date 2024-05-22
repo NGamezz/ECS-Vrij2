@@ -20,12 +20,16 @@ public class ExplosiveBarrel : MonoBehaviour
 
         for(int i = 0; i < count; i++ )
         {
-            var dam  = (IDamageable)results[i].GetComponent(typeof(IDamageable));
+            IDamageable hit;
+            if ( results[i].transform.root == results[i].transform )
+                hit = (IDamageable)results[i].GetComponent(typeof(IDamageable));
+            else
+                hit = (IDamageable)results[i].GetComponentInParent(typeof(IDamageable));
 
-            if ( dam == null )
+            if ( hit == null )
                 continue;
 
-            dam.AfflictDamage(damage);
+            hit.AfflictDamage(damage);
         }
 
         gameObject.SetActive(false);
