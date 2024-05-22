@@ -60,6 +60,7 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
         {
             Debug.Log("You Died.");
             gameObject.SetActive(false);
+            Application.Quit();
         }
     }
 
@@ -131,6 +132,7 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
         playerShooting.OnStart(transform, this);
 
         Souls = 0;
+        UpdateSoulsUI();
 
         characterData.decoyPrefab = decoyPrefab;
         characterData.MoveTarget = enemyMoveTarget;

@@ -6,10 +6,10 @@ public class LieEnemy : Enemy, IAbilityOwner
     private Ability ability = new LieAbility();
     private BTBaseNode abilityTree;
 
-    public override void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData )
+    public override void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData , Transform manager )
     {
         EnemyType = EnemyType.LieEnemy;
-        base.OnStart(stats, moveTarget, startPosition, characterData);
+        base.OnStart(stats, moveTarget, startPosition, characterData, manager);
         ability.Initialize(this, characterData());
     }
 
@@ -27,7 +27,7 @@ public class LieEnemy : Enemy, IAbilityOwner
                 new BTCancelIfFalse(() => Vector3.Distance(MeshTransform.position, moveTarget.target.position) > enemyStats.attackRange,
 
                         new BTGetPosition(VariableNames.PLAYER_TRANSFORM, blackBoard),
-                        new BTCancelIfFalse(() => Vector3.Distance(blackBoard.GetVariable<Vector3>(VariableNames.TARGET_POSITION), moveTarget.target.position) < 1.0f,
+                        new BTCancelIfFalse(() => Vector3.Distance(blackBoard.GetVariable<Vector3>(VariableNames.TARGET_POSITION), blackBoard.GetVariable<Transform>(VariableNames.PLAYER_TRANSFORM).position) < 1.0f,
 
                             new BTAlwaysSuccesTask(() => blackBoard.SetVariable(VariableNames.PLAYER_TRANSFORM, moveTarget.target)),
                             new BTGetPosition(VariableNames.PLAYER_TRANSFORM, blackBoard),
@@ -36,6 +36,7 @@ public class LieEnemy : Enemy, IAbilityOwner
         new BTAlwaysFalse()
                         );
 
+        //Make it so it doesn't grab a copy of the attack speed at the start, but the current value.
         attackTree =
             new BTSequence(
                 new BTConditionNode(() => !gameOver),

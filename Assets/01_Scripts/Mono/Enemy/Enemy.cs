@@ -50,7 +50,7 @@ public class Enemy : Soulable, IDamageable
 
     protected NavMeshAgent agent;
 
-    public virtual void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData )
+    public virtual void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData, Transform manager )
     {
         enemyStats = stats;
         cachedGameObject = gameObject;
@@ -63,7 +63,7 @@ public class Enemy : Soulable, IDamageable
         this.characterData.CharacterTransform = MeshTransform;
         shooting.ownerData = this.characterData;
 
-        shooting.OnStart(transform, this);
+        shooting.OnStart(manager, this);
         UpdateStats(stats);
 
         this.moveTarget = moveTarget;

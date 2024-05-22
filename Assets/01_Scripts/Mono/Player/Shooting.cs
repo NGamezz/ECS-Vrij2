@@ -21,6 +21,8 @@ public class Shooting
     [SerializeField] private int defaultAmountOfPooledObjects = 25;
     [SerializeField] private int ownLayer;
 
+    private List<Gun> activeBullets = new();
+
     private bool shootHeld = false;
     private MonoBehaviour owner;
     private readonly ObjectPool<Gun> objectPool = new();
@@ -46,7 +48,7 @@ public class Shooting
         var gunObject = UnityEngine.Object.Instantiate(currentGun.prefab, gunPosition);
         gunObject.transform.position = gunPosition.position;
         currentGun.CurrentAmmo = currentGun.MagSize;
-        SetLayerRecursive(gunObject, bulletHolder.gameObject.layer);
+        SetLayerRecursive(gunObject, meshTransform.gameObject.layer);
 
         GenerateBullets();
 
@@ -80,7 +82,8 @@ public class Shooting
 
     public void SelectGun ( GunStats gun )
     {
-        owner.StopCoroutine(shootRoutine);
+        if ( shootRoutine != null )
+            owner.StopCoroutine(shootRoutine);
         currentGun = gun;
         gun.CurrentAmmo = gun.MagSize;
         shootRoutine = owner.StartCoroutine(Shoot());
@@ -102,6 +105,8 @@ public class Shooting
 
     private void OnObjectHit ( bool succes, Gun objectToPool )
     {
+        if ( activeBullets.Contains(objectToPool) )
+            activeBullets.Remove(objectToPool);
         objectPool.PoolObject(objectToPool);
     }
 
@@ -110,6 +115,14 @@ public class Shooting
         shootHeld = context.ReadValueAsButton();
     }
 
+    public void OnDisable ()
+    {
+        for ( int i = activeBullets.Count - 1; i >= 0; i-- )
+        {
+            activeBullets[i].GameObject.SetActive(false);
+            activeBullets.RemoveAt(i);
+        }
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void ShootSingle ()
@@ -190,6 +203,7 @@ public class Shooting
             bullet.GameObject.SetActive(true);
         }
 
+        activeBullets.Add(bullet);
         UpdateBulletStats(ref bullet, currentGun, meshTransform);
         currentGun.CurrentAmmo--;
 

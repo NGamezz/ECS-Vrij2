@@ -19,6 +19,9 @@ public class BTMoveToPosition : BTBaseNode
 
     protected override void OnEnter ()
     {
+        if ( !agent.isOnNavMesh || !agent.isActiveAndEnabled )
+            return;
+
         agent.speed = moveSpeed;
         agent.stoppingDistance = keepDistance;
         targetPosition = blackboard.GetVariable<Vector3>(BBtargetPosition);
@@ -33,7 +36,7 @@ public class BTMoveToPosition : BTBaseNode
 
     protected override TaskStatus OnUpdate ()
     {
-        if ( agent == null )
+        if ( agent == null || !agent.isActiveAndEnabled || !agent.isOnNavMesh)
         { return TaskStatus.Failed; }
         if ( agent.pathPending )
         { return TaskStatus.Running; }

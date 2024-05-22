@@ -29,7 +29,7 @@ public class Gun : MonoBehaviour
     private void OnTriggerEnter ( Collider other )
     {
         var layer = other.gameObject.layer;
-        if ( layer == playerLayer || layer == GameObject.layer )
+        if ( layer == playerLayer || layer == GameObject.layer)
         {
             return;
         }

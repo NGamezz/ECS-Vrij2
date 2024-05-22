@@ -37,7 +37,7 @@ public class BackgroundQueue : MonoBehaviour
 
         applicationRunning = false;
 
-        queueThread.Join();
+        //queueThread.Join();
 
         if ( Instance == this )
         {
@@ -68,7 +68,7 @@ public class BackgroundQueue : MonoBehaviour
     /// <typeparam name="T"></typeparam>
     /// <param name="action"></param>
     /// <returns></returns>
-    public Task<T> AsyncEnqueueFunc<T> ( Func<T> action)
+    public Task<T> AsyncEnqueueFunc<T> ( Func<T> action )
     {
         var src = new TaskCompletionSource<T>();
 
@@ -93,7 +93,7 @@ public class BackgroundQueue : MonoBehaviour
     /// </summary>
     /// <param name="action"></param>
     /// <returns></returns>
-    public Task AsyncEnqueue ( Action action)
+    public Task AsyncEnqueue ( Action action )
     {
         var src = new TaskCompletionSource<bool>();
 
@@ -114,9 +114,9 @@ public class BackgroundQueue : MonoBehaviour
         return src.Task;
     }
 
-    public void Enqueue ( Action action)
+    public void Enqueue ( Action action )
     {
-            Interlocked.Increment(ref queueCount);
-            actionQueue.Enqueue(action);
+        Interlocked.Increment(ref queueCount);
+        actionQueue.Enqueue(action);
     }
 }

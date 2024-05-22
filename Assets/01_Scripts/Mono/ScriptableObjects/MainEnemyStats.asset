@@ -16,7 +16,7 @@ MonoBehaviour:
   maxHealth: 100
   moveSpeed: 5
   damage: 10
-  attackRange: 5
+  attackRange: 10
   spawnSpeed: 10
   attackSpeed: 1
   enemiesPerBatch: 10

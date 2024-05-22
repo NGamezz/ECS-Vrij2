@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8e347ca54d5d0a4097d1f40456601fa, type: 3}
   m_Name: AssaultRifle
   m_EditorClassIdentifier: 
-  attackSpeed: 0.25
+  attackSpeed: 2
   GunType: 2
   damage: 5
   projectileLifeTime: 3
@@ -22,7 +22,7 @@ MonoBehaviour:
     y: 0.2
   ReloadSpeed: 1
   Recoil: 1
-  CurrentAmmo: 50
+  CurrentAmmo: 45
   MagSize: 50
   amountOfBulletsPer: 1
   damageProjectileLifeTimeSpeed: 197893

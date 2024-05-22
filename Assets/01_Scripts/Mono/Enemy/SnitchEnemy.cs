@@ -6,10 +6,10 @@ public class SnitchEnemy : Enemy, IAbilityOwner
     [SerializeField] private Ability ability = new SnitchingAbility();
     private BTBaseNode abilityTree;
 
-    public override void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData )
+    public override void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData, Transform manager )
     {
         EnemyType = EnemyType.SnitchEnemy;
-        base.OnStart(stats, moveTarget, startPosition, characterData);
+        base.OnStart(stats, moveTarget, startPosition, characterData, manager);
         shooting.recoilMultiplier = 0;
     }
 
@@ -70,7 +70,7 @@ public class SnitchEnemy : Enemy, IAbilityOwner
     public override void OnFixedUpdate ()
     {
         base.OnFixedUpdate();
-        attackTree?.Tick();
+        abilityTree?.Tick();
     }
 
     public Ability HarvestAbility ()

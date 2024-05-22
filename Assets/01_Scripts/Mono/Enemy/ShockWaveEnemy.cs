@@ -5,11 +5,11 @@ public class ShockWaveEnemy : Enemy, IAbilityOwner
 {
     private readonly Ability ability = new ShockWaveAbility();
 
-    public override void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData )
+    public override void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData, Transform manager )
     {
         EnemyType = EnemyType.ShockWaveEnemy;
         this.characterData = characterData();
-        base.OnStart(stats, moveTarget, startPosition, characterData);
+        base.OnStart(stats, moveTarget, startPosition, characterData, manager);
         ability.Initialize(this, this.characterData);
     }
 

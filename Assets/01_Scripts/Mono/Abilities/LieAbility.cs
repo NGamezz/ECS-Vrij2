@@ -70,7 +70,7 @@ public class LieAbility : Ability
         var position = ownerData.CharacterTransform.position + (UnityEngine.Random.insideUnitSphere.normalized * UnityEngine.Random.Range(spawnRange.x, spawnRange.y));
         ActivateDecoy(position, false, ( data, enemy ) =>
         {
-            enemy.OnFixedUpdate();
+            //enemy.OnFixedUpdate();
 
             return;
         }, ( data, enemy ) =>

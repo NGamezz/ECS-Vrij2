@@ -79,6 +79,8 @@ public class EnemyManager : MonoBehaviour
 
     private void RemoveEnemy ( Enemy sender )
     {
+        Debug.Log(sender);
+
         activeEnemies.Remove(sender);
         sender.gameObject.SetActive(false);
         objectPool.PoolObject(sender);
@@ -179,7 +181,7 @@ public class EnemyManager : MonoBehaviour
         var enemy = gameObject.GetOrAddComponent<Enemy>();
         enemy.OnDisabled += onDisable;
         enemy.OnDeath += onDeath;
-        enemy.OnStart(currentDifficultyGrade.enemyStats, enemyTarget, position, () => CreateEnemyDataObject(enemy));
+        enemy.OnStart(currentDifficultyGrade.enemyStats, enemyTarget, position, () => CreateEnemyDataObject(enemy), transform);
         enemy.SetupBehaviourTrees();
         return enemy;
     }
