@@ -16,6 +16,6 @@ public abstract class Ability
 
 public interface IAbilityOwner
 {
-    public void AcquireAbility ( Ability ability );
+    public void AcquireAbility ( Ability ability, bool oneTimeUse = true );
     public Ability HarvestAbility ();
 }

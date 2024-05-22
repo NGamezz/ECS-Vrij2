@@ -440,6 +440,14 @@ PrefabInstance:
       propertyPath: orthographic
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 1096177187423764652, guid: 704285c1f157c114586304220728720b, type: 3}
+      propertyPath: near clip plane
+      value: -100
+      objectReference: {fileID: 0}
+    - target: {fileID: 1096177187423764652, guid: 704285c1f157c114586304220728720b, type: 3}
+      propertyPath: orthographic size
+      value: 7.5
+      objectReference: {fileID: 0}
     - target: {fileID: 3376528096086967466, guid: 704285c1f157c114586304220728720b, type: 3}
       propertyPath: m_Name
       value: Player
@@ -468,6 +476,10 @@ PrefabInstance:
       propertyPath: playerShooting.currentGun
       value: 
       objectReference: {fileID: 11400000, guid: 39cdbf6e965615549bc612fd7f0cf3b1, type: 2}
+    - target: {fileID: 5163124172975904353, guid: 704285c1f157c114586304220728720b, type: 3}
+      propertyPath: playerMovement.groundLayerMask
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 5495372135968517766, guid: 704285c1f157c114586304220728720b, type: 3}
       propertyPath: m_ActionEvents.Array.size
       value: 6
@@ -547,6 +559,38 @@ PrefabInstance:
     - target: {fileID: 6161982741623012984, guid: 704285c1f157c114586304220728720b, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6977412382383002167, guid: 704285c1f157c114586304220728720b, type: 3}
+      propertyPath: distanceFromBorder.x
+      value: 900
+      objectReference: {fileID: 0}
+    - target: {fileID: 6977412382383002167, guid: 704285c1f157c114586304220728720b, type: 3}
+      propertyPath: distanceFromBorder.y
+      value: 900
+      objectReference: {fileID: 0}
+    - target: {fileID: 6977412382383002167, guid: 704285c1f157c114586304220728720b, type: 3}
+      propertyPath: cameraRecenterDeadzone
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7005942118787718978, guid: 704285c1f157c114586304220728720b, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7005942118787718978, guid: 704285c1f157c114586304220728720b, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7005942118787718978, guid: 704285c1f157c114586304220728720b, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.9659258
+      objectReference: {fileID: 0}
+    - target: {fileID: 7005942118787718978, guid: 704285c1f157c114586304220728720b, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.2588191
+      objectReference: {fileID: 0}
+    - target: {fileID: 7005942118787718978, guid: 704285c1f157c114586304220728720b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 30
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -6640,7 +6684,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6540933391698174886, guid: d14f0bb21b13b0d4db47bc3767e21270, type: 3}
       propertyPath: difficultyGrades.Array.data[0].enemyPrefabs.Array.size
-      value: 1
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 6540933391698174886, guid: d14f0bb21b13b0d4db47bc3767e21270, type: 3}
       propertyPath: 'difficultyGrades.Array.data[0].enemyPrefabs.Array.data[1]'
@@ -6652,15 +6696,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6540933391698174886, guid: d14f0bb21b13b0d4db47bc3767e21270, type: 3}
       propertyPath: difficultyGrades.Array.data[0].enemyPrefabs.Array.data[1].type
-      value: 4
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6540933391698174886, guid: d14f0bb21b13b0d4db47bc3767e21270, type: 3}
       propertyPath: difficultyGrades.Array.data[0].enemyPrefabs.Array.data[2].type
-      value: 4
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 6540933391698174886, guid: d14f0bb21b13b0d4db47bc3767e21270, type: 3}
       propertyPath: difficultyGrades.Array.data[0].enemyPrefabs.Array.data[3].type
-      value: 4
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 6540933391698174886, guid: d14f0bb21b13b0d4db47bc3767e21270, type: 3}
       propertyPath: difficultyGrades.Array.data[0].enemyPrefabs.Array.data[4].type
@@ -6673,15 +6717,15 @@ PrefabInstance:
     - target: {fileID: 6540933391698174886, guid: d14f0bb21b13b0d4db47bc3767e21270, type: 3}
       propertyPath: difficultyGrades.Array.data[0].enemyPrefabs.Array.data[1].meshPrefab
       value: 
-      objectReference: {fileID: 6994793559854184867, guid: d06ccd47b01b1084f9970cacd3da22c1, type: 3}
+      objectReference: {fileID: 6107277973651376024, guid: eb9577278958c6f4783a4c5085f516d2, type: 3}
     - target: {fileID: 6540933391698174886, guid: d14f0bb21b13b0d4db47bc3767e21270, type: 3}
       propertyPath: difficultyGrades.Array.data[0].enemyPrefabs.Array.data[2].meshPrefab
       value: 
-      objectReference: {fileID: 6994793559854184867, guid: d06ccd47b01b1084f9970cacd3da22c1, type: 3}
+      objectReference: {fileID: 5639215074042341115, guid: 7b771d5add09c344aa7ff230b0e42829, type: 3}
     - target: {fileID: 6540933391698174886, guid: d14f0bb21b13b0d4db47bc3767e21270, type: 3}
       propertyPath: difficultyGrades.Array.data[0].enemyPrefabs.Array.data[3].meshPrefab
       value: 
-      objectReference: {fileID: 6994793559854184867, guid: d06ccd47b01b1084f9970cacd3da22c1, type: 3}
+      objectReference: {fileID: 8612197945513794166, guid: 0bb05a899dfb4cf42b77eff08cec48c4, type: 3}
     - target: {fileID: 6540933391698174886, guid: d14f0bb21b13b0d4db47bc3767e21270, type: 3}
       propertyPath: difficultyGrades.Array.data[0].enemyPrefabs.Array.data[4].meshPrefab
       value: 
