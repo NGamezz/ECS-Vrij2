@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using UnityEngine;
 
 public class SnitchingAbility : Ability
@@ -12,6 +10,7 @@ public class SnitchingAbility : Ability
 
     public override void Initialize ( IAbilityOwner owner, CharacterData context )
     {
+        ActivationCooldown = 5;
         Debug.Log("Intialize Snitch.");
     }
 }

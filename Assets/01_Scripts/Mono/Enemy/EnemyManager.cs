@@ -38,21 +38,17 @@ public class EnemyManager : MonoBehaviour
     private bool spawnEnemies = false;
     public bool SpawnEnemies
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => spawnEnemies;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
             spawnEnemies = value;
             if ( !value )
-                StopRoutine();
+                StopAllCoroutines();
         }
     }
     private Vector3 ownPosition;
-
-    public void StopRoutine ()
-    {
-        StopAllCoroutines();
-    }
 
     private void Awake ()
     {
@@ -105,7 +101,7 @@ public class EnemyManager : MonoBehaviour
         if ( enemy.EnemyType == EnemyType.LieEnemy )
             data.decoyPrefab = currentDifficultyGrade.enemyPrefabs[UnityEngine.Random.Range(0, currentDifficultyGrade.enemyPrefabs.Count)].meshPrefab;
 
-        data.CharacterTransform = enemy.Transform;
+        data.CharacterTransform = enemy.MeshTransform;
         data.Speed = currentDifficultyGrade.enemyStats.moveSpeed;
 
         data.MoveTarget = enemyTarget;
@@ -116,7 +112,7 @@ public class EnemyManager : MonoBehaviour
 
     private void OnEnemyDeath ( Enemy sender )
     {
-        Vector3 position = sender.Transform.position;
+        Vector3 position = sender.MeshTransform.position;
 
         Task.Run(() =>
         {
@@ -184,9 +180,11 @@ public class EnemyManager : MonoBehaviour
         enemy.OnDisabled += onDisable;
         enemy.OnDeath += onDeath;
         enemy.OnStart(currentDifficultyGrade.enemyStats, enemyTarget, position, () => CreateEnemyDataObject(enemy));
+        enemy.SetupBehaviourTrees();
         return enemy;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Enemy CreateEnemy ( Vector3 position )
     {
         return CreateEnemy(currentDifficultyGrade, null, null, enemyTarget, position);
@@ -218,24 +216,6 @@ public class EnemyManager : MonoBehaviour
         }
     }
 
-    private void Update ()
-    {
-        if ( activeEnemies.Count < 1 )
-            return;
-
-        var target = enemyTarget.target;
-        var targetPos = target == null ? playerTransform.position : target.position;
-
-        for ( int i = 0; i < activeEnemies.Count; i++ )
-        {
-            var enemy = activeEnemies[i];
-            if ( enemy == null )
-                continue;
-
-            enemy.CheckAttackRange(enemyTarget, targetPos);
-        }
-    }
-
     private IEnumerator CleanUpLostEnemies ()
     {
         while ( spawnEnemies )
@@ -248,7 +228,7 @@ public class EnemyManager : MonoBehaviour
                 if ( enemy == null )
                     continue;
 
-                if ( Vector3.Distance(enemy.Transform.position, playerPos) > maxDistanceToPlayer )
+                if ( Vector3.Distance(enemy.MeshTransform.position, playerPos) > maxDistanceToPlayer )
                 {
                     RemoveEnemy(enemy);
                 }

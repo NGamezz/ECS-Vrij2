@@ -54,7 +54,7 @@ public class LieAbility : Ability
         var cachedTarget = ownerData.MoveTarget.target;
         ActivateDecoy(ownerData.PlayerMousePosition, true, ( data, enemy ) =>
         {
-            ownerData.MoveTarget.target = enemy.Transform;
+            ownerData.MoveTarget.target = enemy.MeshTransform;
             return;
         }, ( data, enemy ) =>
         {
@@ -84,6 +84,8 @@ public class LieAbility : Ability
     {
         this.Owner = owner;
         ownerData = context;
+
+        ActivationCooldown = 3;
 
         ActivationCost = 10;
 

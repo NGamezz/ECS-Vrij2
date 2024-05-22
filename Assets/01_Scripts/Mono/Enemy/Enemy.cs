@@ -1,8 +1,8 @@
 using System;
 using System.Collections;
-using Unity.Mathematics;
-using UnityEditor.Timeline.Actions;
+using System.Runtime.CompilerServices;
 using UnityEngine;
+using UnityEngine.AI;
 
 public enum EnemyType
 {
@@ -21,7 +21,7 @@ public class Enemy : Soulable, IDamageable
 
     public EnemyType EnemyType;
 
-    public Transform meshTransform;
+    public Transform MeshTransform;
 
     public Shooting shooting = new();
 
@@ -29,46 +29,90 @@ public class Enemy : Soulable, IDamageable
 
     protected CharacterData characterData;
 
-    protected Action attackAction;
+    public GameObject GameObject
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => cachedGameObject;
+    }
 
-    public bool Decoy = false;
+    protected Blackboard blackBoard = new();
 
-    public Transform Transform { get => meshTransform; }
-    public GameObject GameObject { get => cachedGameObject; }
+    protected BTBaseNode moveTree;
+    protected BTBaseNode attackTree;
 
-    private MoveToTarget moveToTarget;
-
-    protected bool canAttack = true;
+    protected bool gameOver = false;
 
     private float health;
 
+    protected MoveTarget moveTarget;
+
     protected EnemyStats enemyStats;
+
+    protected NavMeshAgent agent;
 
     public virtual void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData )
     {
         enemyStats = stats;
         cachedGameObject = gameObject;
-        moveToTarget = new();
-
         Dead = false;
 
-        shooting.OnStart(transform, this);
-
-        moveToTarget.OnStart(moveTarget, meshTransform, startPosition);
-        UpdateStats(stats);
-        moveToTarget.Enable();
+        agent = (NavMeshAgent)MeshTransform.GetComponent(typeof(NavMeshAgent));
+        agent.Warp(startPosition);
 
         this.characterData = characterData();
-        this.characterData.CharacterTransform = meshTransform;
+        this.characterData.CharacterTransform = MeshTransform;
+        shooting.ownerData = this.characterData;
+
+        shooting.OnStart(transform, this);
+        UpdateStats(stats);
+
+        this.moveTarget = moveTarget;
+    }
+
+    //Need to add the disposal when it's game over.
+    public virtual void SetupBehaviourTrees ()
+    {
+        var currentGun = shooting.currentGun;
+
+        blackBoard.SetVariable(VariableNames.PLAYER_TRANSFORM, moveTarget.target);
+        blackBoard.SetVariable(VariableNames.TARGET_POSITION, moveTarget.target.position);
+
+        moveTree =
+            new BTSequence(
+                new BTConditionNode(() => !gameOver),
+                new BTCancelIfFalse(() => Vector3.Distance(MeshTransform.position, moveTarget.target.position) > enemyStats.attackRange,
+                        new BTGetPosition(VariableNames.PLAYER_TRANSFORM, blackBoard),
+                        new BTCancelIfFalse(() => Vector3.Distance(blackBoard.GetVariable<Vector3>(VariableNames.TARGET_POSITION), moveTarget.target.position) < 1.0f,
+                            new BTAlwaysSuccesTask(() => blackBoard.SetVariable(VariableNames.PLAYER_TRANSFORM, moveTarget.target)),
+                            new BTGetPosition(VariableNames.PLAYER_TRANSFORM, blackBoard),
+                            new BTMoveToPosition(agent, enemyStats.moveSpeed, VariableNames.TARGET_POSITION, enemyStats.attackRange)
+        )),
+        new BTAlwaysFalse()
+                        );
+
+        attackTree =
+            new BTSequence(
+                new BTConditionNode(() => !gameOver),
+                new BTSequence(
+                    new BTRepeatWhile(() => Vector3.Distance(MeshTransform.position, moveTarget.target.position) < enemyStats.attackRange,
+                           new BTSequence(
+                                new BTAlwaysSuccesTask(() => MeshTransform.forward = (moveTarget.target.position - MeshTransform.position).normalized),
+                                new BTAlwaysSuccesTask(() => shooting.ShootSingle()),
+                                new BTWaitFor(currentGun.attackSpeed)
+                    )),
+                    new BTAlwaysFalse()
+                  )
+                );
+
+        moveTree.SetupBlackboard(blackBoard);
     }
 
     public void OnReuse ( EnemyStats stats, Vector3 startPosition )
     {
         Dead = false;
         enemyStats = stats;
-
-        moveToTarget.OnUpdate(startPosition);
-        moveToTarget.Enable();
+        agent.Warp(startPosition);
+        gameOver = false;
         shooting.SelectGun(shooting.currentGun);
         UpdateStats(stats);
     }
@@ -76,56 +120,22 @@ public class Enemy : Soulable, IDamageable
     public void UpdateStats ( EnemyStats stats )
     {
         health = stats.maxHealth;
-        moveToTarget.SetStats(stats);
     }
 
-    public virtual void OnUpdate ()
+    protected void OnDisable ()
     {
-    }
-
-    private void OnDisable ()
-    {
+        gameOver = true;
         StopAllCoroutines();
-        moveToTarget?.OnDisable();
         OnDisabled?.Invoke(this);
-    }
-
-    //To be improved.
-    public virtual void CheckAttackRange ( MoveTarget target, Vector3 targetPos )
-    {
-        if ( !GameObject.activeInHierarchy )
-            return;
-
-        var distanceToTarget = math.length(targetPos - Transform.position);
-
-        if ( distanceToTarget > enemyStats.attackRange )
-        {
-            moveToTarget.Enable();
-            return;
-        }
-
-        moveToTarget.OnDisable();
-
-        if ( canAttack )
-        {
-            shooting.ShootSingle();
-
-            canAttack = false;
-            StartCoroutine(ResetAttack());
-        }
-
-        Transform.forward = target.target.position - Transform.position;
-    }
-
-    protected IEnumerator ResetAttack ()
-    {
-        yield return Utility.Yielders.Get(shooting.currentGun.ReloadSpeed);
-        canAttack = true;
     }
 
     public virtual void OnFixedUpdate ()
     {
-        moveToTarget.OnFixedUpdate();
+        if ( gameOver )
+            return;
+
+        moveTree?.Tick();
+        attackTree?.Tick();
     }
 
     public void AfflictDamage ( float amount )
@@ -137,6 +147,8 @@ public class Enemy : Soulable, IDamageable
 
         if ( health <= 0 )
         {
+            Debug.Log("EnemyDied");
+
             Dead = true;
             OnDeath?.Invoke(this);
             gameObject.SetActive(false);

@@ -35,6 +35,7 @@ public class ReapAbility : Ability
         Owner = owner;
         ownerData = context;
 
+        ActivationCooldown = 3;
         //Set the values, the trigger condition and the cost.
         ActivationCost = 5;
         Trigger = () => { return InputHandler.IsKeyPressed(VirtualKeys.KeyE) && ownerData.Souls > ActivationCost; };

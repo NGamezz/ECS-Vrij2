@@ -1,14 +1,10 @@
 using System;
-using System.Collections;
-using System.Threading.Tasks;
-using Unity.Mathematics;
 using UnityEngine;
 
 public class SnitchEnemy : Enemy, IAbilityOwner
 {
     [SerializeField] private Ability ability = new SnitchingAbility();
-
-    private bool canUseAbility = true;
+    private BTBaseNode abilityTree;
 
     public override void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData )
     {
@@ -17,44 +13,64 @@ public class SnitchEnemy : Enemy, IAbilityOwner
         shooting.recoilMultiplier = 0;
     }
 
-    public override void CheckAttackRange ( MoveTarget target, Vector3 targetPos )
+    public override void SetupBehaviourTrees ()
     {
-        if ( !GameObject.activeInHierarchy )
-            return;
+        var currentGun = shooting.currentGun;
 
-        var distanceToTarget = math.length(targetPos - Transform.position);
+        blackBoard.SetVariable(VariableNames.PLAYER_TRANSFORM, moveTarget.target);
+        blackBoard.SetVariable(VariableNames.TARGET_POSITION, moveTarget.target.position);
 
-        if ( distanceToTarget > enemyStats.attackRange )
-            return;
+        moveTree =
+            new BTSequence(
 
-        if ( canUseAbility )
-        {
-            var damagable = (IDamageable)target.target.GetComponentInParent(typeof(IDamageable));
-            if ( damagable == null )
-            {
-                return;
-            }
+                new BTConditionNode(() => !gameOver),
+                new BTCancelIfFalse(() => Vector3.Distance(MeshTransform.position, moveTarget.target.position) > enemyStats.attackRange,
 
-            canUseAbility = false;
-            ability.Execute(characterData);
-            StartCoroutine(ResetAbilityCooldown());
-        }
+                        new BTGetPosition(VariableNames.PLAYER_TRANSFORM, blackBoard),
+                        new BTCancelIfFalse(() => Vector3.Distance(blackBoard.GetVariable<Vector3>(VariableNames.TARGET_POSITION), moveTarget.target.position) < 1.0f,
 
-        if ( canAttack )
-        {
-            shooting.ShootSingle();
+                            new BTAlwaysSuccesTask(() => blackBoard.SetVariable(VariableNames.PLAYER_TRANSFORM, moveTarget.target)),
+                            new BTGetPosition(VariableNames.PLAYER_TRANSFORM, blackBoard),
+                            new BTMoveToPosition(agent, enemyStats.moveSpeed, VariableNames.TARGET_POSITION, enemyStats.attackRange)
+        )),
+        new BTAlwaysFalse()
+                        );
 
-            canAttack = false;
-            StartCoroutine(ResetAttack());
-        }
+        attackTree =
+            new BTSequence(
+                new BTConditionNode(() => !gameOver),
+                new BTSequence(
+                    new BTRepeatWhile(() => Vector3.Distance(MeshTransform.position, moveTarget.target.position) < enemyStats.attackRange,
+                           new BTSequence(
+                                new BTAlwaysSuccesTask(() => MeshTransform.forward = (moveTarget.target.position - MeshTransform.position).normalized),
+                                new BTAlwaysSuccesTask(() => shooting.ShootSingle()),
+                                new BTWaitFor(currentGun.attackSpeed)
+                                         )),
+                    new BTAlwaysFalse()
+                             )
+                         );
 
-        Transform.forward = target.target.position - Transform.position;
+        abilityTree = new BTSequence(
+            new BTConditionNode(() => !gameOver),
+            new BTSequence(
+                new BTRepeatWhile(() => Vector3.Distance(MeshTransform.position, moveTarget.target.position) < enemyStats.attackRange,
+                    new BTSequence(
+                        new BTAlwaysSuccesTask(() => ability.Execute(characterData)),
+                        new BTWaitFor(ability.ActivationCooldown)
+                                  )
+                        )
+                )
+            );
+
+        attackTree.SetupBlackboard(blackBoard);
+        moveTree.SetupBlackboard(blackBoard);
+        abilityTree.SetupBlackboard(blackBoard);
     }
 
-    private IEnumerator ResetAbilityCooldown ()
+    public override void OnFixedUpdate ()
     {
-        yield return Utility.Yielders.Get(ability.ActivationCooldown);
-        canUseAbility = true;
+        base.OnFixedUpdate();
+        attackTree?.Tick();
     }
 
     public Ability HarvestAbility ()

@@ -44,14 +44,7 @@ public class PlayerCameraHandling : MonoBehaviour
         lookVector = ctx.ReadValue<Vector2>();
     }
 
-    private readonly RaycastHit[] hits = new RaycastHit[1];
-
-    private Vector3 mousePosition = Vector3.zero;
-    public void UpdateMouseWorldPosition ( Vector3 pos )
-    {
-        mousePosition = pos;
-    }
-
+    Plane plane = new(Vector3.up, 0);
     //Should be improved.
     private void ApplyLookDirection ()
     {
@@ -59,14 +52,14 @@ public class PlayerCameraHandling : MonoBehaviour
 
         if ( lookAtMouse )
         {
-            //var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+            var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+            if ( !plane.Raycast(ray, out float distance) )
+            {
+                return;
+            }
+            var position = ray.GetPoint(distance);
 
-            //if ( Physics.RaycastNonAlloc(ray, hits, float.MaxValue, ~(1 << playerLayerMask)) == 0 )
-            //{
-            //    return;
-            //}
-
-            direction = mousePosition - meshTransform.position;
+            direction = position - meshTransform.position;
             direction.y = 0.0f;
         }
         else
@@ -82,6 +75,7 @@ public class PlayerCameraHandling : MonoBehaviour
 
     private void OnDisable ()
     {
+        running = false;
         StopAllCoroutines();
         updateCameraPosition = false;
         waitUntilUpdateCam = null;

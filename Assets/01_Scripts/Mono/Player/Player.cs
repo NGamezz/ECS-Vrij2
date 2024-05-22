@@ -127,6 +127,7 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
 
         playerMovement.characterData = characterData;
         playerMovement.OnStart();
+        playerShooting.ownerData = characterData;
         playerShooting.OnStart(transform, this);
 
         Souls = 0;

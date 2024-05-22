@@ -8,26 +8,24 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using Random = UnityEngine.Random;
 
-public enum ProjectileType
-{
-    Default = 0,
-}
-
 [Serializable]
 public class Shooting
 {
     public GunStats currentGun;
+    public float recoilMultiplier = 1;
+    public CharacterData ownerData;
+
     [SerializeField] private Transform gunPosition;
     [SerializeField] private List<GunStats> guns = new();
     [SerializeField] private Transform meshTransform;
     [SerializeField] private int defaultAmountOfPooledObjects = 25;
     [SerializeField] private int ownLayer;
 
+    private bool shootHeld = false;
     private MonoBehaviour owner;
     private readonly ObjectPool<Gun> objectPool = new();
     private Rigidbody rb;
     private Transform bulletHolder;
-    public bool shootHeld = false;
     private WaitUntil waitUntilShoot;
     private bool running = false;
     private Coroutine shootRoutine;
@@ -39,11 +37,11 @@ public class Shooting
 
         waitUntilShoot = new WaitUntil(() => shootHeld);
 
-        currentGun ??= guns[0];
+        if ( currentGun == null )
+            currentGun = guns[0];
 
         this.owner = owner;
-
-        this.rb = (Rigidbody)meshTransform.GetComponent(typeof(Rigidbody));
+        rb = (Rigidbody)meshTransform.GetComponent(typeof(Rigidbody));
 
         var gunObject = UnityEngine.Object.Instantiate(currentGun.prefab, gunPosition);
         gunObject.transform.position = gunPosition.position;
@@ -51,6 +49,9 @@ public class Shooting
         SetLayerRecursive(gunObject, bulletHolder.gameObject.layer);
 
         GenerateBullets();
+
+        if ( !ownerData.Player )
+            return;
 
         running = true;
         shootRoutine = owner.StartCoroutine(Shoot());
@@ -109,8 +110,8 @@ public class Shooting
         shootHeld = context.ReadValueAsButton();
     }
 
-    public float recoilMultiplier = 1;
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void ShootSingle ()
     {
         CheckShootType();
@@ -196,10 +197,9 @@ public class Shooting
             OnReload();
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void UpdateBulletStats ( ref Gun bullet, GunStats currentGun, Transform ownerTransform )
     {
-        bullet.Damage = currentGun.damageProjectileLifeTimeSpeed & 255;
+        bullet.Damage = (currentGun.damageProjectileLifeTimeSpeed & 255) * ownerData.DamageMultiplier;
         bullet.Speed = (currentGun.damageProjectileLifeTimeSpeed >> 8) & 255;
         bullet.ProjectileLifeTime = (currentGun.damageProjectileLifeTimeSpeed >> 16) & 255;
 
@@ -208,13 +208,16 @@ public class Shooting
         bullet.Transform.position = newPos;
         var direction = (meshForward + new Vector3(Random.Range(currentGun.spreadOffset.x, currentGun.spreadOffset.y), 0.0f, Random.Range(currentGun.spreadOffset.x, currentGun.spreadOffset.y))).normalized;
         bullet.Transform.forward = direction;
-        rb.AddForce(-direction * currentGun.Recoil * recoilMultiplier, ForceMode.Impulse);
+
+        if ( recoilMultiplier > 0 )
+            rb.AddForce(currentGun.Recoil * recoilMultiplier * -direction, ForceMode.Impulse);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private Gun CreateBulletObject ( GameObject prefab, Action<bool, Gun> uponHit, int playerLayer, Transform bulletHolder )
     {
         var gameObject = UnityEngine.Object.Instantiate(prefab, bulletHolder);
+        gameObject.layer = playerLayer;
         var bullet = gameObject.GetOrAddComponent<Gun>();
         bullet.UponHit = uponHit;
         bullet.playerLayer = playerLayer;

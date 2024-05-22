@@ -41,7 +41,7 @@ public class MoveToTarget
 
     public void OnStart ( MoveTarget target, Transform ownTransform, Vector3 startPosition )
     {
-        agent = ownTransform.GetOrAddComponent<NavMeshAgent>();
+        agent = ownTransform.GetComponentInChildren<NavMeshAgent>();
 
         agent.Warp(startPosition);
 

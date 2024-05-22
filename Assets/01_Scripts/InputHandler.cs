@@ -6,10 +6,9 @@ using UnityEngine;
 
 public class Command
 {
-    public Action Action;
+    public Action Action { get; protected set; }
     public bool BackGroundSafe { get; protected set; }
     public Func<bool> Activation { get; protected set; }
-
     public bool SingleUse { get; protected set; }
 
     public Command ( Action action, bool backGroundSafe, Func<bool> activation, bool singleUse )

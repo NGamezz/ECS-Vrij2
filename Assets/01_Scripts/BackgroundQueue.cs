@@ -1,6 +1,5 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -9,8 +8,11 @@ public class BackgroundQueue : MonoBehaviour
 {
     public static BackgroundQueue Instance;
 
-    private static readonly Queue<Action> actionQueue = new();
-    private static readonly Queue<Action> priorityQueue = new();
+    private static readonly ConcurrentQueue<Action> actionQueue = new();
+    private static readonly ConcurrentQueue<Action> priorityQueue = new();
+
+    private int queueCount = 0;
+    private int priorityQueueCount = 0;
 
     private Thread queueThread;
     private Thread priorityQueueThread;
@@ -48,9 +50,12 @@ public class BackgroundQueue : MonoBehaviour
     private void OnDisable ()
     {
         actionQueue.Clear();
+        priorityQueue.Clear();
+
         applicationRunning = false;
 
-        priorityQueueThread.Abort();
+        queueThread.Join();
+        priorityQueueThread.Join();
 
         if ( Instance == this )
         {
@@ -64,11 +69,12 @@ public class BackgroundQueue : MonoBehaviour
     {
         while ( applicationRunning )
         {
-            lock ( priorityQueue )
+            while ( priorityQueueCount > 0 )
             {
-                while ( priorityQueue.Count > 0 )
+                if ( priorityQueue.TryDequeue(out var func) )
                 {
-                    priorityQueue.Dequeue().Invoke();
+                    func.Invoke();
+                    Interlocked.Decrement(ref priorityQueueCount);
                 }
             }
         }
@@ -78,11 +84,12 @@ public class BackgroundQueue : MonoBehaviour
     {
         while ( applicationRunning )
         {
-            lock ( actionQueue )
+            while ( queueCount > 0 )
             {
-                while ( actionQueue.Count > 0 )
+                if ( actionQueue.TryDequeue(out var func) )
                 {
-                    actionQueue.Dequeue().Invoke();
+                    func.Invoke();
+                    Interlocked.Decrement(ref queueCount);
                 }
             }
         }
@@ -144,17 +151,13 @@ public class BackgroundQueue : MonoBehaviour
     {
         if ( priority )
         {
-            lock ( priorityQueue )
-            {
-                priorityQueue.Enqueue(action);
-            }
+            Interlocked.Increment(ref priorityQueueCount);
+            priorityQueue.Enqueue(action);
         }
         else
         {
-            lock ( actionQueue )
-            {
-                actionQueue.Enqueue(action);
-            }
+            Interlocked.Increment(ref queueCount);
+            actionQueue.Enqueue(action);
         }
     }
 }

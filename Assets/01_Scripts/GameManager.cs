@@ -9,6 +9,7 @@ public class GameManager : MonoBehaviour
 #else
         Debug.unityLogger.logEnabled = false;
 #endif
+        Application.targetFrameRate = Mathf.CeilToInt((float)Screen.currentResolution.refreshRateRatio.value);
     }
 
     private void OnDisable ()
