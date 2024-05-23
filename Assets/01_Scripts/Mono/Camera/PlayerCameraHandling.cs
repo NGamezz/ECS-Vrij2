@@ -121,6 +121,8 @@ public class PlayerCameraHandling : MonoBehaviour
                 cameraTransform.position = cameraPos;
                 yield return null;
             }
+
+            yield return null;
         }
     }
 

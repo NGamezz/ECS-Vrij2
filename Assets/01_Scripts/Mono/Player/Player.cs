@@ -140,9 +140,9 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
         characterData.Initialize(UpdateSoulsUI);
 
         AcquireAbility(new ReapAbility(), false);
-        AcquireAbility(new LieAbility());
-        AcquireAbility(new ShockWaveAbility());
-        AcquireAbility(new AttackBoostAbility());
+        //AcquireAbility(new LieAbility());
+        //AcquireAbility(new ShockWaveAbility());
+        //AcquireAbility(new AttackBoostAbility());
 
         characterData.Health = characterData.MaxHealth;
     }

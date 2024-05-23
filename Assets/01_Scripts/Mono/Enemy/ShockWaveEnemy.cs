@@ -24,15 +24,16 @@ public class ShockWaveEnemy : Enemy, IAbilityOwner
             new BTSequence(
 
                 new BTConditionNode(() => !gameOver),
-                new BTCancelIfFalse(() => Vector3.Distance(MeshTransform.position, moveTarget.target.position) > enemyStats.attackRange,
+                new BTRepeatWhile(() => Vector3.Distance(MeshTransform.position, moveTarget.target.position) > enemyStats.attackRange / 2,
+                    new BTSequence(
 
                         new BTGetPosition(VariableNames.PLAYER_TRANSFORM, blackBoard),
                         new BTCancelIfFalse(() => Vector3.Distance(blackBoard.GetVariable<Vector3>(VariableNames.TARGET_POSITION), moveTarget.target.position) < 1.0f,
 
                             new BTAlwaysSuccesTask(() => blackBoard.SetVariable(VariableNames.PLAYER_TRANSFORM, moveTarget.target)),
                             new BTGetPosition(VariableNames.PLAYER_TRANSFORM, blackBoard),
-                            new BTMoveToPosition(agent, enemyStats.moveSpeed, VariableNames.TARGET_POSITION, enemyStats.attackRange)
-        )),
+                            new BTMoveToPosition(agent, enemyStats.moveSpeed, VariableNames.TARGET_POSITION, enemyStats.attackRange / 2)
+        ))),
         new BTAlwaysFalse()
                         );
 
@@ -40,7 +41,7 @@ public class ShockWaveEnemy : Enemy, IAbilityOwner
            new BTSequence(
                new BTConditionNode(() => !gameOver),
                new BTSequence(
-                   new BTRepeatWhile(() => Vector3.Distance(MeshTransform.position, moveTarget.target.position) < enemyStats.attackRange,
+                   new BTRepeatWhile(() => Vector3.Distance(MeshTransform.position, moveTarget.target.position) < enemyStats.attackRange / 2,
                           new BTSequence(
                                new BTAlwaysSuccesTask(() => MeshTransform.forward = (moveTarget.target.position - MeshTransform.position).normalized),
                                new BTAlwaysSuccesTask(() => ability.Execute(characterData)),

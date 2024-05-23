@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -7,33 +6,23 @@ public class TrackMousePosition : MonoBehaviour
     [SerializeField] private UnityEvent<Vector3> uponMouseSelection;
     [SerializeField] private int ignoredLayers = 6;
 
-    private bool trackMousePosition = true;
-
     private Camera mainCamera;
 
-    private readonly RaycastHit[] hits = new RaycastHit[1];
-    private IEnumerator StartMouseTracking()
+    private Plane plane = new(Vector3.up, 0);
+
+    private void FixedUpdate ()
     {
-        while(trackMousePosition)
+        var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+        if ( !plane.Raycast(ray, out float distance) )
         {
-            var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-
-            if ( Physics.RaycastNonAlloc(ray, hits, float.MaxValue, ~(1 << ignoredLayers)) == 0 )
-            {
-                continue;
-            }
-
-            var playerLocation = hits[0].point;
-            uponMouseSelection?.Invoke(playerLocation);
-
-            yield return Utility.Yielders.FixedUpdate;
+            return;
         }
+
+        uponMouseSelection?.Invoke(ray.GetPoint(distance));
     }
 
-    void Start()
+    void Start ()
     {
         mainCamera = Camera.main;
-
-        StartCoroutine(StartMouseTracking());
     }
 }
