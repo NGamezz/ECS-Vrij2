@@ -6,10 +6,9 @@ using UnityEngine;
 
 public class Command
 {
-    public Action Action;
+    public Action Action { get; protected set; }
     public bool BackGroundSafe { get; protected set; }
     public Func<bool> Activation { get; protected set; }
-
     public bool SingleUse { get; protected set; }
 
     public Command ( Action action, bool backGroundSafe, Func<bool> activation, bool singleUse )
@@ -37,7 +36,10 @@ public class InputHandler : MonoBehaviour
 
         Instance = this;
 
-        inputDetectionThread = new(CheckCurrentCommandsForActivation);
+        inputDetectionThread = new(CheckCurrentCommandsForActivation)
+        {
+            IsBackground = true,
+        };
         inputDetectionThread.Start();
     }
 
@@ -91,7 +93,7 @@ public class InputHandler : MonoBehaviour
                 if ( cmd.Activation() )
                 {
                     if ( cmd.BackGroundSafe )
-                        cmd.Action();
+                        cmd.Action.Invoke();
                     else
                         MainThreadQueue.Instance.Enqueue(cmd.Action);
 
@@ -105,6 +107,8 @@ public class InputHandler : MonoBehaviour
     private void OnDisable ()
     {
         active = false;
+        inputDetectionThread.Join();
+
         boundCommands.Clear();
         Destroy(Instance);
     }

@@ -1,11 +1,9 @@
 using System.Threading.Tasks;
-using UnityEngine;
 
 public class AttackBoostAbility : Ability
 {
     //In ms.
     private int boostDuration = 2000;
-
     private float damageMultiplierBoost = 1;
 
     //Likely not neccesary.
@@ -13,11 +11,11 @@ public class AttackBoostAbility : Ability
 
     public override bool Execute ( object context )
     {
-        ActiveBoost();
+        ActivateBoost();
         return true;
     }
 
-    private async void ActiveBoost ()
+    private async void ActivateBoost ()
     {
         if ( isActive )
         { return; }
@@ -35,6 +33,8 @@ public class AttackBoostAbility : Ability
     {
         ownerData = context;
         Owner = owner;
+
+        ActivationCooldown = 3;
 
         Trigger = () => InputHandler.IsKeyPressed(VirtualKeys.KeyB);
 

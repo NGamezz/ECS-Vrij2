@@ -49,6 +49,8 @@ public class ShockWaveAbility : Ability
         initialized = true;
         ownerData = context;
 
+        ActivationCooldown = 5;
+
         ActivationCost = 10;
         shockWaveRadius = 10;
 

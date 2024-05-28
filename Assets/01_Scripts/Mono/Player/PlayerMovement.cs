@@ -1,7 +1,5 @@
-using NaughtyAttributes.Editor;
 using System;
 using Unity.Mathematics;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 

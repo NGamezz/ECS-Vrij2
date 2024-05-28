@@ -1,5 +1,4 @@
 using System;
-using System.Threading.Tasks;
 
 [Serializable]
 public abstract class Ability
@@ -10,7 +9,6 @@ public abstract class Ability
     public abstract bool Execute ( object context );
     public abstract void Initialize ( IAbilityOwner owner, CharacterData context );
     public Func<bool> Trigger;
-
     protected CharacterData ownerData;
 }
 

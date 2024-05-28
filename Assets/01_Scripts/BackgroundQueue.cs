@@ -1,6 +1,5 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -9,11 +8,11 @@ public class BackgroundQueue : MonoBehaviour
 {
     public static BackgroundQueue Instance;
 
-    private static readonly Queue<Action> actionQueue = new();
-    private static readonly Queue<Action> priorityQueue = new();
+    private static readonly ConcurrentQueue<Action> actionQueue = new();
+
+    private int queueCount = 0;
 
     private Thread queueThread;
-    private Thread priorityQueueThread;
 
     private bool applicationRunning = false;
 
@@ -30,27 +29,15 @@ public class BackgroundQueue : MonoBehaviour
             IsBackground = true
         };
         queueThread.Start();
-
-        priorityQueueThread = new(OnPriorityUpdate)
-        {
-            IsBackground = true,
-            Priority = System.Threading.ThreadPriority.AboveNormal
-        };
-        priorityQueueThread.Start();
-
-#if UNITY_EDITOR
-        Debug.unityLogger.logEnabled = true;
-#else
-        Debug.unityLogger.logEnabled = false;
-#endif
     }
 
     private void OnDisable ()
     {
         actionQueue.Clear();
+
         applicationRunning = false;
 
-        priorityQueueThread.Abort();
+        //queueThread.Join();
 
         if ( Instance == this )
         {
@@ -60,29 +47,16 @@ public class BackgroundQueue : MonoBehaviour
         }
     }
 
-    private void OnPriorityUpdate ()
-    {
-        while ( applicationRunning )
-        {
-            lock ( priorityQueue )
-            {
-                while ( priorityQueue.Count > 0 )
-                {
-                    priorityQueue.Dequeue().Invoke();
-                }
-            }
-        }
-    }
-
     private void OnUpdate ()
     {
         while ( applicationRunning )
         {
-            lock ( actionQueue )
+            while ( queueCount > 0 )
             {
-                while ( actionQueue.Count > 0 )
+                if ( actionQueue.TryDequeue(out var func) )
                 {
-                    actionQueue.Dequeue().Invoke();
+                    func.Invoke();
+                    Interlocked.Decrement(ref queueCount);
                 }
             }
         }
@@ -94,7 +68,7 @@ public class BackgroundQueue : MonoBehaviour
     /// <typeparam name="T"></typeparam>
     /// <param name="action"></param>
     /// <returns></returns>
-    public Task<T> AsyncEnqueueFunc<T> ( Func<T> action, bool priority = false )
+    public Task<T> AsyncEnqueueFunc<T> ( Func<T> action )
     {
         var src = new TaskCompletionSource<T>();
 
@@ -110,7 +84,7 @@ public class BackgroundQueue : MonoBehaviour
             }
         }
 
-        Enqueue(Action, priority);
+        Enqueue(Action);
         return src.Task;
     }
 
@@ -119,7 +93,7 @@ public class BackgroundQueue : MonoBehaviour
     /// </summary>
     /// <param name="action"></param>
     /// <returns></returns>
-    public Task AsyncEnqueue ( Action action, bool priority = false )
+    public Task AsyncEnqueue ( Action action )
     {
         var src = new TaskCompletionSource<bool>();
 
@@ -136,25 +110,13 @@ public class BackgroundQueue : MonoBehaviour
             }
         }
 
-        Enqueue(Action, priority);
+        Enqueue(Action);
         return src.Task;
     }
 
-    public void Enqueue ( Action action, bool priority = false )
+    public void Enqueue ( Action action )
     {
-        if ( priority )
-        {
-            lock ( priorityQueue )
-            {
-                priorityQueue.Enqueue(action);
-            }
-        }
-        else
-        {
-            lock ( actionQueue )
-            {
-                actionQueue.Enqueue(action);
-            }
-        }
+        Interlocked.Increment(ref queueCount);
+        actionQueue.Enqueue(action);
     }
 }
