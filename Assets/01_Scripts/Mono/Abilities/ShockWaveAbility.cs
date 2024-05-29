@@ -12,11 +12,6 @@ public class ShockWaveAbility : Ability
         if ( !initialized )
         { return false; }
 
-        if ( ownerData.Player && ownerData.Souls < ActivationCost )
-        {
-            return false;
-        }
-
         var ownerPos = ownerData.CharacterTransform.position;
 
         var hitCount = Physics.OverlapSphereNonAlloc(ownerPos, shockWaveRadius, this.hits);

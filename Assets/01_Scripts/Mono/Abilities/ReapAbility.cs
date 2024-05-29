@@ -1,5 +1,3 @@
-using UnityEngine;
-
 //To be improved.
 public class ReapAbility : Ability
 {
@@ -12,7 +10,13 @@ public class ReapAbility : Ability
         if ( enemyTransform.gameObject.activeInHierarchy == false )
             return false;
 
-        var abilityOwner = (IAbilityOwner)enemyTransform.gameObject.GetComponent(typeof(IAbilityOwner));
+        IAbilityOwner abilityOwner;
+
+        if ( enemyTransform.root == enemyTransform )
+            abilityOwner = (IAbilityOwner)enemyTransform.gameObject.GetComponent(typeof(IAbilityOwner));
+        else
+            abilityOwner = (IAbilityOwner)enemyTransform.gameObject.GetComponentInParent(typeof(IAbilityOwner));
+
         if ( abilityOwner == null )
         {
             return false;

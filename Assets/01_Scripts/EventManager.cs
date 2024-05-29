@@ -7,6 +7,7 @@ public enum EventType
     UponHarvestSoul = 1,
     TargetSelection = 2,
     OnTextPopupQueue = 3,
+    PortalActivation = 4,
 }
 
 public static class EventManager

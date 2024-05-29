@@ -44,7 +44,7 @@ public class PlayerMovement
         characterData.Stamina -= halfStamina;
 
         canDash = false;
-        rb.AddForce((characterData.Speed * 1.5f) * direction, ForceMode.Impulse);
+        rb.AddForce((characterData.SpeedMultiplier) * direction, ForceMode.Impulse);
 
         ResetDashCooldown();
     }

@@ -22,8 +22,8 @@ MonoBehaviour:
     y: 0.2
   ReloadSpeed: 1
   Recoil: 1
-  CurrentAmmo: 45
-  MagSize: 50
+  CurrentAmmo: 23
+  MagSize: 35
   amountOfBulletsPer: 1
   damageProjectileLifeTimeSpeed: 199173
   prefab: {fileID: 4120230577132574208, guid: 99345b48c7a11944d82e5bf97126101f, type: 3}

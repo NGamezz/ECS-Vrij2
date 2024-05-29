@@ -24,6 +24,7 @@ public class CollectionPointManager : MonoBehaviour
             return;
 
         UponCompletionOfPoints?.Invoke();
+        EventManager.InvokeEvent(EventType.PortalActivation);
         EventManagerGeneric<TextPopup>.InvokeEvent(EventType.OnTextPopupQueue, new(1.0f, "Portal Has Been Unlocked."));
     }
 

@@ -210,6 +210,8 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
     //Returns if the player already owns the ability, otherwise adds it.
     public void AcquireAbility ( Ability ability )
     {
+        Debug.Log(ability);
+
         ability.Initialize(this, characterData);
 
         EventManagerGeneric<TextPopup>.InvokeEvent(EventType.OnTextPopupQueue, new(2.0f, $"Acquired : {ability.GetType()}"));
