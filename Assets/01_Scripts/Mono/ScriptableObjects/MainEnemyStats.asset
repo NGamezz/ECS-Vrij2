@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   EnemyType: 0
   maxHealth: 100
-  moveSpeed: 5
+  moveSpeed: 2.5
   damage: 10
   attackRange: 10
-  spawnSpeed: 10
+  spawnSpeed: 5
   attackSpeed: 1
-  enemiesPerBatch: 10
+  enemiesPerBatch: 15

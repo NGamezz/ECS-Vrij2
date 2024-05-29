@@ -39,7 +39,7 @@ public class ShockWaveAbility : Ability
             if ( hit == null )
                 continue;
 
-            hit.AfflictDamage(999999);
+            hit.AfflictDamage(500);
         }
         return true;
     }

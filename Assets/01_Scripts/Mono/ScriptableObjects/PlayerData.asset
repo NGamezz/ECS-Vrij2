@@ -12,12 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a724e0bc04822084a9b1f131dd04b299, type: 3}
   m_Name: PlayerData
   m_EditorClassIdentifier: 
+  Player: 1
+  PlayerMousePosition:
+    x: 1.2206655
+    y: 0
+    z: 29.354797
   souls: 0
   Health: 500
   Stamina: 150
   MaxStamina: 150
   MaxHealth: 500
-  Speed: 18
+  Speed: 15
   DamageMultiplier: 1
   SpeedMultiplier: 5
   Armour: 15
