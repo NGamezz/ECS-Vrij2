@@ -1,17 +1,9 @@
+using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.Events;
 
 public class LockOnHandler : MonoBehaviour
 {
-    private const int regularEnemyLayer = 9;
-    private const int specialEnemyLayer = 8;
-
-    [SerializeField] private UnityEvent<Transform> UponTargetSelection;
-    [SerializeField] private UnityEvent<Transform> UponSpecialTargetSelection;
-
-    [SerializeField] private CharacterData characterData;
-
-    [SerializeField] private UnityEvent UponTargetDeselection;
+    [SerializeField] private float activationCoolDown = 0.2f;
 
     private Camera mainCamera;
 
@@ -20,41 +12,55 @@ public class LockOnHandler : MonoBehaviour
         mainCamera = Camera.main;
     }
 
-    public void OnActivate ()
+    private RaycastHit[] hits = new RaycastHit[5];
+    private bool active = false;
+    public async void OnActivate ()
     {
+        if ( active )
+            return;
+
+        active = true;
+
         var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+        var hitCount = Physics.RaycastNonAlloc(ray, hits, 5000.0f);
 
-        var hasHit = Physics.Raycast(ray, out var hits, 5000.0f);
-
-        if ( !hasHit )
+        if ( hitCount == 0 )
         {
-            UponTargetDeselection?.Invoke();
+            EventManagerGeneric<Transform>.InvokeEvent(EventType.TargetSelection, null);
             return;
         }
 
-        var transform = hits.transform;
-        var layer = transform.gameObject.layer;
-
-        switch ( layer )
+        for ( int i = 0; i < hitCount; ++i )
         {
-            case specialEnemyLayer:
-                {
-                    characterData.TargetedTransform = transform;
-                    UponSpecialTargetSelection?.Invoke(transform);
-                    break;
-                }
-            case regularEnemyLayer:
-                {
-                    characterData.TargetedTransform = transform;
-                    UponTargetSelection?.Invoke(transform);
-                    break;
-                }
-            default:
-                {
-                    characterData.TargetedTransform = null;
-                    UponTargetDeselection?.Invoke();
-                    return;
-                }
+            if ( CheckHit(hits[i]) )
+                break;
+
         }
+
+        await Task.Delay(System.TimeSpan.FromSeconds(activationCoolDown));
+
+        active = false;
+    }
+
+    private bool CheckHit ( RaycastHit hit )
+    {
+        var transform = hit.transform;
+
+        bool hasLockOnProperty;
+        if ( transform.root == transform )
+            hasLockOnProperty = (ILockOnAble)transform.GetComponent(typeof(ILockOnAble)) != null;
+        else
+            hasLockOnProperty = (ILockOnAble)transform.GetComponentInParent(typeof(ILockOnAble)) != null;
+
+        Transform target = null;
+        if ( hasLockOnProperty )
+        {
+            target = transform;
+        }
+        EventManagerGeneric<Transform>.InvokeEvent(EventType.TargetSelection, target);
+
+        return target != null;
     }
 }
+
+public interface ILockOnAble { }

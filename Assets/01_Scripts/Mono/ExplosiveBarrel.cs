@@ -4,19 +4,14 @@ using UnityEngine;
 public class ExplosiveBarrel : MonoBehaviour
 {
     [SerializeField] private float radius;
-
     [SerializeField] private float damage;
 
     private Collider[] results = new Collider[10];
 
+    //Afflict Damage to anything Damagable within radius.
     private void OnTriggerEnter ( Collider other )
     {
-        if ( !other.TryGetComponent<IDamageable>(out var damageable) )
-        {
-            return;
-        }
-
-        var count = Physics.OverlapSphereNonAlloc(other.transform.position, radius, results);
+        var count = Physics.OverlapSphereNonAlloc(transform.position, radius, results);
 
         for(int i = 0; i < count; i++ )
         {

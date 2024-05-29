@@ -13,7 +13,7 @@ public enum EnemyType
     AngryEnemy = 4,
 }
 
-public class Enemy : Soulable, IDamageable
+public class Enemy : Soulable, IDamageable, ILockOnAble
 {
     public bool Dead { get; private set; }
 
@@ -147,8 +147,6 @@ public class Enemy : Soulable, IDamageable
 
         if ( health <= 0 )
         {
-            Debug.Log("EnemyDied");
-
             Dead = true;
             OnDeath?.Invoke(this);
             gameObject.SetActive(false);

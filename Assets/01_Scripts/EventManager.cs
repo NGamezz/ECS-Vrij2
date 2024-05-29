@@ -1,21 +1,23 @@
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 
 public enum EventType
 {
     UponDesiredSoulsAmount = 0,
     UponHarvestSoul = 1,
+    TargetSelection = 2,
+    OnTextPopupQueue = 3,
 }
 
 public static class EventManager
 {
-    private static Dictionary<EventType, Action> events = new();
+    private static ConcurrentDictionary<EventType, Action> events = new();
 
     public static void AddListener ( EventType type, Action action )
     {
         if ( !events.ContainsKey(type) )
         {
-            events.Add(type, action);
+            events.TryAdd(type, action);
         }
         else if ( events.ContainsKey(type) )
         {
@@ -57,13 +59,13 @@ public static class EventManager
 
 public static class EventManagerGeneric<T>
 {
-    private static Dictionary<EventType, Action<T>> events = new();
+    private static ConcurrentDictionary<EventType, Action<T>> events = new();
 
     public static void AddListener ( EventType type, Action<T> action )
     {
         if ( !events.ContainsKey(type) )
         {
-            events.Add(type, action);
+            events.TryAdd(type, action);
         }
         else if ( events.ContainsKey(type) )
         {
@@ -92,7 +94,7 @@ public static class EventManagerGeneric<T>
 
     public static void ClearListeners ()
     {
-        int amount = System.Enum.GetValues(typeof(EventType)).Length;
+        int amount = Enum.GetValues(typeof(EventType)).Length;
 
         for ( int i = amount; i > 0; i-- )
         {

@@ -6,13 +6,14 @@ public class LieEnemy : Enemy, IAbilityOwner
     private Ability ability = new LieAbility();
     private BTBaseNode abilityTree;
 
-    public override void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData , Transform manager )
+    public override void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData, Transform manager )
     {
         EnemyType = EnemyType.LieEnemy;
         base.OnStart(stats, moveTarget, startPosition, characterData, manager);
         ability.Initialize(this, characterData());
     }
 
+    //Sets up the behaviour Tree.
     public override void SetupBehaviourTrees ()
     {
         var currentGun = shooting.currentGun;
@@ -80,7 +81,5 @@ public class LieEnemy : Enemy, IAbilityOwner
         return ability;
     }
 
-    public void AcquireAbility ( Ability ability, bool singleUse = true )
-    {
-    }
+    public void AcquireAbility ( Ability ability ) { }
 }

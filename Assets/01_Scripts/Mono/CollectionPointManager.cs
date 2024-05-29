@@ -20,19 +20,16 @@ public class CollectionPointManager : MonoBehaviour
     {
         amountOfCompletedPoints++;
 
-        if ( amountOfCompletedPoints >= requiredAmountOfCompletedPoints )
-        {
-            UponCompletionOfPoints?.Invoke();
-        }
+        if ( amountOfCompletedPoints < requiredAmountOfCompletedPoints )
+            return;
+
+        UponCompletionOfPoints?.Invoke();
+        EventManagerGeneric<TextPopup>.InvokeEvent(EventType.OnTextPopupQueue, new(1.0f, "Portal Has Been Unlocked."));
     }
 
     private void OnDisable ()
     {
         EventManager.RemoveListener(EventType.UponDesiredSoulsAmount, ActivateCompletion);
-
-        foreach(var point in collectionPoints)
-        {
-        }
     }
 
     private void Start ()

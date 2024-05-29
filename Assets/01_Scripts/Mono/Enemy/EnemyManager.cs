@@ -26,6 +26,8 @@ public class EnemyManager : MonoBehaviour
 
     [SerializeField] private Transform playerTransform;
 
+    private Transform currentlySelectedTarget = null;
+
     [Header("Difficulty Scaling.")]
     [SerializeField] private List<DifficultyGrade> difficultyGrades = new();
     [SerializeField] private float currentDifficultyIndex = 0;
@@ -79,6 +81,9 @@ public class EnemyManager : MonoBehaviour
 
     private void RemoveEnemy ( Enemy sender )
     {
+        if ( currentlySelectedTarget != null && currentlySelectedTarget == sender.MeshTransform )
+            EventManagerGeneric<Transform>.InvokeEvent(EventType.TargetSelection, null);
+
         activeEnemies.Remove(sender);
         sender.gameObject.SetActive(false);
         objectPool.PoolObject(sender);
@@ -196,8 +201,14 @@ public class EnemyManager : MonoBehaviour
         return CreateEnemy(currentDifficultyGrade, null, null, enemyTarget, position);
     }
 
+    private void OnEnable ()
+    {
+        EventManagerGeneric<Transform>.AddListener(EventType.TargetSelection, ( target ) => currentlySelectedTarget = target);
+    }
+
     private void OnDisable ()
     {
+        EventManagerGeneric<Transform>.RemoveListener(EventType.TargetSelection, ( target ) => currentlySelectedTarget = target);
         foreach ( var enemy in activeEnemies )
         {
             enemy.OnDeath -= OnEnemyDeath;

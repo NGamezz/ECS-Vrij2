@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -23,7 +22,6 @@ public class CharacterData : ScriptableObject
 
     public float3 PlayerMousePosition; 
 
-    public HashSet<Type> OwnedAbilitiesHash = new();
 
     [SerializeField] private int souls;
     public int Souls
@@ -87,7 +85,6 @@ public class CharacterData : ScriptableObject
     public void Reset ()
     {
         Souls = 0;
-        OwnedAbilitiesHash?.Clear();
 
         UponSoulValueChanged = null;
 

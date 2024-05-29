@@ -21,23 +21,18 @@ public class ReapAbility : Ability
         var ability = abilityOwner.HarvestAbility();
         ownerData.Souls -= (int)ActivationCost;
 
-        if ( ownerData.OwnedAbilitiesHash.Contains(ability.GetType()) )
-        {
-            return false;
-        }
-
         Owner.AcquireAbility(ability);
         return false;
     }
 
+    //Set the values, the trigger condition and the cost.
     public override void Initialize ( IAbilityOwner owner, CharacterData context )
     {
         Owner = owner;
         ownerData = context;
 
         ActivationCooldown = 3;
-        //Set the values, the trigger condition and the cost.
         ActivationCost = 5;
-        Trigger = () => { return InputHandler.IsKeyPressed(VirtualKeys.KeyE) && ownerData.Souls > ActivationCost; };
+        Trigger = () => { return ownerData.Souls >= ActivationCost; };
     }
 }

@@ -55,9 +55,7 @@ public class ShockWaveEnemy : Enemy, IAbilityOwner
         moveTree.SetupBlackboard(blackBoard);
     }
 
-    public void AcquireAbility ( Ability ability, bool singleUse = true )
-    {
-    }
+    public void AcquireAbility ( Ability ability ) { }
 
     public Ability HarvestAbility ()
     {

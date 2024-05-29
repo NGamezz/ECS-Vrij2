@@ -10,7 +10,6 @@ public class SnitchingAbility : Ability
 
     public override void Initialize ( IAbilityOwner owner, CharacterData context )
     {
-        ActivationCooldown = 5;
         Debug.Log("Intialize Snitch.");
     }
 }

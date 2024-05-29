@@ -22,7 +22,7 @@ MonoBehaviour:
     y: 0.1
   ReloadSpeed: 1
   Recoil: 0.5
-  CurrentAmmo: 750
+  CurrentAmmo: 725
   MagSize: 750
   amountOfBulletsPer: 1
   damageProjectileLifeTimeSpeed: 133732

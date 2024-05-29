@@ -70,8 +70,6 @@ public class LieAbility : Ability
         var position = ownerData.CharacterTransform.position + (UnityEngine.Random.insideUnitSphere.normalized * UnityEngine.Random.Range(spawnRange.x, spawnRange.y));
         ActivateDecoy(position, false, ( data, enemy ) =>
         {
-            //enemy.OnFixedUpdate();
-
             return;
         }, ( data, enemy ) =>
         {
@@ -89,6 +87,6 @@ public class LieAbility : Ability
 
         ActivationCost = 10;
 
-        Trigger = () => { return InputHandler.IsKeyPressed(VirtualKeys.KeyQ); };
+        Trigger = () => { return ownerData.Souls >= ActivationCost; };
     }
 }

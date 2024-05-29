@@ -11,9 +11,7 @@ public class AngryEnemy : Enemy, IAbilityOwner
         ability.Initialize(this, this.characterData);
     }
 
-    public void AcquireAbility ( Ability ability, bool singleUse = true )
-    {
-    }
+    public void AcquireAbility ( Ability ability ) { }
 
     public Ability HarvestAbility ()
     {

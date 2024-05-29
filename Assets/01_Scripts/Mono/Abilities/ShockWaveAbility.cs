@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using UnityEngine;
 
 public class ShockWaveAbility : Ability
@@ -39,7 +38,7 @@ public class ShockWaveAbility : Ability
             if ( hit == null )
                 continue;
 
-            hit.AfflictDamage(999999);
+            hit.AfflictDamage(float.MaxValue);
         }
         return true;
     }
@@ -54,6 +53,6 @@ public class ShockWaveAbility : Ability
         ActivationCost = 10;
         shockWaveRadius = 10;
 
-        Trigger = () => { return InputHandler.IsKeyPressed(VirtualKeys.KeyO); };
+        Trigger = () => { return ownerData.Souls >= ActivationCost; };
     }
 }
