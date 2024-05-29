@@ -79,8 +79,6 @@ public class EnemyManager : MonoBehaviour
 
     private void RemoveEnemy ( Enemy sender )
     {
-        Debug.Log(sender);
-
         activeEnemies.Remove(sender);
         sender.gameObject.SetActive(false);
         objectPool.PoolObject(sender);
@@ -153,6 +151,12 @@ public class EnemyManager : MonoBehaviour
             {
                 var position = playerPos + (UnityEngine.Random.insideUnitSphere.normalized * UnityEngine.Random.Range(spawnRange.x, spawnRange.y));
                 position.y = ownPosition.y;
+
+                bool validPosition = Physics.CheckSphere(position, 1.0f, 1 << 3);
+                bool obstructions = Physics.CheckSphere(position, 1.0f, ~(1 << 3));
+
+                if ( !validPosition || obstructions )
+                    continue;
 
                 var succes = objectPool.GetPooledObject(out var enemy);
                 var gameObject = enemy.GameObject;

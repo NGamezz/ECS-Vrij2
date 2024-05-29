@@ -45,6 +45,7 @@ public class PlayerCameraHandling : MonoBehaviour
     }
 
     Plane plane = new(Vector3.up, 0);
+
     //Should be improved.
     private void ApplyLookDirection ()
     {
@@ -52,7 +53,7 @@ public class PlayerCameraHandling : MonoBehaviour
 
         if ( lookAtMouse )
         {
-            var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+            var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if ( !plane.Raycast(ray, out float distance) )
             {
                 return;
@@ -78,7 +79,6 @@ public class PlayerCameraHandling : MonoBehaviour
         running = false;
         StopAllCoroutines();
         updateCameraPosition = false;
-        waitUntilUpdateCam = null;
     }
 
     private void CheckForPositionChange ()
@@ -97,41 +97,28 @@ public class PlayerCameraHandling : MonoBehaviour
         updateCameraPosition = true;
     }
 
-    private static WaitUntil waitUntilUpdateCam;
-
-    private IEnumerator UpdateCameraPositionIE ()
+    private void UpdateCameraPositionIE ()
     {
-        while ( running )
+        if ( !updateCameraPosition )
+            return;
+
+        var cameraPos = cameraTransform.position;
+        var meshPos = meshTransform.position;
+
+        var newPos = new Vector3(meshPos.x, cameraPos.y, meshPos.z);
+        cameraPos = Vector3.SmoothDamp(cameraPos, newPos, ref velocity, smoothTime);
+
+        if ( Vector3.Distance(cameraPos, newPos) < cameraRecenterDeadzone )
         {
-            yield return waitUntilUpdateCam;
-
-            while ( updateCameraPosition )
-            {
-                var cameraPos = cameraTransform.position;
-                var meshPos = meshTransform.position;
-
-                var newPos = new Vector3(meshPos.x, cameraPos.y, meshPos.z);
-                cameraPos = Vector3.SmoothDamp(cameraPos, newPos, ref velocity, smoothTime);
-
-                if ( Vector3.Distance(cameraPos, newPos) < cameraRecenterDeadzone )
-                {
-                    updateCameraPosition = false;
-                }
-
-                cameraTransform.position = cameraPos;
-                yield return null;
-            }
-
-            yield return null;
+            updateCameraPosition = false;
         }
+
+        cameraTransform.position = cameraPos;
     }
 
     private void Start ()
     {
         mainCamera = Camera.main;
-        waitUntilUpdateCam = new(() => updateCameraPosition);
-
-        StartCoroutine(UpdateCameraPositionIE());
         SetScalingForBorderDeadZone();
     }
 
@@ -154,9 +141,8 @@ public class PlayerCameraHandling : MonoBehaviour
         distanceFromBorder = new((int)(distanceFromBorder.x * scalingA), (int)(distanceFromBorder.y * scalingB));
     }
 
-    private void Update ()
+    private void LateUpdate ()
     {
         ApplyLookDirection();
-        CheckForPositionChange();
     }
 }

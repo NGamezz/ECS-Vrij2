@@ -90,17 +90,36 @@ public class InputHandler : MonoBehaviour
                 if ( cmd == null )
                     continue;
 
-                if ( cmd.Activation() )
-                {
-                    if ( cmd.BackGroundSafe )
-                        cmd.Action.Invoke();
-                    else
-                        MainThreadQueue.Instance.Enqueue(cmd.Action);
+                HandleCommand(cmd, i);
+            }
+        }
+    }
 
-                    if ( cmd.SingleUse )
-                        UnBindCommand(i);
+    private void HandleCommand ( Command cmd, int index )
+    {
+        if ( cmd.Activation() )
+        {
+            if ( cmd.BackGroundSafe )
+            {
+                try
+                {
+                    cmd.Action();
+                }
+                catch ( UnityException e )
+                {
+                    Debug.Log($"Caught UnityException, attempting on main thread. Exception : {e.Message}");
+
+                    MainThreadQueue.Instance.Enqueue(() =>
+                    {
+                        cmd.Action();
+                    });
                 }
             }
+            else
+                MainThreadQueue.Instance.Enqueue(cmd.Action);
+
+            if ( cmd.SingleUse )
+                UnBindCommand(index);
         }
     }
 
