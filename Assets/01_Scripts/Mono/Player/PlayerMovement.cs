@@ -17,10 +17,6 @@ public class PlayerMovement
     [SerializeField] private float staminaRegenSpeed = 1.0f;
 
     public CharacterData characterData;
-
-    private bool isRunning = false;
-    private bool pressedKey = false;
-
     private Vector2 inputVector;
 
     private bool canDash = true;
@@ -62,44 +58,6 @@ public class PlayerMovement
         rb = rb != null ? rb : meshObject.AddComponent<Rigidbody>();
         characterData.Stamina = characterData.MaxStamina;
         cachedMeshTransform = meshObject.transform;
-    }
-
-    private void HandleInput ()
-    {
-        if ( Input.GetKeyDown(KeyCode.LeftShift) && characterData.Stamina - sprintStaminaCost >= 0 )
-        {
-            SetSprint(true);
-            Utility.Utility.Log("Activate Sprint.");
-        }
-        if ( Input.GetKeyUp(KeyCode.LeftShift) && pressedKey )
-        {
-            SetSprint(false);
-            Utility.Utility.Log("Activate Sprint.");
-        }
-    }
-
-    private void CheckStamina ()
-    {
-        if ( !isRunning && characterData.Stamina + staminaRegenSpeed <= characterData.MaxStamina )
-        {
-            characterData.Stamina += staminaRegenSpeed * Time.deltaTime;
-        }
-        if ( isRunning && characterData.Stamina - sprintStaminaCost > 0 )
-        {
-            characterData.Stamina -= sprintStaminaCost * Time.deltaTime;
-        }
-        else if ( isRunning && characterData.Stamina - sprintStaminaCost <= 0 )
-        {
-            SetSprint(false);
-        }
-    }
-
-    private void SetSprint ( bool state )
-    {
-        pressedKey = state;
-        var speed = characterData.Speed;
-        characterData.Speed = state ? speed + characterData.SpeedMultiplier : speed - characterData.SpeedMultiplier;
-        isRunning = state;
     }
 
     private void VelocityLimiting ()

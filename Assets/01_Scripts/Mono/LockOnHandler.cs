@@ -17,7 +17,10 @@ public class LockOnHandler : MonoBehaviour
     public async void OnActivate ()
     {
         if ( active )
+        {
+            Debug.Log("On Cooldown");
             return;
+        }
 
         active = true;
 
@@ -34,7 +37,6 @@ public class LockOnHandler : MonoBehaviour
         {
             if ( CheckHit(hits[i]) )
                 break;
-
         }
 
         await Task.Delay(System.TimeSpan.FromSeconds(activationCoolDown));

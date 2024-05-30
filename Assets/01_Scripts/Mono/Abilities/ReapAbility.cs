@@ -1,10 +1,15 @@
 //To be improved.
+using System.Diagnostics;
+
 public class ReapAbility : Ability
 {
     public override bool Execute ( object context )
     {
         if ( ownerData.TargetedTransform == null )
+        {
+            UnityEngine.Debug.Log("No Targeted Transform.");
             return false;
+        }
 
         var enemyTransform = ownerData.TargetedTransform;
         if ( enemyTransform.gameObject.activeInHierarchy == false )
@@ -19,6 +24,7 @@ public class ReapAbility : Ability
 
         if ( abilityOwner == null )
         {
+            EventManagerGeneric<TextPopup>.InvokeEvent(EventType.OnTextPopupQueue, new(1.0f, "Enemy Doesn't have an ability."));
             return false;
         }
 
