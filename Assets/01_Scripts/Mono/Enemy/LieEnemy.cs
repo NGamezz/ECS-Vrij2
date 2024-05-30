@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public class LieEnemy : Enemy, IAbilityOwner
+public class LieEnemy : Enemy, IAbilityOwner, ILockOnAble
 {
     private Ability ability = new LieAbility();
     private BTBaseNode abilityTree;
@@ -32,7 +32,7 @@ public class LieEnemy : Enemy, IAbilityOwner
 
                             new BTAlwaysSuccesTask(() => blackBoard.SetVariable(VariableNames.PLAYER_TRANSFORM, moveTarget.target)),
                             new BTGetPosition(VariableNames.PLAYER_TRANSFORM, blackBoard),
-                            new BTMoveToPosition(agent, enemyStats.moveSpeed, VariableNames.TARGET_POSITION, enemyStats.attackRange)
+                            new BTMoveToPosition(agent, enemyStats.MoveSpeed, VariableNames.TARGET_POSITION, enemyStats.attackRange)
         )),
         new BTAlwaysFalse()
                         );
@@ -82,4 +82,6 @@ public class LieEnemy : Enemy, IAbilityOwner
     }
 
     public void AcquireAbility ( Ability ability ) { }
+
+    public void OnExecuteAbility ( AbilityType type ) { }
 }

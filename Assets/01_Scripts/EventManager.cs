@@ -8,6 +8,8 @@ public enum EventType
     TargetSelection = 2,
     OnTextPopupQueue = 3,
     PortalActivation = 4,
+    ActivateSoulEffect = 5,
+    GameOver = 6,
 }
 
 public static class EventManager
@@ -22,7 +24,10 @@ public static class EventManager
         }
         else if ( events.ContainsKey(type) )
         {
-            events[type] += action;
+            lock ( events[type] )
+            {
+                events[type] += action;
+            }
         }
     }
 
@@ -33,7 +38,10 @@ public static class EventManager
 
         if ( events.ContainsKey(type) )
         {
-            events[type] -= action;
+            lock ( events[type] )
+            {
+                events[type] -= action;
+            }
         }
     }
 
@@ -42,7 +50,10 @@ public static class EventManager
         if ( !events.ContainsKey(type) )
             return;
 
-        events[type]?.Invoke();
+        lock ( events[type] )
+        {
+            events[type]?.Invoke();
+        }
     }
 
     public static void ClearListeners ()
@@ -51,7 +62,10 @@ public static class EventManager
 
         for ( int i = amount; i > 0; i-- )
         {
-            events[(EventType)i] = null;
+            lock ( events[(EventType)i] )
+            {
+                events[(EventType)i] = null;
+            }
         }
 
         events.Clear();
@@ -70,7 +84,10 @@ public static class EventManagerGeneric<T>
         }
         else if ( events.ContainsKey(type) )
         {
-            events[type] += action;
+            lock ( events[type] )
+            {
+                events[type] += action;
+            }
         }
     }
 
@@ -81,7 +98,10 @@ public static class EventManagerGeneric<T>
 
         if ( events.ContainsKey(type) )
         {
-            events[type] -= action;
+            lock ( events[type] )
+            {
+                events[type] -= action;
+            }
         }
     }
 
@@ -90,7 +110,10 @@ public static class EventManagerGeneric<T>
         if ( !events.ContainsKey(type) )
             return;
 
-        events[type]?.Invoke(input);
+        lock ( events[type] )
+        {
+            events[type]?.Invoke(input);
+        }
     }
 
     public static void ClearListeners ()
@@ -99,7 +122,10 @@ public static class EventManagerGeneric<T>
 
         for ( int i = amount; i > 0; i-- )
         {
-            events[(EventType)i] = null;
+            lock ( events[(EventType)i] )
+            {
+                events[(EventType)i] = null;
+            }
         }
 
         events.Clear();

@@ -32,6 +32,8 @@ public class ReapAbility : Ability
         ownerData.Souls -= (int)ActivationCost;
 
         Owner.AcquireAbility(ability);
+
+        Owner.OnExecuteAbility(Type);
         return false;
     }
 

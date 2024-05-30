@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public class SnitchEnemy : Enemy, IAbilityOwner
+public class SnitchEnemy : Enemy, IAbilityOwner, ILockOnAble
 {
     [SerializeField] private Ability ability = new SnitchingAbility();
     private BTBaseNode abilityTree;
@@ -31,7 +31,7 @@ public class SnitchEnemy : Enemy, IAbilityOwner
 
                             new BTAlwaysSuccesTask(() => blackBoard.SetVariable(VariableNames.PLAYER_TRANSFORM, moveTarget.target)),
                             new BTGetPosition(VariableNames.PLAYER_TRANSFORM, blackBoard),
-                            new BTMoveToPosition(agent, enemyStats.moveSpeed, VariableNames.TARGET_POSITION, enemyStats.attackRange)
+                            new BTMoveToPosition(agent, enemyStats.MoveSpeed, VariableNames.TARGET_POSITION, enemyStats.attackRange)
         )),
         new BTAlwaysFalse()
                         );
@@ -80,4 +80,6 @@ public class SnitchEnemy : Enemy, IAbilityOwner
     }
 
     public void AcquireAbility ( Ability ability ) { }
+
+    public void OnExecuteAbility ( AbilityType type ) { }
 }

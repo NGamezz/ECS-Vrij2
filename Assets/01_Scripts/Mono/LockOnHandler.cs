@@ -1,67 +1,44 @@
-using System.Threading.Tasks;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class LockOnHandler : MonoBehaviour
 {
-    [SerializeField] private float activationCoolDown = 0.2f;
+    [SerializeField] private float radius = 10.0f;
 
-    private Camera mainCamera;
+    [SerializeField] private Transform meshTransform;
 
-    private void Start ()
+    private Collider[] hits = new Collider[50];
+    private int targetCount = 0;
+
+    public void SwitchLock (InputAction.CallbackContext ctx)
     {
-        mainCamera = Camera.main;
-    }
-
-    private RaycastHit[] hits = new RaycastHit[5];
-    private bool active = false;
-    public async void OnActivate ()
-    {
-        if ( active )
-        {
-            Debug.Log("On Cooldown");
+        if ( ctx.phase != InputActionPhase.Performed )
             return;
-        }
 
-        active = true;
+        targetCount = Physics.OverlapSphereNonAlloc(meshTransform.position, radius, hits);
 
-        var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-        var hitCount = Physics.RaycastNonAlloc(ray, hits, 5000.0f);
+        if ( targetCount < 1 )
+            return;
 
-        if ( hitCount == 0 )
+        var collider = GetNearest(meshTransform.position, hits);
+
+        if ( collider == null )
         {
             EventManagerGeneric<Transform>.InvokeEvent(EventType.TargetSelection, null);
             return;
         }
 
-        for ( int i = 0; i < hitCount; ++i )
-        {
-            if ( CheckHit(hits[i]) )
-                break;
-        }
-
-        await Task.Delay(System.TimeSpan.FromSeconds(activationCoolDown));
-
-        active = false;
+        EventManagerGeneric<Transform>.InvokeEvent(EventType.TargetSelection, collider.transform);
     }
 
-    private bool CheckHit ( RaycastHit hit )
+    private Collider GetNearest ( Vector3 startPosition, params Collider[] colliders )
     {
-        var transform = hit.transform;
+        int ownLayer = gameObject.layer;
+        var numerator = colliders.Where(x => x != null && x.gameObject.layer != ownLayer && (x.GetComponentInParent<IAbilityOwner>() != null || x.GetComponent<IAbilityOwner>() != null));
+        var nearest = numerator.OrderBy(x => Vector3.Distance(x.transform.position, startPosition)).FirstOrDefault();
 
-        bool hasLockOnProperty;
-        if ( transform.root == transform )
-            hasLockOnProperty = (ILockOnAble)transform.GetComponent(typeof(ILockOnAble)) != null;
-        else
-            hasLockOnProperty = (ILockOnAble)transform.GetComponentInParent(typeof(ILockOnAble)) != null;
-
-        Transform target = null;
-        if ( hasLockOnProperty )
-        {
-            target = transform;
-        }
-        EventManagerGeneric<Transform>.InvokeEvent(EventType.TargetSelection, target);
-
-        return target != null;
+        return nearest;
     }
 }
 

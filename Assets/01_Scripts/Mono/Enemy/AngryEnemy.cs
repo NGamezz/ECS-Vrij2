@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public class AngryEnemy : Enemy, IAbilityOwner
+public class AngryEnemy : Enemy, IAbilityOwner, ILockOnAble
 {
     private Ability ability = new AttackBoostAbility();
 
@@ -18,4 +18,6 @@ public class AngryEnemy : Enemy, IAbilityOwner
         gameObject.SetActive(false);
         return ability;
     }
+
+    public void OnExecuteAbility ( AbilityType type ) { }
 }

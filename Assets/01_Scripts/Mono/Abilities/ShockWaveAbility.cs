@@ -16,7 +16,10 @@ public class ShockWaveAbility : Ability
 
         var hitCount = Physics.OverlapSphereNonAlloc(ownerPos, shockWaveRadius, this.hits);
         if ( hitCount == 0 )
+        {
+            Debug.Log("No Hits within Range.");
             return false;
+        }
 
         ownerData.Souls -= (int)ActivationCost;
         for ( int i = 0; i < hitCount; i++ )
@@ -35,6 +38,8 @@ public class ShockWaveAbility : Ability
 
             hit.AfflictDamage(float.MaxValue);
         }
+
+        Owner.OnExecuteAbility(Type);
         return true;
     }
 

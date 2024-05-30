@@ -16,9 +16,11 @@ public class LieAbility : Ability
     {
         refPos.y = ownerData.CharacterTransform.position.y;
         var enemy = EnemyManager.Instance.CreateEnemy(refPos);
+        enemy.GameObject.SetActive(true);
         contextCallBackStart(ownerData, enemy);
 
         activeCount++;
+        Owner.OnExecuteAbility(Type);
 
         await Task.Delay(abilityDuration);
 

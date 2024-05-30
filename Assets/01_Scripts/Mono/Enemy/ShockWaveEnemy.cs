@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public class ShockWaveEnemy : Enemy, IAbilityOwner
+public class ShockWaveEnemy : Enemy, IAbilityOwner, ILockOnAble
 {
     private readonly Ability ability = new ShockWaveAbility();
 
@@ -32,7 +32,7 @@ public class ShockWaveEnemy : Enemy, IAbilityOwner
 
                             new BTAlwaysSuccesTask(() => blackBoard.SetVariable(VariableNames.PLAYER_TRANSFORM, moveTarget.target)),
                             new BTGetPosition(VariableNames.PLAYER_TRANSFORM, blackBoard),
-                            new BTMoveToPosition(agent, enemyStats.moveSpeed, VariableNames.TARGET_POSITION, enemyStats.attackRange / 2)
+                            new BTMoveToPosition(agent, enemyStats.MoveSpeed, VariableNames.TARGET_POSITION, enemyStats.attackRange / 2)
         ))),
         new BTAlwaysFalse()
                         );
@@ -62,4 +62,6 @@ public class ShockWaveEnemy : Enemy, IAbilityOwner
         gameObject.SetActive(false);
         return ability;
     }
+
+    public void OnExecuteAbility ( AbilityType type ) { }
 }

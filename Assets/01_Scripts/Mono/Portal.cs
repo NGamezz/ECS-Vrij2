@@ -1,32 +1,34 @@
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.InputSystem;
 
 public class Portal : MonoBehaviour
 {
     [SerializeField] private UnityEvent uponEnablePortal;
 
-    [SerializeField] private int playerLayer;
-
     [SerializeField] private UnityEvent uponPortalActivation;
-    [SerializeField] private KeyCode activationKey;
+
+    [SerializeField] private InputAction activationAction;
 
     private bool active = true;
+
+    private void Start ()
+    {
+        activationAction.performed += Activate;
+    }
 
     private void ActivatePortal ()
     {
         uponEnablePortal?.Invoke();
     }
 
-    private void OnTriggerStay ( Collider other )
+    private void Activate ( InputAction.CallbackContext ctx )
     {
-        if ( !active || other.gameObject.layer != playerLayer )
+        if ( !active )
             return;
 
-        if ( Input.GetKeyDown(activationKey) )
-        {
-            uponEnablePortal?.Invoke();
-            active = false;
-        }
+        uponEnablePortal?.Invoke();
+        active = false;
     }
 
     void OnEnable ()

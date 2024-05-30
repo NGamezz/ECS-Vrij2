@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Events;
@@ -20,34 +19,35 @@ public class CollectionPoint : MonoBehaviour
 
     [SerializeField] private int souls = 0;
 
-    [SerializeField] private List<int2> cellPositions = new();
+    [SerializeField] private HashSet<int2> cellPositions = new();
 
     [SerializeField] private int amountToTrigger = 10;
+
+    private Transform playerTransform;
 
     [SerializeField] private UnityEvent eventToTrigger;
 
     private Vector3 ownPosition;
 
-    private void CalculateOnDeath ( object entity )
+    private async void CalculateOnDeath ( object entity )
     {
-        Task.Run(() =>
-        {
-            var mode = this.mode;
+        await Awaitable.BackgroundThreadAsync();
 
-            switch ( mode )
-            {
-                case CollectionPointMode.Standard:
-                    {
-                        StandardCollection(entity);
-                        break;
-                    }
-                case CollectionPointMode.Manual:
-                    {
-                        EventManagerGeneric<int>.InvokeEvent(EventType.UponHarvestSoul, 1);
-                        break;
-                    }
-            }
-        }).ConfigureAwait(false);
+        var mode = this.mode;
+
+        switch ( mode )
+        {
+            case CollectionPointMode.Standard:
+                {
+                    StandardCollection(entity);
+                    break;
+                }
+            case CollectionPointMode.Manual:
+                {
+                    EventManagerGeneric<int>.InvokeEvent(EventType.UponHarvestSoul, 1);
+                    break;
+                }
+        }
     }
 
     private void StandardCollection ( object entity )
@@ -59,29 +59,34 @@ public class CollectionPoint : MonoBehaviour
 
         if ( lenght > range )
         {
+            MainThreadQueue.Instance.Enqueue(() =>
+            {
+                EventManagerGeneric<DoubleVector3>.InvokeEvent(EventType.ActivateSoulEffect, new(pos, playerTransform.position));
+            });
             EventManagerGeneric<int>.InvokeEvent(EventType.UponHarvestSoul, 1);
             return;
         }
 
+        EventManagerGeneric<DoubleVector3>.InvokeEvent(EventType.ActivateSoulEffect, new(pos, ownPosition));
+
         AddSoul(1);
     }
 
-    public void OnStart ()
+    public void OnStart ( Transform playerTransform )
     {
         ownPosition = transform.position;
 
-        Task.Run(async () =>
+        this.playerTransform = playerTransform;
+
+        BackgroundQueue.Instance.Enqueue(() =>
         {
-            cellPositions = await WorldManager.AddGridListenerParallelJob(ownPosition, range, CalculateOnDeath, CellEventType.OnEntityDeath);
-        }).ConfigureAwait(false);
+            cellPositions = WorldManager.AddGridListener(ownPosition, range, CalculateOnDeath, CellEventType.OnEntityDeath);
+        });
     }
 
     private void OnDisable ()
     {
-        Task.Run(() =>
-        {
-            WorldManager.RemoveGridListener(ownPosition, range, CalculateOnDeath, CellEventType.OnEntityDeath);
-        }).Wait();
+        WorldManager.RemoveGridListener(ownPosition, range, CalculateOnDeath, CellEventType.OnEntityDeath);
 
         souls = 0;
         cellPositions.Clear();
@@ -94,22 +99,19 @@ public class CollectionPoint : MonoBehaviour
 
         souls += amount;
 
-        Task.Run(() =>
+        if ( souls >= amountToTrigger )
         {
-            if ( souls >= amountToTrigger )
+            if ( eventToTrigger != null )
             {
-                if ( eventToTrigger != null )
+                MainThreadQueue.Instance.Enqueue(() =>
                 {
-                    MainThreadQueue.Instance.Enqueue(() =>
-                    {
-                        eventToTrigger?.Invoke();
-                    });
-                }
-
-                WorldManager.RemoveGridListener(ownPosition, range, CalculateOnDeath, CellEventType.OnEntityDeath);
-                EventManager.InvokeEvent(EventType.UponDesiredSoulsAmount);
+                    eventToTrigger?.Invoke();
+                });
             }
-        }).ConfigureAwait(false);
+
+            WorldManager.RemoveGridListener(ownPosition, range, CalculateOnDeath, CellEventType.OnEntityDeath);
+            EventManager.InvokeEvent(EventType.UponDesiredSoulsAmount);
+        }
     }
 
     private void OnDrawGizmos ()

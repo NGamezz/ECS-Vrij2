@@ -43,7 +43,7 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
 
     [SerializeField] private MoveTarget enemyMoveTarget;
 
-    [SerializeField] private Transform meshTransform;
+    public Transform meshTransform;
 
     [SerializeField] private float abilityCooldown = 0.2f;
 
@@ -51,24 +51,28 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
 
     [Space(2)]
 
-    [SerializeField] private Stack<Ability> abilities = new();
+    [SerializeField] private List<Ability> abilities = new(2);
 
     private bool canUseAbility = true;
 
     public void AfflictDamage ( float amount )
     {
+        return;
+
         characterData.Health -= amount;
 
         if ( characterData.Health <= 0 )
         {
             Debug.Log("You Died.");
             gameObject.SetActive(false);
-            Application.Quit();
         }
     }
 
     public void OnShoot ( InputAction.CallbackContext context )
     {
+        if ( context.phase != InputActionPhase.Performed )
+            return;
+
         playerShooting.OnShoot(context);
     }
 
@@ -100,39 +104,44 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
     }
 
     //Gets Activated when the dash key gets pressed, passes it onto the actual logic.
-    public void OnDash ()
+    public void OnDash ( InputAction.CallbackContext ctx )
     {
+        if ( ctx.phase != InputActionPhase.Performed )
+            return;
+
         playerMovement.OnDash();
     }
 
     //Use the ability, if it fails due to not having enough souls, re-add it.
-    public async void OnUseAbility ()
+    public async void OnUseAbility ( InputAction.CallbackContext ctx )
     {
-        if ( !canUseAbility )
+        if ( !canUseAbility || ctx.phase != InputActionPhase.Performed )
             return;
 
         canUseAbility = false;
 
-        var ability = abilities.Pop();
+        var ability = abilities[^1];
         if ( ability.Trigger() )
         {
-            if ( !ability.Execute(characterData) )
+            if ( ability.Execute(characterData) )
             {
-                abilities.Push(ability);
+                abilities.Remove(ability);
             }
         }
         else
         {
             EventManagerGeneric<TextPopup>.InvokeEvent(EventType.OnTextPopupQueue, new(1.0f, $"Not Enough Souls. Requires : {ability.ActivationCost}"));
-            abilities.Push(ability);
         }
 
         await Task.Delay(TimeSpan.FromSeconds(abilityCooldown));
         canUseAbility = true;
     }
 
-    public void OnReload ()
+    public void OnReload ( InputAction.CallbackContext ctx )
     {
+        if ( ctx.phase != InputActionPhase.Performed )
+            return;
+
         OnReloadEvent?.Invoke();
         playerShooting.OnReload();
     }
@@ -217,12 +226,17 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
 
         EventManagerGeneric<TextPopup>.InvokeEvent(EventType.OnTextPopupQueue, new(2.0f, $"Acquired : {ability.GetType()}"));
         EventManagerGeneric<Transform>.InvokeEvent(EventType.TargetSelection, null);
-        abilities.Push(ability);
+        abilities.Add(ability);
     }
 
     public Ability HarvestAbility ()
     {
         //Not Applicable.
         return null;
+    }
+
+    //The visual effects of the ability.
+    public void OnExecuteAbility ( AbilityType type )
+    {
     }
 }

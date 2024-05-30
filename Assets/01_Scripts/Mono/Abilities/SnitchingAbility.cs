@@ -4,7 +4,7 @@ public class SnitchingAbility : Ability
 {
     public override bool Execute ( object context )
     {
-        return false;
+        return true;
         //Debug.Log("Snitch Ability");
     }
 

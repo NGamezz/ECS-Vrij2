@@ -31,28 +31,9 @@ public static class WorldManager
         AddListener(cellPos, action, type);
     }
 
-    public static async Task<List<int2>> AddGridListenerParallelJob ( float3 position, float radius, Action<object> action, CellEventType type )
+    public static HashSet<int2> AddGridListener ( float3 position, float radius, Action<object> action, CellEventType type )
     {
-        var cellPositions = await CalculatePositionsParallelJobbed(position, radius, cellSize);
-
-        foreach ( var cellPos in cellPositions )
-        {
-            if ( !grid.ContainsKey(cellPos) )
-            {
-                grid.TryAdd(cellPos, new Cell(type, action));
-                continue;
-            }
-
-            AddListener(cellPos, action, type);
-        }
-
-        return cellPositions;
-    }
-
-    public static List<int2> AddGridListener ( float3 fPosition, float radius, Action<object> action, CellEventType type )
-    {
-        List<int2> cellPositions = new();
-        CalculateCellPositions(fPosition, radius, cellSize, ref cellPositions);
+        var cellPositions = CalculateCellPositions(position, radius, cellSize);
 
         foreach ( var cellPos in cellPositions )
         {
@@ -69,9 +50,9 @@ public static class WorldManager
     }
 
     //Work in Progress.
-    public static async Task<bool> InvokeCellEvent ( CellEventType type, float3 position, object input, float radius )
+    public static bool InvokeCellEvent ( CellEventType type, float3 position, object input, float radius )
     {
-        var positions = await CalculatePositionsParallelJobbed(position, radius, cellSize);
+        var positions = CalculateCellPositions(position, radius, cellSize);
 
         foreach ( var pos in positions )
         {
@@ -83,7 +64,6 @@ public static class WorldManager
             InvokeEvent(pos, type, input);
             return true;
         }
-
         return false;
     }
 
@@ -116,7 +96,9 @@ public static class WorldManager
     //Improve the grid listener removal.
     public async static void RemoveGridListener ( float3 fPosition, float radius, Action<object> action, CellEventType type )
     {
-        var cellPositions = await CalculatePositionsParallelJobbed(fPosition, radius, cellSize);
+        await Task.Yield();
+
+        var cellPositions = CalculateCellPositions(fPosition, radius, cellSize);
 
         foreach ( var cellPos in cellPositions )
         {
@@ -167,8 +149,9 @@ public static class WorldManager
     }
 
     //Should probably be improved. Maybe with a job and the burst compiler.
-    private static void CalculateCellPositions ( float3 position, float radius, int cellSize, ref List<int2> positions )
+    private static HashSet<int2> CalculateCellPositions ( float3 position, float radius, int cellSize )
     {
+        HashSet<int2> positions = new();
         positions.Clear();
 
         var halfCelSize = cellSize / 2;
@@ -185,9 +168,6 @@ public static class WorldManager
                 int y = SnapFloatToGrid(position.z + (t * cellSize), cellSize);
                 int2 result = new(x, y);
 
-                if ( positions.Contains(result) )
-                    continue;
-
                 int dx = x - posX;
                 int dy = y - posY;
 
@@ -197,57 +177,58 @@ public static class WorldManager
                 }
             }
         }
-    }
-
-    //Work in progress.
-    private static async Task<List<int2>> CalculatePositionsParallelJobbed ( float3 position, float radius, int cellSize )
-    {
-        NativeArray<PositionHolder> jobList = new(49, Allocator.Persistent);
-        List<int2> positions = new();
-
-        try
-        {
-            const int indexOffSet = -3;
-            const int iterations = 4;
-
-            CalculateIntersectinCellPositionsParallelJob job = new()
-            {
-                indexOffset = indexOffSet,
-                position = position,
-                radius = radius,
-                cellSize = cellSize,
-                positions = jobList
-            };
-
-            JobHandle handle = job.Schedule(-indexOffSet + iterations, 64);
-
-            await Utility.Async.WaitWhileAsync(CancellationToken.None, () => { return handle.IsCompleted == false; });
-            handle.Complete();
-
-            for ( int i = 0; i < job.positions.Length; i++ )
-            {
-                var pos = job.positions[i];
-
-                if ( pos.PositionSet == false )
-                    continue;
-
-                if ( positions.Contains(pos.Position) )
-                    continue;
-
-                positions.Add(pos.Position);
-            }
-        }
-        catch ( Exception e )
-        {
-            UnityEngine.Debug.LogException(e);
-        }
-        finally
-        {
-            jobList.Dispose();
-        }
-
         return positions;
     }
+
+    ////Work in progress.
+    //private static async Task<List<int2>> CalculatePositionsParallelJobbed ( float3 position, float radius, int cellSize )
+    //{
+    //    NativeArray<PositionHolder> jobList = new(49, Allocator.Persistent);
+    //    List<int2> positions = new();
+
+    //    try
+    //    {
+    //        const int indexOffSet = -3;
+    //        const int iterations = 4;
+
+    //        CalculateIntersectinCellPositionsParallelJob job = new()
+    //        {
+    //            indexOffset = indexOffSet,
+    //            position = position,
+    //            radius = radius,
+    //            cellSize = cellSize,
+    //            positions = jobList
+    //        };
+
+    //        JobHandle handle = job.Schedule(-indexOffSet + iterations, 64);
+
+    //        await Utility.Async.WaitWhileAsync(CancellationToken.None, () => !handle.IsCompleted);
+    //        handle.Complete();
+
+    //        for ( int i = 0; i < job.positions.Length; i++ )
+    //        {
+    //            var pos = job.positions[i];
+
+    //            if ( pos.PositionSet == false )
+    //                continue;
+
+    //            if ( positions.Contains(pos.Position) )
+    //                continue;
+
+    //            positions.Add(pos.Position);
+    //        }
+    //    }
+    //    catch ( Exception e )
+    //    {
+    //        UnityEngine.Debug.LogException(e);
+    //    }
+    //    finally
+    //    {
+    //        jobList.Dispose();
+    //    }
+
+    //    return positions;
+    //}
 
     //Work in Progress.
     private static async Task<List<int2>> CalculeCellPositionsJobbed ( float3 position, float radius, int cellSize )
@@ -399,7 +380,7 @@ public enum CellEventType
 
 public class Cell
 {
-    private readonly Dictionary<CellEventType, Action<object>> events = new();
+    private readonly ConcurrentDictionary<CellEventType, Action<object>> events = new();
 
     public Cell ( CellEventType type, Action<object> action )
     {

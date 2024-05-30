@@ -13,6 +13,7 @@ public class AttackBoostAbility : Ability
     public override bool Execute ( object context )
     {
         ActivateBoost();
+        Owner.OnExecuteAbility(Type);
         return true;
     }
 

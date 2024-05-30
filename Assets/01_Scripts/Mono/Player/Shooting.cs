@@ -89,10 +89,16 @@ public class Shooting
         shootRoutine = owner.StartCoroutine(Shoot());
     }
 
+    private Coroutine reloadRoutine;
     public void OnReload ()
     {
-        if ( !reloading )
-            owner.StartCoroutine(Reload());
+        if ( reloadRoutine == null )
+        {
+            if ( ownerData.Player )
+                EventManagerGeneric<TextPopup>.InvokeEvent(EventType.OnTextPopupQueue, new(1.0f, "Reloading."));
+
+            reloadRoutine ??= owner.StartCoroutine(Reload());
+        }
     }
 
     private IEnumerator Reload ()

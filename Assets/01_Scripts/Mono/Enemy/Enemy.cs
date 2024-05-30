@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Runtime.CompilerServices;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -13,7 +14,7 @@ public enum EnemyType
     AngryEnemy = 4,
 }
 
-public class Enemy : Soulable, IDamageable, ILockOnAble
+public class Enemy : Soulable, IDamageable
 {
     public bool Dead { get; private set; }
 
@@ -48,6 +49,8 @@ public class Enemy : Soulable, IDamageable, ILockOnAble
 
     protected EnemyStats enemyStats;
 
+    protected BTBaseNode treePlayerChase;
+
     protected NavMeshAgent agent;
 
     public virtual void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData, Transform manager )
@@ -76,19 +79,43 @@ public class Enemy : Soulable, IDamageable, ILockOnAble
 
         blackBoard.SetVariable(VariableNames.PLAYER_TRANSFORM, moveTarget.target);
         blackBoard.SetVariable(VariableNames.TARGET_POSITION, moveTarget.target.position);
+        blackBoard.SetVariable(VariableNames.CHASING_PLAYER, false);
 
         moveTree =
             new BTSequence(
                 new BTConditionNode(() => !gameOver),
+                new BTRepeatWhile(() => Vector3.Distance(blackBoard.GetVariable<Vector3>(VariableNames.TARGET_POSITION), moveTarget.target.position) < 1.0f,
                 new BTCancelIfFalse(() => Vector3.Distance(MeshTransform.position, moveTarget.target.position) > enemyStats.attackRange,
                         new BTGetPosition(VariableNames.PLAYER_TRANSFORM, blackBoard),
-                        new BTCancelIfFalse(() => Vector3.Distance(blackBoard.GetVariable<Vector3>(VariableNames.TARGET_POSITION), moveTarget.target.position) < 1.0f,
+                        new BTCancelIfFalse(() => Vector3.Distance(blackBoard.GetVariable<Vector3>(VariableNames.TARGET_POSITION), moveTarget.target.position) < 3.0f,
                             new BTAlwaysSuccesTask(() => blackBoard.SetVariable(VariableNames.PLAYER_TRANSFORM, moveTarget.target)),
-                            new BTGetPosition(VariableNames.PLAYER_TRANSFORM, blackBoard),
-                            new BTMoveToPosition(agent, enemyStats.moveSpeed, VariableNames.TARGET_POSITION, enemyStats.attackRange)
-        )),
+                            new BTAlwaysSuccesTask(() => blackBoard.SetVariable(VariableNames.TARGET_POSITION, moveTarget.target.position)),
+                            new BTMoveToPosition(agent, enemyStats.MoveSpeed, VariableNames.TARGET_POSITION, enemyStats.attackRange)
+        ))),
         new BTAlwaysFalse()
                         );
+
+        //  treePlayerChase =
+        //  new BTSequence(
+        //      new BTConditionNode(() => !gameOver),
+        //      new BTConditionNode(() => Vector3.Distance(moveTarget.target.position, transform.position) > enemyStats.attackRange),
+        //      new BTAlwaysSuccesTask(() => blackBoard.SetVariable(VariableNames.CHASING_PLAYER, true)),
+
+        //      //Repeats while the chasing player variable is true.
+        //      new BTRepeatWhile(() => blackBoard.GetVariable<bool>(VariableNames.CHASING_PLAYER),
+        //          new BTSelector(
+
+        //             //Perform the player chase.
+        //             new BTCancelIfFalse(()=> Vector3.Distance(blackBoard.GetVariable<Transform>(VariableNames.PLAYER_TRANSFORM).position, transform.position) > enemyStats.attackRange,
+        //                 new BTGetPosition(VariableNames.PLAYER_TRANSFORM, blackBoard),
+        //                 new BTMoveToPosition(agent, enemyStats.moveSpeed, VariableNames.TARGET_POSITION, enemyStats.attackRange)
+        //                 ),
+
+        //             //Disable the player chase.
+        //             new BTSequence(
+        //                 new BTAlwaysSuccesTask(() => blackBoard.SetVariable(VariableNames.CHASING_PLAYER, false))
+        //                  )
+        //)));
 
         attackTree =
             new BTSequence(
@@ -104,11 +131,13 @@ public class Enemy : Soulable, IDamageable, ILockOnAble
                   )
                 );
 
+        //treePlayerChase.SetupBlackboard(blackBoard);
         moveTree.SetupBlackboard(blackBoard);
     }
 
     public void OnReuse ( EnemyStats stats, Vector3 startPosition )
     {
+        GameObject.SetActive(true);
         Dead = false;
         enemyStats = stats;
         agent.Warp(startPosition);
@@ -119,7 +148,7 @@ public class Enemy : Soulable, IDamageable, ILockOnAble
 
     public void UpdateStats ( EnemyStats stats )
     {
-        health = stats.maxHealth;
+        health = stats.MaxHealth;
     }
 
     protected void OnDisable ()
@@ -134,6 +163,7 @@ public class Enemy : Soulable, IDamageable, ILockOnAble
         if ( gameOver )
             return;
 
+        //treePlayerChase?.Tick();
         moveTree?.Tick();
         attackTree?.Tick();
     }
@@ -149,7 +179,6 @@ public class Enemy : Soulable, IDamageable, ILockOnAble
         {
             Dead = true;
             OnDeath?.Invoke(this);
-            gameObject.SetActive(false);
         }
     }
 }

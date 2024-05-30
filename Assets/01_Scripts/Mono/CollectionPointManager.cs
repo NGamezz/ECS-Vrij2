@@ -36,10 +36,11 @@ public class CollectionPointManager : MonoBehaviour
     private void Start ()
     {
         collectionPoints = FindObjectsByType<CollectionPoint>(FindObjectsSortMode.None);
+        var playerTransform = FindAnyObjectByType<PlayerManager>().meshTransform;
 
         foreach ( var point in collectionPoints )
         {
-            point.OnStart();
+            point.OnStart(playerTransform);
         }
     }
 }
