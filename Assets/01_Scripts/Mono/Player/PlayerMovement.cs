@@ -13,9 +13,6 @@ public class PlayerMovement
 
     [SerializeField] private int groundLayerMask = 4;
 
-    [SerializeField] private float sprintStaminaCost = 2.0f;
-    [SerializeField] private float staminaRegenSpeed = 1.0f;
-
     public CharacterData characterData;
     private Vector2 inputVector;
 
@@ -64,6 +61,7 @@ public class PlayerMovement
     {
         var vel = rb.velocity;
         var flatVel = new Vector3(vel.x, 0.0f, vel.z);
+
         if ( flatVel.magnitude > characterData.Speed )
         {
             flatVel.Normalize();

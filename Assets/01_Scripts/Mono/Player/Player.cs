@@ -201,6 +201,7 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
         playerMovement.OnFixedUpdate();
     }
 
+    //This gets called when you kill an enemy and you're not near a collection point.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Collect ( int amount )
     {

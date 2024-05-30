@@ -17,6 +17,11 @@ public class LockTrack : MonoBehaviour
 
         tracking = true;
         trackingTarget = target;
+
+        var pos = trackingTarget.position;
+        pos.y = 1.0f;
+        trackingIdentifier.position = pos;
+
         trackingIdentifier.gameObject.SetActive(true);
     }
 
