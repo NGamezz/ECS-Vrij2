@@ -1,7 +1,5 @@
 using System;
-using System.Collections;
 using System.Runtime.CompilerServices;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -84,7 +82,7 @@ public class Enemy : Soulable, IDamageable
         moveTree =
             new BTSequence(
                 new BTConditionNode(() => !gameOver),
-                new BTRepeatWhile(() => Vector3.Distance(blackBoard.GetVariable<Vector3>(VariableNames.TARGET_POSITION), moveTarget.target.position) < 1.0f,
+                new BTRepeatWhile(() => Vector3.Distance(blackBoard.GetVariable<Vector3>(VariableNames.TARGET_POSITION), moveTarget.target.position) < 3.0f,
                 new BTCancelIfFalse(() => Vector3.Distance(MeshTransform.position, moveTarget.target.position) > enemyStats.attackRange,
                         new BTGetPosition(VariableNames.PLAYER_TRANSFORM, blackBoard),
                         new BTCancelIfFalse(() => Vector3.Distance(blackBoard.GetVariable<Vector3>(VariableNames.TARGET_POSITION), moveTarget.target.position) < 3.0f,
@@ -163,7 +161,6 @@ public class Enemy : Soulable, IDamageable
         if ( gameOver )
             return;
 
-        //treePlayerChase?.Tick();
         moveTree?.Tick();
         attackTree?.Tick();
     }

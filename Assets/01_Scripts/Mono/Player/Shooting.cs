@@ -16,7 +16,7 @@ public class Shooting
     public CharacterData ownerData;
 
     [SerializeField] private Transform gunPosition;
-    [SerializeField] private List<GunStats> guns = new();
+    //[SerializeField] private List<GunStats> guns = new();
     [SerializeField] private Transform meshTransform;
     [SerializeField] private int defaultAmountOfPooledObjects = 25;
     [SerializeField] private int ownLayer;
@@ -40,7 +40,7 @@ public class Shooting
         waitUntilShoot = new WaitUntil(() => shootHeld);
 
         if ( currentGun == null )
-            currentGun = guns[0];
+            return;
 
         this.owner = owner;
         rb = (Rigidbody)meshTransform.GetComponent(typeof(Rigidbody));
@@ -84,6 +84,7 @@ public class Shooting
     {
         if ( shootRoutine != null )
             owner.StopCoroutine(shootRoutine);
+
         currentGun = gun;
         gun.CurrentAmmo = gun.MagSize;
         shootRoutine = owner.StartCoroutine(Shoot());
@@ -224,7 +225,9 @@ public class Shooting
         bullet.ProjectileLifeTime = (currentGun.damageProjectileLifeTimeSpeed >> 16) & 255;
 
         var meshForward = ownerTransform.forward;
-        var newPos = ownerTransform.position + meshForward;
+        meshForward.y = 0.0f;
+
+        var newPos = gunPosition.position + meshForward;
         bullet.Transform.position = newPos;
         var direction = (meshForward + new Vector3(Random.Range(currentGun.spreadOffset.x, currentGun.spreadOffset.y), 0.0f, Random.Range(currentGun.spreadOffset.x, currentGun.spreadOffset.y))).normalized;
         bullet.Transform.forward = direction;

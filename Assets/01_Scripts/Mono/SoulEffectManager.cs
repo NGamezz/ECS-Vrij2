@@ -14,11 +14,13 @@ public class SoulEffectManager : MonoBehaviour
     private void OnEnable ()
     {
         EventManagerGeneric<DoubleVector3>.AddListener(EventType.ActivateSoulEffect, SpawnEffect);
+        EventManagerGeneric<VectorAndTransform>.AddListener(EventType.ActivateSoulEffect, SpawnEffect);
     }
 
     private void OnDisable ()
     {
         EventManagerGeneric<DoubleVector3>.RemoveListener(EventType.ActivateSoulEffect, SpawnEffect);
+        EventManagerGeneric<VectorAndTransform>.RemoveListener(EventType.ActivateSoulEffect, SpawnEffect);
     }
 
     private void SpawnEffect ( DoubleVector3 positions )
@@ -29,6 +31,31 @@ public class SoulEffectManager : MonoBehaviour
             gameObject.transform.position = positions.a + positionOffset;
             StartCoroutine(DispatchObject(positions.b + positionOffset, gameObject.transform, effectSpeed));
         });
+    }
+
+    private void SpawnEffect(VectorAndTransform originAndTarget)
+    {
+        MainThreadQueue.Instance.Enqueue(() =>
+        {
+            var gameObject = Instantiate(soulEffectPrefab);
+            gameObject.transform.position = originAndTarget.origin + positionOffset;
+            StartCoroutine(DispatchObject(originAndTarget.target, gameObject.transform, effectSpeed));
+        });
+    }
+
+    private IEnumerator DispatchObject ( Transform target, Transform transform, float speed )
+    {
+        int count = 0;
+
+        while ( Vector3.Distance(target.position, transform.position) > minDistanceToTarget && count < 10000 )
+        {
+            var dir = target.position - transform.position;
+            transform.Translate(speed * Time.deltaTime * dir);
+
+            yield return null;
+        }
+
+        Destroy(transform.gameObject);
     }
 
     private IEnumerator DispatchObject ( Vector3 target, Transform transform, float speed )
@@ -55,5 +82,17 @@ public struct DoubleVector3
     {
         this.a = a;
         this.b = b;
+    }
+}
+
+public struct VectorAndTransform
+{
+    public Vector3 origin;
+    public Transform target;
+
+    public VectorAndTransform ( Vector3 origin, Transform target )
+    {
+        this.origin = origin;
+        this.target = target;
     }
 }

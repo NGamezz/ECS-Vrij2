@@ -12,29 +12,6 @@ public class GameManager : MonoBehaviour
 
         QualitySettings.vSyncCount = 1;
         Application.targetFrameRate = Mathf.CeilToInt((float)Screen.currentResolution.refreshRateRatio.value);
-
-        //For Testing Purposes.
-        //Task.Run(() =>
-        //{
-        //    void action ()
-        //    {
-        //        transform.position = transform.position;
-        //    }
-
-        //    try
-        //    {
-        //        action();
-        //    }
-        //    catch ( UnityException e )
-        //    {
-        //        Debug.Log($"Caught UnityException, attempting on main thread. Exception : {e.Message}");
-
-        //        MainThreadQueue.Instance.Enqueue(() =>
-        //        {
-        //            action();
-        //        });
-        //    }
-        //});
     }
 
     private void OnDisable ()

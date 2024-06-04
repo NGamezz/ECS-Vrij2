@@ -57,8 +57,6 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
 
     public void AfflictDamage ( float amount )
     {
-        return;
-
         characterData.Health -= amount;
 
         if ( characterData.Health <= 0 )
@@ -70,9 +68,6 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
 
     public void OnShoot ( InputAction.CallbackContext context )
     {
-        if ( context.phase != InputActionPhase.Performed )
-            return;
-
         playerShooting.OnShoot(context);
     }
 

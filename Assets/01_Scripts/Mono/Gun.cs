@@ -64,6 +64,7 @@ public class Gun : MonoBehaviour
         float deltaTime = Time.deltaTime;
 
         currentLifeTime -= deltaTime;
+
         Transform.Translate(Speed * deltaTime * Transform.forward, Space.World);
 
         if ( currentLifeTime <= 0 )
