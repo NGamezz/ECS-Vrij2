@@ -114,3 +114,4 @@ public enum AdjacentObjects
     Left = 3,
     Right = 4,
 }
+

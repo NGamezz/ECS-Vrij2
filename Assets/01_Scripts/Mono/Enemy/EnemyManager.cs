@@ -119,10 +119,11 @@ public class EnemyManager : MonoBehaviour
 
     private async void OnEnemyDeath ( Enemy sender )
     {
+        Debug.Log(sender.MeshTransform.position);
+
         onEnemyDeath?.Invoke();
 
         Vector3 position = sender.MeshTransform.position;
-        var playerPos = playerTransform.position;
 
         RemoveEnemy(sender);
 
@@ -131,8 +132,13 @@ public class EnemyManager : MonoBehaviour
         var succes = WorldManager.InvokeCellEvent(CellEventType.OnEntityDeath, position, position);
         if ( !succes )
         {
-            EventManagerGeneric<DoubleVector3>.InvokeEvent(EventType.ActivateSoulEffect, new(position, playerPos));
             EventManagerGeneric<int>.InvokeEvent(EventType.UponHarvestSoul, 1);
+
+            MainThreadQueue.Instance.Enqueue(() =>
+            {
+                EventManagerGeneric<VectorAndTransform>.InvokeEvent(EventType.ActivateSoulEffect, new(position, playerTransform));
+            });
+
         }
     }
 

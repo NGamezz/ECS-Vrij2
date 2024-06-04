@@ -18,11 +18,11 @@ MonoBehaviour:
   projectileLifeTime: 2
   projectileSpeed: 15
   spreadOffset:
-    x: -0.1
-    y: 0.1
+    x: 0
+    y: 0
   ReloadSpeed: 1
   Recoil: 0.5
-  CurrentAmmo: 28
+  CurrentAmmo: 35
   MagSize: 35
   amountOfBulletsPer: 1
   damageProjectileLifeTimeSpeed: 135012

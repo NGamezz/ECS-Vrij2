@@ -31,8 +31,6 @@ public class PlayerMovement
         if ( !canDash || characterData.Stamina < halfStamina || !Physics.CheckSphere(ownPos - new Vector3(ownPos.x, ownPos.y + 0.25f, ownPos.z), 0.5f, 1 << groundLayerMask) )
             return;
 
-        Debug.Log("Dash");
-
         var direction = inputVector.magnitude == 0 ? rb.transform.forward : new(inputVector.x, 0.0f, inputVector.y);
         characterData.Stamina -= halfStamina;
 
