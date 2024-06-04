@@ -30,6 +30,9 @@ public class BTMoveToPosition : BTBaseNode
 
     public override void OnReset ()
     {
+        if ( !agent.isActiveAndEnabled || !agent.isOnNavMesh )
+            return;
+
         agent.isStopped = true;
         agent.ResetPath();
     }

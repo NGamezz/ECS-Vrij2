@@ -14,11 +14,14 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/TestLoadScene.unity
     guid: d080d5e1493a8f242802d7fc7b550b6a
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/LevelTestBlockout.unity
     guid: 2d13469552d90fb4d8d16e7efb625223
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/MainScene.unity
     guid: e47c71be0c380d943baf5ef1ff855faa
+  - enabled: 1
+    path: Assets/Scenes/EmptyScene.unity
+    guid: a3b2312eb21ae9b40a1519aa411d448a
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0

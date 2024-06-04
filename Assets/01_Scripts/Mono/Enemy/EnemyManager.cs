@@ -2,10 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class EnemyManager : MonoBehaviour
 {
@@ -22,9 +22,13 @@ public class EnemyManager : MonoBehaviour
 
     [SerializeField] private float maxDistanceToPlayer;
 
+    [SerializeField] private UnityEvent onEnemyDeath;
+
     private readonly ObjectPool<Enemy> objectPool = new();
 
     [SerializeField] private Transform playerTransform;
+
+    private Transform currentlySelectedTarget = null;
 
     [Header("Difficulty Scaling.")]
     [SerializeField] private List<DifficultyGrade> difficultyGrades = new();
@@ -79,6 +83,9 @@ public class EnemyManager : MonoBehaviour
 
     private void RemoveEnemy ( Enemy sender )
     {
+        if ( currentlySelectedTarget != null && currentlySelectedTarget == sender.MeshTransform )
+            EventManagerGeneric<Transform>.InvokeEvent(EventType.TargetSelection, null);
+
         activeEnemies.Remove(sender);
         sender.gameObject.SetActive(false);
         objectPool.PoolObject(sender);
@@ -91,18 +98,18 @@ public class EnemyManager : MonoBehaviour
         var prefab = currentDifficultyGrade.RequestPrefab(enemy.EnemyType);
         var defaultStats = prefab.defaultStats;
 
-        data.Speed = defaultStats.moveSpeed;
+        data.Speed = defaultStats.MoveSpeed;
         data.SpeedMultiplier = 1;
         data.Souls = 0;
         data.Stamina = 0;
-        data.DamageMultiplier = defaultStats.damage;
-        data.MaxHealth = defaultStats.maxHealth;
+        data.DamageMultiplier = defaultStats.Damage;
+        data.MaxHealth = defaultStats.MaxHealth;
 
         if ( enemy.EnemyType == EnemyType.LieEnemy )
             data.decoyPrefab = currentDifficultyGrade.enemyPrefabs[UnityEngine.Random.Range(0, currentDifficultyGrade.enemyPrefabs.Count)].meshPrefab;
 
         data.CharacterTransform = enemy.MeshTransform;
-        data.Speed = currentDifficultyGrade.enemyStats.moveSpeed;
+        data.Speed = currentDifficultyGrade.enemyStats.MoveSpeed;
 
         data.MoveTarget = enemyTarget;
         data.Reset();
@@ -110,22 +117,23 @@ public class EnemyManager : MonoBehaviour
         return data;
     }
 
-    private void OnEnemyDeath ( Enemy sender )
+    private async void OnEnemyDeath ( Enemy sender )
     {
+        onEnemyDeath?.Invoke();
+
         Vector3 position = sender.MeshTransform.position;
-
-        Task.Run(() =>
-        {
-            var succes = WorldManager.InvokeCellEvent(CellEventType.OnEntityDeath, position, position);
-
-            if ( !succes )
-            {
-                EventManagerGeneric<int>.InvokeEvent(EventType.UponHarvestSoul, 1);
-            }
-
-        }).ConfigureAwait(false);
+        var playerPos = playerTransform.position;
 
         RemoveEnemy(sender);
+
+        await Awaitable.BackgroundThreadAsync();
+
+        var succes = WorldManager.InvokeCellEvent(CellEventType.OnEntityDeath, position, position);
+        if ( !succes )
+        {
+            EventManagerGeneric<DoubleVector3>.InvokeEvent(EventType.ActivateSoulEffect, new(position, playerPos));
+            EventManagerGeneric<int>.InvokeEvent(EventType.UponHarvestSoul, 1);
+        }
     }
 
     private void GenerateObjects ()
@@ -133,8 +141,6 @@ public class EnemyManager : MonoBehaviour
         for ( int i = 0; i < startingAmountOfPooledObjects; i++ )
         {
             var enemy = CreateEnemy(currentDifficultyGrade, RemoveEnemy, OnEnemyDeath, enemyTarget, ownPosition);
-
-            enemy.GameObject.SetActive(false);
 
             objectPool.PoolObject(enemy);
         }
@@ -152,14 +158,7 @@ public class EnemyManager : MonoBehaviour
                 var position = playerPos + (UnityEngine.Random.insideUnitSphere.normalized * UnityEngine.Random.Range(spawnRange.x, spawnRange.y));
                 position.y = ownPosition.y;
 
-                bool validPosition = Physics.CheckSphere(position, 1.0f, 1 << 3);
-                bool obstructions = Physics.CheckSphere(position, 1.0f, ~(1 << 3));
-
-                if ( !validPosition || obstructions )
-                    continue;
-
                 var succes = objectPool.GetPooledObject(out var enemy);
-                var gameObject = enemy.GameObject;
 
                 if ( !succes )
                 {
@@ -167,9 +166,11 @@ public class EnemyManager : MonoBehaviour
                 }
                 else
                 {
-                    gameObject.SetActive(true);
                     enemy.OnReuse(currentDifficultyGrade.enemyStats, position);
                 }
+
+                var gameObject = enemy.GameObject;
+                gameObject.SetActive(true);
 
                 activeEnemies.Add(enemy);
             }
@@ -182,11 +183,17 @@ public class EnemyManager : MonoBehaviour
     private Enemy CreateEnemy ( DifficultyGrade currentDifficultyGrade, Action<Enemy> onDisable, Action<Enemy> onDeath, MoveTarget enemyTarget, Vector3 position )
     {
         var gameObject = Instantiate(currentDifficultyGrade.enemyPrefabs[UnityEngine.Random.Range(0, currentDifficultyGrade.enemyPrefabs.Count)].meshPrefab, transform);
+
         var enemy = gameObject.GetOrAddComponent<Enemy>();
+
         enemy.OnDisabled += onDisable;
         enemy.OnDeath += onDeath;
+
         enemy.OnStart(currentDifficultyGrade.enemyStats, enemyTarget, position, () => CreateEnemyDataObject(enemy), transform);
         enemy.SetupBehaviourTrees();
+
+        gameObject.SetActive(false);
+
         return enemy;
     }
 
@@ -196,30 +203,39 @@ public class EnemyManager : MonoBehaviour
         return CreateEnemy(currentDifficultyGrade, null, null, enemyTarget, position);
     }
 
+    private void OnEnable ()
+    {
+        EventManagerGeneric<Transform>.AddListener(EventType.TargetSelection, ( target ) => currentlySelectedTarget = target);
+    }
+
     private void OnDisable ()
     {
+        EventManagerGeneric<Transform>.RemoveListener(EventType.TargetSelection, ( target ) => currentlySelectedTarget = target);
         foreach ( var enemy in activeEnemies )
         {
             enemy.OnDeath -= OnEnemyDeath;
         }
         objectPool.ClearPool();
         activeEnemies.Clear();
+        SpawnEnemies = false;
 
         StopAllCoroutines();
     }
 
     private void UpdateDifficultyIndex ()
     {
-        currentDifficultyIndex += difficultyIncreasePerSecond * Time.deltaTime;
+        currentDifficultyIndex += difficultyIncreasePerSecond * Time.fixedDeltaTime;
 
         if ( currentDifficultyIndex >= requiredIndexForDifficultyAdvancement )
         {
             currentDifficultyIndex = 0;
-            if ( gradeIndex >= difficultyGrades.Count )
+            if ( ++gradeIndex >= difficultyGrades.Count )
                 return;
 
-            currentDifficultyGrade = difficultyGrades[++gradeIndex];
+            currentDifficultyGrade = difficultyGrades[gradeIndex];
         }
+
+        currentDifficultyGrade.enemyStats.statMultiplier += 0.001f * Time.fixedDeltaTime;
     }
 
     private IEnumerator CleanUpLostEnemies ()
@@ -252,7 +268,7 @@ public class EnemyManager : MonoBehaviour
         if ( activeEnemies.Count < 1 )
             return;
 
-        for ( int i = 0; i < activeEnemies.Count; i++ )
+        for ( int i = activeEnemies.Count - 1; i >= 0; --i )
         {
             var enemy = activeEnemies[i];
             if ( enemy == null )
@@ -260,6 +276,8 @@ public class EnemyManager : MonoBehaviour
 
             enemy.OnFixedUpdate();
         }
+
+        UpdateDifficultyIndex();
     }
 }
 

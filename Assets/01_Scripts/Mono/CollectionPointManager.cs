@@ -20,28 +20,27 @@ public class CollectionPointManager : MonoBehaviour
     {
         amountOfCompletedPoints++;
 
-        if ( amountOfCompletedPoints >= requiredAmountOfCompletedPoints )
-        {
-            UponCompletionOfPoints?.Invoke();
-        }
+        if ( amountOfCompletedPoints < requiredAmountOfCompletedPoints )
+            return;
+
+        UponCompletionOfPoints?.Invoke();
+        EventManager.InvokeEvent(EventType.PortalActivation);
+        EventManagerGeneric<TextPopup>.InvokeEvent(EventType.OnTextPopupQueue, new(1.0f, "Portal Has Been Unlocked."));
     }
 
     private void OnDisable ()
     {
         EventManager.RemoveListener(EventType.UponDesiredSoulsAmount, ActivateCompletion);
-
-        foreach(var point in collectionPoints)
-        {
-        }
     }
 
     private void Start ()
     {
         collectionPoints = FindObjectsByType<CollectionPoint>(FindObjectsSortMode.None);
+        var playerTransform = FindAnyObjectByType<PlayerManager>().meshTransform;
 
         foreach ( var point in collectionPoints )
         {
-            point.OnStart();
+            point.OnStart(playerTransform);
         }
     }
 }

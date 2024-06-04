@@ -1,60 +1,45 @@
+using System.Linq;
 using UnityEngine;
-using UnityEngine.Events;
+using UnityEngine.InputSystem;
 
 public class LockOnHandler : MonoBehaviour
 {
-    private const int regularEnemyLayer = 9;
-    private const int specialEnemyLayer = 8;
+    [SerializeField] private float radius = 10.0f;
 
-    [SerializeField] private UnityEvent<Transform> UponTargetSelection;
-    [SerializeField] private UnityEvent<Transform> UponSpecialTargetSelection;
+    [SerializeField] private Transform meshTransform;
 
-    [SerializeField] private CharacterData characterData;
+    private Collider[] hits = new Collider[50];
+    private int targetCount = 0;
 
-    [SerializeField] private UnityEvent UponTargetDeselection;
-
-    private Camera mainCamera;
-
-    private void Start ()
+    public void SwitchLock (InputAction.CallbackContext ctx)
     {
-        mainCamera = Camera.main;
-    }
+        if ( ctx.phase != InputActionPhase.Performed )
+            return;
 
-    public void OnActivate ()
-    {
-        var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+        targetCount = Physics.OverlapSphereNonAlloc(meshTransform.position, radius, hits);
 
-        var hasHit = Physics.Raycast(ray, out var hits, 5000.0f);
+        if ( targetCount < 1 )
+            return;
 
-        if ( !hasHit )
+        var collider = GetNearest(meshTransform.position, hits);
+
+        if ( collider == null )
         {
-            UponTargetDeselection?.Invoke();
+            EventManagerGeneric<Transform>.InvokeEvent(EventType.TargetSelection, null);
             return;
         }
 
-        var transform = hits.transform;
-        var layer = transform.gameObject.layer;
+        EventManagerGeneric<Transform>.InvokeEvent(EventType.TargetSelection, collider.transform);
+    }
 
-        switch ( layer )
-        {
-            case specialEnemyLayer:
-                {
-                    characterData.TargetedTransform = transform;
-                    UponSpecialTargetSelection?.Invoke(transform);
-                    break;
-                }
-            case regularEnemyLayer:
-                {
-                    characterData.TargetedTransform = transform;
-                    UponTargetSelection?.Invoke(transform);
-                    break;
-                }
-            default:
-                {
-                    characterData.TargetedTransform = null;
-                    UponTargetDeselection?.Invoke();
-                    return;
-                }
-        }
+    private Collider GetNearest ( Vector3 startPosition, params Collider[] colliders )
+    {
+        int ownLayer = gameObject.layer;
+        var numerator = colliders.Where(x => x != null && x.gameObject.layer != ownLayer && (x.GetComponentInParent<IAbilityOwner>() != null || x.GetComponent<IAbilityOwner>() != null));
+        var nearest = numerator.OrderBy(x => Vector3.Distance(x.transform.position, startPosition)).FirstOrDefault();
+
+        return nearest;
     }
 }
+
+public interface ILockOnAble { }

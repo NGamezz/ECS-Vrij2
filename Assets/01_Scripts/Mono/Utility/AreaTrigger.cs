@@ -12,10 +12,10 @@ public class AreaTrigger : MonoBehaviour
 
     private void OnTriggerEnter ( Collider other )
     {
-        if(other.gameObject.layer == triggerLayer)
-        {
-            eventToTrigger?.Invoke();
-            this.enabled = false;
-        }
+        if ( other.gameObject.layer != triggerLayer )
+            return;
+        
+        eventToTrigger?.Invoke();
+        this.enabled = false;
     }
 }

@@ -5,6 +5,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
+using Unity.VisualScripting;
 
 namespace Utility
 {
@@ -73,7 +74,7 @@ namespace Utility
                 }
             }
         }
-         
+
         public static void MultiAddElementToList<T> ( ref List<T> list, params T[] elements )
         {
             list.AddRange(elements);
@@ -85,19 +86,19 @@ namespace Utility
         }
 
         [Conditional("ENABLE_LOGS")]
-        public static void Log (string msg)
+        public static void Log ( string msg )
         {
             UnityEngine.Debug.Log(msg);
         }
 
         [Conditional("ENABLE_LOGS")]
-        public static void LogWarning( string msg )
+        public static void LogWarning ( string msg )
         {
             UnityEngine.Debug.LogWarning(msg);
         }
 
         [Conditional("ENABLE_LOGS")]
-        public static void LogException ( Exception e)
+        public static void LogException ( Exception e )
         {
             UnityEngine.Debug.LogException(e);
         }

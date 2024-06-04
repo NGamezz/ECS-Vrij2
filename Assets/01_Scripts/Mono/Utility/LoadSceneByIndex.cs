@@ -27,9 +27,7 @@ public class LoadSceneByIndex : MonoBehaviour
 
     private async Task StartLoad ()
     {
-        var action = LoadScene.LoadSceneByIndex(sceneIndex, mode);
-
-        await action;
+        await LoadScene.LoadSceneByIndex(sceneIndex, mode);
 
         gameObject.SetActive(false);
         currentAction = null;
@@ -37,9 +35,7 @@ public class LoadSceneByIndex : MonoBehaviour
 
     private async Task StartDeLoad ()
     {
-        var action = LoadScene.UnLoadScene(sceneIndex);
-
-        await action;
+        await LoadScene.UnLoadScene(sceneIndex);
 
         gameObject.SetActive(false);
         currentAction = null;

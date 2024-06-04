@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using UnityEngine;
 
 public class AttackBoostAbility : Ability
 {
@@ -12,6 +13,7 @@ public class AttackBoostAbility : Ability
     public override bool Execute ( object context )
     {
         ActivateBoost();
+        Owner.OnExecuteAbility(Type);
         return true;
     }
 
@@ -36,7 +38,7 @@ public class AttackBoostAbility : Ability
 
         ActivationCooldown = 3;
 
-        Trigger = () => InputHandler.IsKeyPressed(VirtualKeys.KeyB);
+        Trigger = () => ownerData.Souls >= ActivationCost;
 
         if ( !ownerData.Player )
             ownerData.DamageMultiplier += damageMultiplierBoost;

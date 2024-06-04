@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using UnityEngine;
 
 public class ShockWaveAbility : Ability
@@ -13,16 +12,14 @@ public class ShockWaveAbility : Ability
         if ( !initialized )
         { return false; }
 
-        if ( ownerData.Player && ownerData.Souls < ActivationCost )
-        {
-            return false;
-        }
-
         var ownerPos = ownerData.CharacterTransform.position;
 
         var hitCount = Physics.OverlapSphereNonAlloc(ownerPos, shockWaveRadius, this.hits);
         if ( hitCount == 0 )
+        {
+            Debug.Log("No Hits within Range.");
             return false;
+        }
 
         ownerData.Souls -= (int)ActivationCost;
         for ( int i = 0; i < hitCount; i++ )
@@ -39,8 +36,10 @@ public class ShockWaveAbility : Ability
             if ( hit == null )
                 continue;
 
-            hit.AfflictDamage(999999);
+            hit.AfflictDamage(float.MaxValue);
         }
+
+        Owner.OnExecuteAbility(Type);
         return true;
     }
 
@@ -54,6 +53,6 @@ public class ShockWaveAbility : Ability
         ActivationCost = 10;
         shockWaveRadius = 10;
 
-        Trigger = () => { return InputHandler.IsKeyPressed(VirtualKeys.KeyO); };
+        Trigger = () => { return ownerData.Souls >= ActivationCost; };
     }
 }

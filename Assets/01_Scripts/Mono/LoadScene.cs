@@ -6,7 +6,7 @@ public static class LoadScene
 {
     public static AsyncOperation LoadSceneByIndex(int sceneIndex, LoadSceneMode loadMode)
     {
-        return SceneManager.LoadSceneAsync(sceneIndex, LoadSceneMode.Additive);
+        return SceneManager.LoadSceneAsync(sceneIndex, loadMode);
     }
 
     public static AsyncOperation UnLoadScene (int sceneIndex)

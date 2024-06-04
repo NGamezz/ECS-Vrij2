@@ -36,8 +36,7 @@ public class BackgroundQueue : MonoBehaviour
         actionQueue.Clear();
 
         applicationRunning = false;
-
-        //queueThread.Join();
+        queueThread.Join();
 
         if ( Instance == this )
         {
