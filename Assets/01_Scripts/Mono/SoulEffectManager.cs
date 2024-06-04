@@ -11,6 +11,13 @@ public class SoulEffectManager : MonoBehaviour
 
     [SerializeField] private float minDistanceToTarget = 2.0f;
 
+    private Vector3 ownPosition;
+
+    private void Start ()
+    {
+        ownPosition = transform.position;
+    }
+
     private void OnEnable ()
     {
         EventManagerGeneric<DoubleVector3>.AddListener(EventType.ActivateSoulEffect, SpawnEffect);
@@ -28,7 +35,10 @@ public class SoulEffectManager : MonoBehaviour
         MainThreadQueue.Instance.Enqueue(() =>
         {
             var gameObject = Instantiate(soulEffectPrefab);
-            gameObject.transform.position = positions.a + positionOffset;
+
+            positions.a.y = positionOffset.y;
+            gameObject.transform.position = positions.a;
+
             StartCoroutine(DispatchObject(positions.b + positionOffset, gameObject.transform, effectSpeed));
         });
     }
@@ -38,7 +48,10 @@ public class SoulEffectManager : MonoBehaviour
         MainThreadQueue.Instance.Enqueue(() =>
         {
             var gameObject = Instantiate(soulEffectPrefab);
-            gameObject.transform.position = originAndTarget.origin + positionOffset;
+
+            originAndTarget.origin.y = positionOffset.y;
+            gameObject.transform.position = originAndTarget.origin;
+
             StartCoroutine(DispatchObject(originAndTarget.target, gameObject.transform, effectSpeed));
         });
     }
@@ -47,9 +60,20 @@ public class SoulEffectManager : MonoBehaviour
     {
         int count = 0;
 
-        while ( Vector3.Distance(target.position, transform.position) > minDistanceToTarget && count < 10000 )
+        var targetPos = target.position;
+        var otherPos = transform.position;
+
+        while ( Vector3.Distance(targetPos, otherPos) > minDistanceToTarget && count < 10000 )
         {
-            var dir = (target.position + positionOffset) - transform.position;
+            targetPos = target.position;
+            targetPos.y = ownPosition.y;
+
+            otherPos = transform.position;
+            otherPos.y = ownPosition.y;
+
+            var dir = (targetPos + positionOffset) - otherPos;
+            dir.y = 0.0f;
+
             transform.Translate(speed * Time.deltaTime * dir);
 
             yield return null;
@@ -61,9 +85,17 @@ public class SoulEffectManager : MonoBehaviour
     private IEnumerator DispatchObject ( Vector3 target, Transform transform, float speed )
     {
         int count = 0;
-        while ( Vector3.Distance(target, transform.position) > minDistanceToTarget && count < 10000 )
+
+        var otherPos = transform.position;
+
+        while ( Vector3.Distance(target, otherPos) > minDistanceToTarget && count < 10000 )
         {
-            var dir = target - transform.position;
+            otherPos = transform.position;
+            otherPos.y = ownPosition.y;
+
+            var dir = target - otherPos;
+            dir.y = 0.0f;
+
             transform.Translate(speed * Time.deltaTime * dir);
 
             yield return null;

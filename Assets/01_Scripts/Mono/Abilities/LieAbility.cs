@@ -60,6 +60,9 @@ public class LieAbility : Ability
             return;
         }, ( data, enemy ) =>
         {
+            if ( cachedTarget == null )
+                cachedTarget = ownerData.CharacterTransform;
+
             ownerData.MoveTarget.target = cachedTarget;
             return;
         });

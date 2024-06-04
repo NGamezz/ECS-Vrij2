@@ -41,7 +41,9 @@ public class EnemyManager : MonoBehaviour
 
     private bool spawnEnemies = false;
     private Transform playerTransform;
-    
+
+    IEnemyCreator EnemyCreator = new EnemyCreator();
+
     public bool SpawnEnemies
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -98,32 +100,6 @@ public class EnemyManager : MonoBehaviour
         objectPool.PoolObject(sender);
     }
 
-    private CharacterData CreateEnemyDataObject ( Enemy enemy )
-    {
-        CharacterData data = (CharacterData)ScriptableObject.CreateInstance(nameof(CharacterData));
-
-        var prefab = currentDifficultyGrade.RequestPrefab(enemy.EnemyType);
-        var defaultStats = prefab.defaultStats;
-
-        data.Speed = defaultStats.MoveSpeed;
-        data.SpeedMultiplier = 1;
-        data.Souls = 0;
-        data.Stamina = 0;
-        data.DamageMultiplier = defaultStats.Damage;
-        data.MaxHealth = defaultStats.MaxHealth;
-
-        if ( enemy.EnemyType == EnemyType.LieEnemy )
-            data.decoyPrefab = currentDifficultyGrade.enemyPrefabs[UnityEngine.Random.Range(0, currentDifficultyGrade.enemyPrefabs.Count)].meshPrefab;
-
-        data.CharacterTransform = enemy.MeshTransform;
-        data.Speed = currentDifficultyGrade.enemyStats.MoveSpeed;
-
-        data.MoveTarget = enemyTarget;
-        data.Reset();
-
-        return data;
-    }
-
     private async void OnEnemyDeath ( Enemy sender )
     {
         onEnemyDeath?.Invoke();
@@ -148,8 +124,7 @@ public class EnemyManager : MonoBehaviour
     {
         for ( int i = 0; i < startingAmountOfPooledObjects; i++ )
         {
-            var enemy = CreateEnemy(currentDifficultyGrade, RemoveEnemy, OnEnemyDeath, enemyTarget, ownPosition);
-
+            var enemy = EnemyCreator.CreateEnemy(currentDifficultyGrade, transform, RemoveEnemy, OnEnemyDeath, enemyTarget, ownPosition);
             objectPool.PoolObject(enemy);
         }
     }
@@ -170,7 +145,7 @@ public class EnemyManager : MonoBehaviour
 
                 if ( !succes )
                 {
-                    enemy = CreateEnemy(currentDifficultyGrade, RemoveEnemy, OnEnemyDeath, enemyTarget, position);
+                    enemy = EnemyCreator.CreateEnemy(currentDifficultyGrade, transform, RemoveEnemy, OnEnemyDeath, enemyTarget, position);
                 }
                 else
                 {
@@ -188,28 +163,10 @@ public class EnemyManager : MonoBehaviour
         }
     }
 
-    private Enemy CreateEnemy ( DifficultyGrade currentDifficultyGrade, Action<Enemy> onDisable, Action<Enemy> onDeath, MoveTarget enemyTarget, Vector3 position )
-    {
-        var gameObject = Instantiate(currentDifficultyGrade.enemyPrefabs[UnityEngine.Random.Range(0, currentDifficultyGrade.enemyPrefabs.Count)].meshPrefab);
-
-        var enemy = gameObject.GetOrAddComponent<Enemy>();
-
-        enemy.blackBoardObject = blackBoardObject;
-
-        enemy.OnDisabled += onDisable;
-        enemy.OnDeath += onDeath;
-
-        enemy.OnStart(currentDifficultyGrade.enemyStats, enemyTarget, position, () => CreateEnemyDataObject(enemy), transform);
-
-        gameObject.SetActive(false);
-
-        return enemy;
-    }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Enemy CreateEnemy ( Vector3 position )
     {
-        return CreateEnemy(currentDifficultyGrade, null, null, enemyTarget, position);
+        return EnemyCreator.CreateEnemy(currentDifficultyGrade, transform, null, null, enemyTarget, position);
     }
 
     private void OnEnable ()
@@ -219,7 +176,7 @@ public class EnemyManager : MonoBehaviour
 
     private void OnDisable ()
     {
-        EventManagerGeneric<Transform>.RemoveListener(EventType.TargetSelection, ( target ) => currentlySelectedTarget = target);
+        EventManagerGeneric<UnityEngine.Transform>.RemoveListener(EventType.TargetSelection, ( target ) => currentlySelectedTarget = target);
         foreach ( var enemy in activeEnemies )
         {
             enemy.OnDeath -= OnEnemyDeath;
@@ -324,4 +281,54 @@ public class EnemyPrefab
     public GameObject meshPrefab;
     public EnemyStats defaultStats;
     public EnemyType type;
+}
+
+public class EnemyCreator : IEnemyCreator
+{
+    public Enemy CreateEnemy ( DifficultyGrade difficulty, Transform transform, Action<Enemy> onDisable, Action<Enemy> onDeath, MoveTarget enemyTarget, Vector3 position )
+    {
+        var gameObject = UnityEngine.Object.Instantiate(difficulty.enemyPrefabs[UnityEngine.Random.Range(0, difficulty.enemyPrefabs.Count)].meshPrefab);
+
+        var enemy = gameObject.GetOrAddComponent<Enemy>();
+        enemy.OnDisabled += onDisable;
+        enemy.OnDeath += onDeath;
+        enemy.OnStart(difficulty.enemyStats, enemyTarget, position, () => CreateEnemyDataObject(enemy, difficulty, enemyTarget), transform);
+        gameObject.SetActive(false);
+
+        return enemy;
+    }
+
+    public CharacterData CreateEnemyDataObject ( Enemy enemy, DifficultyGrade currentDifficultyGrade, MoveTarget enemyTarget )
+    {
+        CharacterData data = (CharacterData)ScriptableObject.CreateInstance(nameof(CharacterData));
+
+        var prefab = currentDifficultyGrade.RequestPrefab(enemy.EnemyType);
+        var defaultStats = prefab.defaultStats;
+
+        data.Speed = defaultStats.MoveSpeed;
+        data.SpeedMultiplier = 1;
+        data.Souls = 0;
+        data.Stamina = 0;
+        data.DamageMultiplier = 1;
+
+        data.DamageMultiplier = defaultStats.Damage;
+        data.MaxHealth = defaultStats.MaxHealth;
+
+        if ( enemy.EnemyType == EnemyType.LieEnemy )
+            data.decoyPrefab = currentDifficultyGrade.enemyPrefabs[UnityEngine.Random.Range(0, currentDifficultyGrade.enemyPrefabs.Count)].meshPrefab;
+
+        data.CharacterTransform = enemy.MeshTransform;
+        data.Speed = currentDifficultyGrade.enemyStats.MoveSpeed;
+
+        data.MoveTarget = enemyTarget;
+        data.Reset();
+
+        return data;
+    }
+}
+
+public interface IEnemyCreator
+{
+    public Enemy CreateEnemy ( DifficultyGrade difficulty, Transform transform, Action<Enemy> onDisable, Action<Enemy> onDeath, MoveTarget enemyTarget, Vector3 position );
+    public CharacterData CreateEnemyDataObject ( Enemy enemy, DifficultyGrade currentDifficultyGrade, MoveTarget enemyTarget );
 }

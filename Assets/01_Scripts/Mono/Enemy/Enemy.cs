@@ -139,12 +139,10 @@ public class Enemy : Soulable, IDamageable
             return;
         }
 
-        if ( agent.hasPath == false || Vector3.Distance(agent.pathEndPosition, moveTarget.target.position) > 5.0f )
+        if ( moveTarget.target != null && agent.hasPath == false || Vector3.Distance(agent.pathEndPosition, moveTarget.target.position) > 5.0f )
         {
             agent.SetDestination(moveTarget.target.position);
         }
-
-        agent.SetDestination(moveTarget.target.position);
         agent.isStopped = false;
     }
 

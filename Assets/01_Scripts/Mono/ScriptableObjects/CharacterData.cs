@@ -20,8 +20,9 @@ public class CharacterData : ScriptableObject
 
     public bool Player = false;
 
-    public float3 PlayerMousePosition; 
+    public float3 PlayerMousePosition;
 
+    public GunStats currentGun;
 
     [SerializeField] private int souls;
     public int Souls

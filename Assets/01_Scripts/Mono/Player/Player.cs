@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
 
-public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilityOwner
+public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgradable, ICharacterDataHolder
 {
     public int Souls
     {
@@ -29,8 +29,6 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
         }
     }
 
-    public bool Dead { get; private set; }
-
     [SerializeField] private PlayerMovement playerMovement;
 
     [SerializeField] TMP_Text soulsUiText;
@@ -45,6 +43,8 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
 
     public Transform meshTransform;
 
+    private UpgradeHolder upgradeHolder;
+
     [SerializeField] private float abilityCooldown = 0.2f;
 
     [SerializeField] private Shooting playerShooting = new();
@@ -54,17 +54,6 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
     private IAbilityHolder abilityHolder = new PlayerAbilityHolder();
 
     private bool canUseAbility = true;
-
-    public void AfflictDamage ( float amount )
-    {
-        characterData.Health -= amount;
-
-        if ( characterData.Health <= 0 )
-        {
-            Debug.Log("You Died.");
-            gameObject.SetActive(false);
-        }
-    }
 
     public void OnShoot ( InputAction.CallbackContext context )
     {
@@ -84,13 +73,15 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
         if ( walkEffects == null )
             return;
 
-        if ( state && !walkEffects.isPlaying )
+        var isPlaying = walkEffects.isPlaying;
+
+        if ( state && !isPlaying )
         {
             walkEffects.Play();
             var main = walkEffects.main;
             main.loop = true;
         }
-        else if ( !state && walkEffects.isPlaying )
+        else if ( !state && isPlaying )
         {
             walkEffects.Stop();
             var main = walkEffects.main;
@@ -103,8 +94,6 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
     {
         if ( ctx.phase != InputActionPhase.Performed )
             return;
-
-        Debug.Log("Dash");
 
         playerMovement.OnDash();
     }
@@ -142,6 +131,7 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
         EventManagerGeneric<int>.RemoveListener(EventType.UponHarvestSoul, Collect);
         EventManagerGeneric<Transform>.RemoveListener(EventType.TargetSelection, ( transform ) => characterData.TargetedTransform = transform);
         characterData.Reset();
+        upgradeHolder.RemoveAll();
         StopAllCoroutines();
     }
 
@@ -152,6 +142,8 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
         characterData.CharacterTransform = transform;
 
         characterData.Player = true;
+
+        upgradeHolder = new(characterData);
 
         playerMovement.characterData = characterData;
         playerMovement.OnStart();
@@ -222,6 +214,18 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
     public void OnExecuteAbility ( AbilityType type )
     {
     }
+
+    public void Upgrade ( IUpgrade upgrade )
+    {
+        upgradeHolder.AcquireUpgrade(upgrade);
+    }
+
+    public void SetCharacterData ( CharacterData characterData )
+    {
+        playerMovement.characterData = characterData;
+        playerShooting.ownerData = characterData;
+        this.characterData = characterData;
+    }
 }
 
 //To abstract the usage of the abilities a bit.
@@ -271,58 +275,52 @@ public class PlayerAbilityHolder : IAbilityHolder
     }
 }
 
-//public interface IUpgradeHolder
-//{
-//    public IUpgrade GetUpgrade ();
-//    public void AcquireUpgrade ( IUpgrade upgrade );
-//    public void ReleaseUpgrade ( IUpgrade upgrade );
-//}
+public interface IUpgradeHolder
+{
+    public void AcquireUpgrade ( IUpgrade upgrade );
+    public void RemoveAll ();
+    public void UndoRandomAction ();
+}
 
-//public interface IUpgrade
-//{
-//    public void Add ( object ctx );
-//    public void Remove ( object ctx );
-//}
+public interface IUpgrade
+{
+    public void Add ( object ctx );
+    public void Remove ( object ctx );
+}
 
-//public class ManaUpgrade : IUpgrade
-//{
-//    private float increaseAmount = 5;
+public interface IUpgradable
+{
+    public void Upgrade ( IUpgrade upgrade );
+}
 
-//    public void Add ( object ctx )
-//    {
-//        if ( ctx is not CharacterData data )
-//            return;
+public class UpgradeHolder : IUpgradeHolder
+{
+    private CharacterData data;
 
-//    }
+    public UpgradeHolder ( CharacterData data )
+    {
+        this.data = data;
+    }
 
-//    public void Remove ( object ctx )
-//    {
-//        if ( ctx is not CharacterData data )
-//            return;
+    private List<Action> undoActions = new();
 
-//    }
-//}
+    public void AcquireUpgrade ( IUpgrade upgrade )
+    {
+        upgrade.Add(data);
+        undoActions.Add(() => upgrade.Remove(data));
+    }
 
-//public class UpgradeHolder : MonoBehaviour, IUpgradeHolder
-//{
-//    private List<IUpgrade> upgrades = new();
+    public void RemoveAll ()
+    {
+        undoActions.Clear();
+    }
 
-//    public void AcquireUpgrade ( IUpgrade upgrade )
-//    {
-//        upgrades.Add(upgrade);
-//    }
+    public void UndoRandomAction ()
+    {
+        var randomIndex = UnityEngine.Random.Range(0, undoActions.Count);
+        var upgrade = undoActions[randomIndex];
+        upgrade();
 
-//    public IUpgrade GetUpgrade ()
-//    {
-//        var randomIndex = UnityEngine.Random.Range(0, upgrades.Count);
-//        var upgrade = upgrades[randomIndex];
-//        upgrades.RemoveAt(randomIndex);
-//        return upgrade;
-//    }
-
-//    public void ReleaseUpgrade ( IUpgrade upgrade )
-//    {
-//        if ( upgrades.Contains(upgrade) )
-//            upgrades.Remove(upgrade);
-//    }
-//}
+        undoActions.RemoveAt(randomIndex);
+    }
+}

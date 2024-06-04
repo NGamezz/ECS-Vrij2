@@ -14,9 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Player: 1
   PlayerMousePosition:
-    x: 29.146437
+    x: 17.909798
     y: 0
-    z: 58.284615
+    z: 70.79242
+  currentGun: {fileID: 11400000, guid: 438c0530b40d20b4399dd2a270c2507f, type: 2}
   souls: 0
   Health: 500
   Stamina: 150

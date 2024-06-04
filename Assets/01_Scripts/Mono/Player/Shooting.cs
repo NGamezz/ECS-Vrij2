@@ -25,10 +25,12 @@ public class Shooting
     private bool shootHeld = false;
     private MonoBehaviour owner;
     private readonly ObjectPool<Gun> objectPool = new();
+
     private Rigidbody rb;
     private Transform bulletHolder;
     private WaitUntil waitUntilShoot;
     private bool running = false;
+
     private Coroutine shootRoutine;
     private bool reloading = false;
 
@@ -47,6 +49,7 @@ public class Shooting
         var gunObject = UnityEngine.Object.Instantiate(currentGun.prefab, gunPosition);
         gunObject.transform.position = gunPosition.position;
         currentGun.CurrentAmmo = currentGun.MagSize;
+
         SetLayerRecursive(gunObject, meshTransform.gameObject.layer);
 
         GenerateBullets();
@@ -89,21 +92,21 @@ public class Shooting
         shootRoutine = owner.StartCoroutine(Shoot());
     }
 
-    private Coroutine reloadRoutine;
     public void OnReload ()
     {
-        if ( reloadRoutine == null )
+        if ( reloading == false )
         {
+            reloading = true;
+
             if ( ownerData.Player )
                 EventManagerGeneric<TextPopup>.InvokeEvent(EventType.OnTextPopupQueue, new(1.0f, "Reloading."));
 
-            reloadRoutine ??= owner.StartCoroutine(Reload());
+            owner.StartCoroutine(Reload());
         }
     }
 
     private IEnumerator Reload ()
     {
-        reloading = true;
         yield return Utility.Yielders.Get(currentGun.ReloadSpeed);
         currentGun.CurrentAmmo = currentGun.MagSize;
         reloading = false;
@@ -140,9 +143,7 @@ public class Shooting
     {
         while ( running )
         {
-            yield return new WaitUntil(()=> shootHeld);
-
-            Debug.Log("Shoot");
+            yield return waitUntilShoot;
 
             while ( shootHeld && !reloading )
             {
