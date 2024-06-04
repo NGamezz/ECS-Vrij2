@@ -24,9 +24,9 @@ public class EnemyManager : MonoBehaviour
 
     [SerializeField] private UnityEvent onEnemyDeath;
 
-    private readonly ObjectPool<Enemy> objectPool = new();
+    [SerializeField] private BlackBoardObject blackBoardObject;
 
-    [SerializeField] private Transform playerTransform;
+    private readonly ObjectPool<Enemy> objectPool = new();
 
     private Transform currentlySelectedTarget = null;
 
@@ -40,6 +40,8 @@ public class EnemyManager : MonoBehaviour
     private int requiredIndexForDifficultyAdvancement = 5;
 
     private bool spawnEnemies = false;
+    private Transform playerTransform;
+    
     public bool SpawnEnemies
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -71,6 +73,9 @@ public class EnemyManager : MonoBehaviour
 
         currentDifficultyGrade = difficultyGrades[gradeIndex];
 
+        var playerMesh = FindAnyObjectByType<PlayerMesh>();
+        playerTransform = playerMesh.GetTransform();
+
         enemyTarget.target = playerTransform;
         ownPosition = transform.position;
 
@@ -83,8 +88,10 @@ public class EnemyManager : MonoBehaviour
 
     private void RemoveEnemy ( Enemy sender )
     {
-        if ( currentlySelectedTarget != null && currentlySelectedTarget == sender.MeshTransform )
+        if ( currentlySelectedTarget != null && currentlySelectedTarget.root == sender.transform )
             EventManagerGeneric<Transform>.InvokeEvent(EventType.TargetSelection, null);
+
+        sender.OnDeath -= OnEnemyDeath;
 
         activeEnemies.Remove(sender);
         sender.gameObject.SetActive(false);
@@ -119,8 +126,6 @@ public class EnemyManager : MonoBehaviour
 
     private async void OnEnemyDeath ( Enemy sender )
     {
-        Debug.Log(sender.MeshTransform.position);
-
         onEnemyDeath?.Invoke();
 
         Vector3 position = sender.MeshTransform.position;
@@ -134,11 +139,8 @@ public class EnemyManager : MonoBehaviour
         {
             EventManagerGeneric<int>.InvokeEvent(EventType.UponHarvestSoul, 1);
 
-            MainThreadQueue.Instance.Enqueue(() =>
-            {
-                EventManagerGeneric<VectorAndTransform>.InvokeEvent(EventType.ActivateSoulEffect, new(position, playerTransform));
-            });
-
+            await Awaitable.MainThreadAsync();
+            EventManagerGeneric<VectorAndTransform>.InvokeEvent(EventType.ActivateSoulEffect, new(position, playerTransform));
         }
     }
 
@@ -173,6 +175,7 @@ public class EnemyManager : MonoBehaviour
                 else
                 {
                     enemy.OnReuse(currentDifficultyGrade.enemyStats, position);
+                    enemy.OnDeath += OnEnemyDeath;
                 }
 
                 var gameObject = enemy.GameObject;
@@ -185,18 +188,18 @@ public class EnemyManager : MonoBehaviour
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private Enemy CreateEnemy ( DifficultyGrade currentDifficultyGrade, Action<Enemy> onDisable, Action<Enemy> onDeath, MoveTarget enemyTarget, Vector3 position )
     {
-        var gameObject = Instantiate(currentDifficultyGrade.enemyPrefabs[UnityEngine.Random.Range(0, currentDifficultyGrade.enemyPrefabs.Count)].meshPrefab, transform);
+        var gameObject = Instantiate(currentDifficultyGrade.enemyPrefabs[UnityEngine.Random.Range(0, currentDifficultyGrade.enemyPrefabs.Count)].meshPrefab);
 
         var enemy = gameObject.GetOrAddComponent<Enemy>();
+
+        enemy.blackBoardObject = blackBoardObject;
 
         enemy.OnDisabled += onDisable;
         enemy.OnDeath += onDeath;
 
         enemy.OnStart(currentDifficultyGrade.enemyStats, enemyTarget, position, () => CreateEnemyDataObject(enemy), transform);
-        enemy.SetupBehaviourTrees();
 
         gameObject.SetActive(false);
 
@@ -283,7 +286,7 @@ public class EnemyManager : MonoBehaviour
             enemy.OnFixedUpdate();
         }
 
-        UpdateDifficultyIndex();
+        //UpdateDifficultyIndex();
     }
 }
 

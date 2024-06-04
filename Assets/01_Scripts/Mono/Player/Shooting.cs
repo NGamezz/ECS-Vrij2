@@ -16,7 +16,6 @@ public class Shooting
     public CharacterData ownerData;
 
     [SerializeField] private Transform gunPosition;
-    //[SerializeField] private List<GunStats> guns = new();
     [SerializeField] private Transform meshTransform;
     [SerializeField] private int defaultAmountOfPooledObjects = 25;
     [SerializeField] private int ownLayer;

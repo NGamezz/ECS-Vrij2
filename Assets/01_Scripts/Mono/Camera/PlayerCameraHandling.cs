@@ -5,7 +5,7 @@ public class PlayerCameraHandling : MonoBehaviour
 {
     [SerializeField] private Transform meshTransform;
 
-    [SerializeField] private bool mouseController = false;
+    [SerializeField] private AimType aimType = AimType.Controller;
 
     private Camera mainCamera;
 
@@ -29,20 +29,29 @@ public class PlayerCameraHandling : MonoBehaviour
     {
         var direction = meshTransform.forward;
 
-        if ( mouseController )
+        switch ( aimType )
         {
-            var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-            if ( !plane.Raycast(ray, out float distance) )
-            {
-                return direction;
-            }
-            var position = ray.GetPoint(distance);
+            case AimType.Controller:
+                {
+                    direction = new(lookDirection.x, direction.y, lookDirection.y);
 
-            direction = position - meshTransform.position;
-        }
-        else if ( lookDirection != Vector2.zero )
-        {
-            direction = new(lookDirection.x, direction.y, lookDirection.y);
+                    if ( lookDirection == Vector2.zero )
+                        direction = meshTransform.forward;
+
+                    break;
+                }
+            default:
+                {
+                    var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+                    if ( !plane.Raycast(ray, out float distance) )
+                    {
+                        return direction;
+                    }
+                    var position = ray.GetPoint(distance);
+
+                    direction = position - meshTransform.position;
+                    break;
+                }
         }
 
         direction.y = 0.0f;
@@ -59,4 +68,10 @@ public class PlayerCameraHandling : MonoBehaviour
     {
         ApplyLookDirection();
     }
+}
+
+public enum AimType
+{
+    Mouse = 0,
+    Controller = 1,
 }

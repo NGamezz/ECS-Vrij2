@@ -1,10 +1,12 @@
 using System;
+using System.Threading.Tasks;
 using UnityEngine;
+
 
 public class LieEnemy : Enemy, IAbilityOwner, ILockOnAble
 {
     private Ability ability = new LieAbility();
-    private BTBaseNode abilityTree;
+    private bool canUseAbility = true;
 
     public override void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData, Transform manager )
     {
@@ -13,66 +15,42 @@ public class LieEnemy : Enemy, IAbilityOwner, ILockOnAble
         ability.Initialize(this, characterData());
     }
 
-    //Sets up the behaviour Tree.
-    public override void SetupBehaviourTrees ()
+    private async void Attack ()
     {
-        var currentGun = shooting.currentGun;
+        if ( !canShoot )
+            return;
+        canShoot = false;
 
-        blackBoard.SetVariable(VariableNames.PLAYER_TRANSFORM, moveTarget.target);
-        blackBoard.SetVariable(VariableNames.TARGET_POSITION, moveTarget.target.position);
-
-        moveTree =
-            new BTSequence(
-
-                new BTConditionNode(() => !gameOver),
-                new BTCancelIfFalse(() => Vector3.Distance(MeshTransform.position, moveTarget.target.position) > enemyStats.attackRange,
-
-                        new BTGetPosition(VariableNames.PLAYER_TRANSFORM, blackBoard),
-                        new BTCancelIfFalse(() => Vector3.Distance(blackBoard.GetVariable<Vector3>(VariableNames.TARGET_POSITION), blackBoard.GetVariable<Transform>(VariableNames.PLAYER_TRANSFORM).position) < 1.0f,
-
-                            new BTAlwaysSuccesTask(() => blackBoard.SetVariable(VariableNames.PLAYER_TRANSFORM, moveTarget.target)),
-                            new BTGetPosition(VariableNames.PLAYER_TRANSFORM, blackBoard),
-                            new BTMoveToPosition(agent, enemyStats.MoveSpeed, VariableNames.TARGET_POSITION, enemyStats.attackRange)
-        )),
-        new BTAlwaysFalse()
-                        );
-
-        //Make it so it doesn't grab a copy of the attack speed at the start, but the current value.
-        attackTree =
-            new BTSequence(
-                new BTConditionNode(() => !gameOver),
-                new BTSequence(
-                    new BTRepeatWhile(() => Vector3.Distance(MeshTransform.position, moveTarget.target.position) < enemyStats.attackRange,
-                           new BTSequence(
-                                new BTAlwaysSuccesTask(() => MeshTransform.forward = (moveTarget.target.position - MeshTransform.position).normalized),
-                                new BTAlwaysSuccesTask(() => shooting.ShootSingle()),
-                                new BTWaitFor(currentGun.attackSpeed)
-                                         )),
-                    new BTAlwaysFalse()
-                             )
-                         );
-
-        abilityTree = new BTSequence(
-            new BTConditionNode(() => !gameOver),
-            new BTSequence(
-                new BTRepeatWhile(() => Vector3.Distance(MeshTransform.position, moveTarget.target.position) < enemyStats.attackRange,
-                    new BTSequence(
-                        new BTAlwaysSuccesTask(() => ability.Execute(characterData)),
-                        new BTWaitFor(ability.ActivationCooldown)
-                                  )
-                        )
-                )
-            );
-
-        attackTree.SetupBlackboard(blackBoard);
-        moveTree.SetupBlackboard(blackBoard);
-        abilityTree.SetupBlackboard(blackBoard);
+        shooting.ShootSingle();
+        await Task.Delay(TimeSpan.FromSeconds(shooting.currentGun.attackSpeed));
+        canShoot = true;
     }
 
-    public override void OnFixedUpdate ()
+    private async void UseAbility ()
     {
-        base.OnFixedUpdate();
-        abilityTree?.Tick();
+        if ( !canUseAbility )
+            return;
+        canUseAbility = false;
+
+        ability.Execute(characterData);
+        await Task.Delay(TimeSpan.FromSeconds(ability.ActivationCooldown));
+        canUseAbility = true;
+    }
+
+    protected override void Attacking ()
+    {
+        if ( agent.isActiveAndEnabled == false || agent.isOnNavMesh == false )
+            return;
+
+        if ( !agent.isStopped )
+        {
+            agent.isStopped = true;
+            agent.ResetPath();
+        }
+
+        MeshTransform.forward = (moveTarget.target.position - MeshTransform.position).normalized;
+        Attack();
+        UseAbility();
     }
 
     public Ability HarvestAbility ()

@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -18,6 +19,8 @@ public class Enemy : Soulable, IDamageable
 
     public event Action<Enemy> OnDisabled;
 
+    public BlackBoardObject blackBoardObject;
+
     public EnemyType EnemyType;
 
     public Transform MeshTransform;
@@ -34,11 +37,6 @@ public class Enemy : Soulable, IDamageable
         get => cachedGameObject;
     }
 
-    protected Blackboard blackBoard = new();
-
-    protected BTBaseNode moveTree;
-    protected BTBaseNode attackTree;
-
     protected bool gameOver = false;
 
     private float health;
@@ -47,7 +45,7 @@ public class Enemy : Soulable, IDamageable
 
     protected EnemyStats enemyStats;
 
-    protected BTBaseNode treePlayerChase;
+    protected StateManager stateManager = new();
 
     protected NavMeshAgent agent;
 
@@ -65,72 +63,21 @@ public class Enemy : Soulable, IDamageable
         shooting.ownerData = this.characterData;
 
         shooting.OnStart(manager, this);
-        UpdateStats(stats);
+        health = stats.MaxHealth;
 
         this.moveTarget = moveTarget;
-    }
 
-    //Need to add the disposal when it's game over.
-    public virtual void SetupBehaviourTrees ()
-    {
-        var currentGun = shooting.currentGun;
+        var chasingState = new BaseState(() => Vector3.Distance(MeshTransform.position, moveTarget.target.position) > enemyStats.attackRange, null, null, Chasing);
+        var attackState = new BaseState(() => Vector3.Distance(MeshTransform.position, moveTarget.target.position) < enemyStats.attackRange, () =>
+        {
+            if ( !agent.isStopped )
+            {
+                agent.isStopped = true;
+                agent.ResetPath();
+            }
+        }, null, Attacking);
 
-        blackBoard.SetVariable(VariableNames.PLAYER_TRANSFORM, moveTarget.target);
-        blackBoard.SetVariable(VariableNames.TARGET_POSITION, moveTarget.target.position);
-        blackBoard.SetVariable(VariableNames.CHASING_PLAYER, false);
-
-        moveTree =
-            new BTSequence(
-                new BTConditionNode(() => !gameOver),
-                new BTRepeatWhile(() => Vector3.Distance(blackBoard.GetVariable<Vector3>(VariableNames.TARGET_POSITION), moveTarget.target.position) < 3.0f,
-                new BTCancelIfFalse(() => Vector3.Distance(MeshTransform.position, moveTarget.target.position) > enemyStats.attackRange,
-                        new BTGetPosition(VariableNames.PLAYER_TRANSFORM, blackBoard),
-                        new BTCancelIfFalse(() => Vector3.Distance(blackBoard.GetVariable<Vector3>(VariableNames.TARGET_POSITION), moveTarget.target.position) < 3.0f,
-                            new BTAlwaysSuccesTask(() => blackBoard.SetVariable(VariableNames.PLAYER_TRANSFORM, moveTarget.target)),
-                            new BTAlwaysSuccesTask(() => blackBoard.SetVariable(VariableNames.TARGET_POSITION, moveTarget.target.position)),
-                            new BTMoveToPosition(agent, enemyStats.MoveSpeed, VariableNames.TARGET_POSITION, enemyStats.attackRange)
-        ))),
-        new BTAlwaysFalse()
-                        );
-
-        //  treePlayerChase =
-        //  new BTSequence(
-        //      new BTConditionNode(() => !gameOver),
-        //      new BTConditionNode(() => Vector3.Distance(moveTarget.target.position, transform.position) > enemyStats.attackRange),
-        //      new BTAlwaysSuccesTask(() => blackBoard.SetVariable(VariableNames.CHASING_PLAYER, true)),
-
-        //      //Repeats while the chasing player variable is true.
-        //      new BTRepeatWhile(() => blackBoard.GetVariable<bool>(VariableNames.CHASING_PLAYER),
-        //          new BTSelector(
-
-        //             //Perform the player chase.
-        //             new BTCancelIfFalse(()=> Vector3.Distance(blackBoard.GetVariable<Transform>(VariableNames.PLAYER_TRANSFORM).position, transform.position) > enemyStats.attackRange,
-        //                 new BTGetPosition(VariableNames.PLAYER_TRANSFORM, blackBoard),
-        //                 new BTMoveToPosition(agent, enemyStats.moveSpeed, VariableNames.TARGET_POSITION, enemyStats.attackRange)
-        //                 ),
-
-        //             //Disable the player chase.
-        //             new BTSequence(
-        //                 new BTAlwaysSuccesTask(() => blackBoard.SetVariable(VariableNames.CHASING_PLAYER, false))
-        //                  )
-        //)));
-
-        attackTree =
-            new BTSequence(
-                new BTConditionNode(() => !gameOver),
-                new BTSequence(
-                    new BTRepeatWhile(() => Vector3.Distance(MeshTransform.position, moveTarget.target.position) < enemyStats.attackRange,
-                           new BTSequence(
-                                new BTAlwaysSuccesTask(() => MeshTransform.forward = (moveTarget.target.position - MeshTransform.position).normalized),
-                                new BTAlwaysSuccesTask(() => shooting.ShootSingle()),
-                                new BTWaitFor(currentGun.attackSpeed)
-                    )),
-                    new BTAlwaysFalse()
-                  )
-                );
-
-        //treePlayerChase.SetupBlackboard(blackBoard);
-        moveTree.SetupBlackboard(blackBoard);
+        stateManager.AddState(chasingState, attackState);
     }
 
     public void OnReuse ( EnemyStats stats, Vector3 startPosition )
@@ -141,7 +88,52 @@ public class Enemy : Soulable, IDamageable
         agent.Warp(startPosition);
         gameOver = false;
         shooting.SelectGun(shooting.currentGun);
-        UpdateStats(stats);
+        health = stats.MaxHealth;
+    }
+
+    protected bool canShoot = true;
+    private async void Attack ()
+    {
+        if ( !canShoot )
+            return;
+        canShoot = false;
+
+        shooting.ShootSingle();
+        await Task.Delay(TimeSpan.FromSeconds(shooting.currentGun.attackSpeed));
+        canShoot = true;
+    }
+
+    public void OnFixedUpdate ()
+    {
+        if ( gameOver )
+            return;
+
+        stateManager?.OnFixedUpdate();
+    }
+
+    protected virtual void Attacking ()
+    {
+        if ( agent.isActiveAndEnabled == false || agent.isOnNavMesh == false )
+            return;
+
+        MeshTransform.forward = (moveTarget.target.position - MeshTransform.position).normalized;
+        Attack();
+    }
+
+    protected virtual void Chasing ()
+    {
+        if ( agent.isActiveAndEnabled == false || agent.isOnNavMesh == false )
+        {
+            return;
+        }
+
+        if ( agent.hasPath == false || Vector3.Distance(agent.pathEndPosition, moveTarget.target.position) > 5.0f )
+        {
+            agent.SetDestination(moveTarget.target.position);
+        }
+
+        agent.SetDestination(moveTarget.target.position);
+        agent.isStopped = false;
     }
 
     public void UpdateStats ( EnemyStats stats )
@@ -156,15 +148,6 @@ public class Enemy : Soulable, IDamageable
         OnDisabled?.Invoke(this);
     }
 
-    public virtual void OnFixedUpdate ()
-    {
-        if ( gameOver )
-            return;
-
-        moveTree?.Tick();
-        attackTree?.Tick();
-    }
-
     public void AfflictDamage ( float amount )
     {
         if ( Dead )
@@ -176,6 +159,8 @@ public class Enemy : Soulable, IDamageable
         {
             Dead = true;
             OnDeath?.Invoke(this);
+            OnDeath = null;
+            OnDisabled = null;
         }
     }
 }

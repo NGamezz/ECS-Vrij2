@@ -1,5 +1,6 @@
 using NaughtyAttributes;
 using System.Collections.Generic;
+using Unity.AI.Navigation;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -52,6 +53,9 @@ public class CreateColliders : MonoBehaviour
 
         var collider = transform.GetComponent<MeshCollider>();
         collider.sharedMesh = mesh;
+
+        var navSurface = (NavMeshSurface)GetComponent(typeof(NavMeshSurface));
+        navSurface.BuildNavMesh();
 
         Debug.Log("Finish Generating Colliders");
     }

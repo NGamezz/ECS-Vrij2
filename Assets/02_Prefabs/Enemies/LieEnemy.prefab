@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 1209696256619516862}
   - component: {fileID: 545492853613259460}
   - component: {fileID: 2529447978538070915}
-  - component: {fileID: 1398976205363756730}
+  - component: {fileID: 346736584288831532}
   m_Layer: 8
   m_Name: Capsule
   m_TagString: Untagged
@@ -134,7 +134,7 @@ NavMeshAgent:
   m_BaseOffset: 1
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
---- !u!54 &1398976205363756730
+--- !u!54 &346736584288831532
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -159,7 +159,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 112
+  m_Constraints: 122
   m_CollisionDetection: 0
 --- !u!1 &5164147966008300341
 GameObject:
@@ -237,14 +237,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 289aeb298051a7a4aa2f804d7b1409e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  EnemyType: 0
+  blackBoardObject: {fileID: 0}
+  EnemyType: 3
   MeshTransform: {fileID: 3033864854325359725}
   shooting:
     currentGun: {fileID: 11400000, guid: 2405d90e6c2fd0d47a1ec20ec1496373, type: 2}
     recoilMultiplier: 0
     ownerData: {fileID: 0}
     gunPosition: {fileID: 5612260506728360145}
-    guns: []
     meshTransform: {fileID: 3033864854325359725}
     defaultAmountOfPooledObjects: 25
     ownLayer: 8

@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -19,7 +20,7 @@ public class BTMoveToPosition : BTBaseNode
 
     protected override void OnEnter ()
     {
-        if ( !agent.isOnNavMesh || !agent.isActiveAndEnabled )
+        if ( agent.isActiveAndEnabled == false || agent.isOnNavMesh == false )
             return;
 
         agent.speed = moveSpeed;
@@ -30,30 +31,40 @@ public class BTMoveToPosition : BTBaseNode
 
     public override void OnReset ()
     {
-        if ( !agent.isActiveAndEnabled || !agent.isOnNavMesh )
-            return;
-
         agent.isStopped = true;
         agent.ResetPath();
     }
 
     protected override TaskStatus OnUpdate ()
     {
-        if ( agent == null || !agent.isActiveAndEnabled || !agent.isOnNavMesh)
-        { return TaskStatus.Failed; }
+        if ( agent == null || !agent.isActiveAndEnabled || !agent.isOnNavMesh )
+        {
+            Debug.Log("Agent Null or Inactive");
+            return TaskStatus.Failed;
+        }
+
         if ( agent.pathPending )
         { return TaskStatus.Running; }
+
         if ( agent.hasPath && agent.path.status == NavMeshPathStatus.PathInvalid )
-        { return TaskStatus.Failed; }
-        if ( agent.pathEndPosition != targetPosition )
         {
+            Debug.Log("Path Invalid");
+            return TaskStatus.Failed;
+        }
+
+        //We want to ignore the y value since that differs due to the height of the plane.
+        if ( (agent.pathEndPosition.x != targetPosition.x && agent.pathEndPosition.z != targetPosition.z) )
+        {
+            Debug.Log($"End Pos is {agent.pathEndPosition}, target pos = {targetPosition}.");
             agent.SetDestination(targetPosition);
         }
 
         if ( Vector3.Distance(agent.transform.position, targetPosition) <= keepDistance )
         {
+            Debug.Log("Reached Destination.");
             return TaskStatus.Success;
         }
+
         return TaskStatus.Running;
     }
 }

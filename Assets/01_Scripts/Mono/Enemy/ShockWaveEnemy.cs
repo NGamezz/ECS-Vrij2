@@ -1,9 +1,12 @@
 using System;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class ShockWaveEnemy : Enemy, IAbilityOwner, ILockOnAble
 {
     private readonly Ability ability = new ShockWaveAbility();
+
+    private bool canUseAbility = true;
 
     public override void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData, Transform manager )
     {
@@ -13,46 +16,42 @@ public class ShockWaveEnemy : Enemy, IAbilityOwner, ILockOnAble
         ability.Initialize(this, this.characterData);
     }
 
-    public override void SetupBehaviourTrees ()
+    private async void Attack ()
     {
-        var currentGun = shooting.currentGun;
+        if ( !canShoot )
+            return;
+        canShoot = false;
 
-        blackBoard.SetVariable(VariableNames.PLAYER_TRANSFORM, moveTarget.target);
-        blackBoard.SetVariable(VariableNames.TARGET_POSITION, moveTarget.target.position);
+        shooting.ShootSingle();
+        await Task.Delay(TimeSpan.FromSeconds(shooting.currentGun.attackSpeed));
+        canShoot = true;
+    }
 
-        moveTree =
-            new BTSequence(
+    private async void UseAbility ()
+    {
+        if ( !canUseAbility )
+            return;
+        canUseAbility = false;
 
-                new BTConditionNode(() => !gameOver),
-                new BTRepeatWhile(() => Vector3.Distance(MeshTransform.position, moveTarget.target.position) > enemyStats.attackRange / 2,
-                    new BTSequence(
+        ability.Execute(characterData);
+        await Task.Delay(TimeSpan.FromSeconds(ability.ActivationCooldown));
+        canUseAbility = true;
+    }
 
-                        new BTGetPosition(VariableNames.PLAYER_TRANSFORM, blackBoard),
-                        new BTCancelIfFalse(() => Vector3.Distance(blackBoard.GetVariable<Vector3>(VariableNames.TARGET_POSITION), moveTarget.target.position) < 1.0f,
+    protected override void Attacking ()
+    {
+        if ( agent.isActiveAndEnabled == false || agent.isOnNavMesh == false )
+            return;
 
-                            new BTAlwaysSuccesTask(() => blackBoard.SetVariable(VariableNames.PLAYER_TRANSFORM, moveTarget.target)),
-                            new BTGetPosition(VariableNames.PLAYER_TRANSFORM, blackBoard),
-                            new BTMoveToPosition(agent, enemyStats.MoveSpeed, VariableNames.TARGET_POSITION, enemyStats.attackRange / 2)
-        ))),
-        new BTAlwaysFalse()
-                        );
+        if ( !agent.isStopped )
+        {
+            agent.isStopped = true;
+            agent.ResetPath();
+        }
 
-        attackTree =
-           new BTSequence(
-               new BTConditionNode(() => !gameOver),
-               new BTSequence(
-                   new BTRepeatWhile(() => Vector3.Distance(MeshTransform.position, moveTarget.target.position) < enemyStats.attackRange / 2,
-                          new BTSequence(
-                               new BTAlwaysSuccesTask(() => MeshTransform.forward = (moveTarget.target.position - MeshTransform.position).normalized),
-                               new BTAlwaysSuccesTask(() => ability.Execute(characterData)),
-                               new BTWaitFor(ability.ActivationCooldown)
-                                        )),
-                   new BTAlwaysFalse()
-                            )
-                        );
-
-        attackTree.SetupBlackboard(blackBoard);
-        moveTree.SetupBlackboard(blackBoard);
+        MeshTransform.forward = (moveTarget.target.position - MeshTransform.position).normalized;
+        Attack();
+        UseAbility();
     }
 
     public void AcquireAbility ( Ability ability ) { }

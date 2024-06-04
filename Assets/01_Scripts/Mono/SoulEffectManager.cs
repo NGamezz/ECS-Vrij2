@@ -33,7 +33,7 @@ public class SoulEffectManager : MonoBehaviour
         });
     }
 
-    private void SpawnEffect(VectorAndTransform originAndTarget)
+    private void SpawnEffect ( VectorAndTransform originAndTarget )
     {
         MainThreadQueue.Instance.Enqueue(() =>
         {
@@ -49,7 +49,7 @@ public class SoulEffectManager : MonoBehaviour
 
         while ( Vector3.Distance(target.position, transform.position) > minDistanceToTarget && count < 10000 )
         {
-            var dir = target.position - transform.position;
+            var dir = (target.position + positionOffset) - transform.position;
             transform.Translate(speed * Time.deltaTime * dir);
 
             yield return null;
