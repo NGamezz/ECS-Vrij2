@@ -1,66 +1,64 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class AnimationController : MonoBehaviour
 {
     private Animator animator;
 
-    void Start()
+    void Start ()
     {
-        animator = GetComponent<Animator>();
+        animator = (Animator)GetComponentInChildren(typeof(Animator));
+
+        if ( animator == null )
+            animator = (Animator)GetComponent(typeof(Animator));
     }
 
-    void Update()
+    public void OnShoot ()
     {
+        animator.SetTrigger("isAttacking");
+    }
 
-        //aninimationbool for forward
-        if (Input.GetButtonDown("Onmove"))
-        {
-            animator.SetBool("isWalkingForward", true);
-        }
-        else if (Input.GetButtonUp("Onmove"))
-        {
-            animator.SetBool("isWalkingForward", false);
-        }
+    public void OnDash ()
+    {
+    }
 
-        //aninimationbool for sideways
-        if (Input.GetButtonDown("Onmove"))
+    public void OnAbilitySteal ()
+    {
+        animator.SetTrigger("isStealing");
+    }
+
+    public void OnMovement ( InputAction.CallbackContext ctx )
+    {
+        SetInput(ctx.ReadValue<Vector2>());
+    }
+
+    private void SetInput ( Vector2 pos )
+    {
+        if ( pos.x > 0 || pos.x < 0 )
         {
             animator.SetBool("isWalkingSideways", true);
         }
-        else if (Input.GetButtonUp("Onmove"))
+        else
         {
             animator.SetBool("isWalkingSideways", false);
         }
 
-        //aninimationbool for backward
-        if (Input.GetButtonDown("Onmove"))
+        if ( pos.y > 0 )
         {
-            animator.SetBool("isWalkingBackwards", true);
+            animator.SetBool("isWalkingForward", true);
         }
-        else if (Input.GetButtonUp("Onmove"))
+        else
         {
-            animator.SetBool("isWalkingBackwards", false);
-        }
-
-        //aninimationtrigger for attack
-        if (Input.GetButtonDown("Fire1"))
-        {
-            animator.SetTrigger("isAttacking");
-        }
-        
-        //aninimationtrigger for steal
-        if (Input.GetButtonDown("E"))
-        {
-            animator.SetTrigger("isStealing");
+            animator.SetBool("isWalkingForward", false);
         }
 
-        //aninimationtrigger for dash
-        if (Input.GetButtonDown("OnDash"))
+        if ( pos.y < 0 )
         {
-            animator.SetTrigger("isDodging");
+            animator.SetBool("isWalkingBackward", true);
         }
-
+        else
+        {
+            animator.SetBool("isWalkingBackward", false);
+        }
     }
 }

@@ -67,8 +67,20 @@ public class Enemy : Soulable, IDamageable
 
         this.moveTarget = moveTarget;
 
-        var chasingState = new BaseState(() => Vector3.Distance(MeshTransform.position, moveTarget.target.position) > enemyStats.attackRange, null, null, Chasing);
-        var attackState = new BaseState(() => Vector3.Distance(MeshTransform.position, moveTarget.target.position) < enemyStats.attackRange, () =>
+        var chasingState = new BaseState(() =>
+        {
+            if ( moveTarget.target == null )
+                return false;
+
+            return Vector3.Distance(MeshTransform.position, moveTarget.target.position) > enemyStats.attackRange;
+        }, null, null, Chasing);
+        var attackState = new BaseState(() =>
+        {
+            if ( moveTarget.target == null )
+                return false;
+
+            return Vector3.Distance(MeshTransform.position, moveTarget.target.position) < enemyStats.attackRange;
+        }, () =>
         {
             if ( !agent.isStopped )
             {

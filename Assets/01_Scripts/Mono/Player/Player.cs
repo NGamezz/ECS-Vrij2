@@ -51,7 +51,7 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
 
     [Space(2)]
 
-    [SerializeField] private List<Ability> abilities = new(2);
+    private IAbilityHolder abilityHolder = new PlayerAbilityHolder();
 
     private bool canUseAbility = true;
 
@@ -104,6 +104,8 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
         if ( ctx.phase != InputActionPhase.Performed )
             return;
 
+        Debug.Log("Dash");
+
         playerMovement.OnDash();
     }
 
@@ -112,21 +114,9 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
     {
         if ( !canUseAbility || ctx.phase != InputActionPhase.Performed )
             return;
-
         canUseAbility = false;
 
-        var ability = abilities[^1];
-        if ( ability.Trigger() )
-        {
-            if ( ability.Execute(characterData) )
-            {
-                abilities.Remove(ability);
-            }
-        }
-        else
-        {
-            EventManagerGeneric<TextPopup>.InvokeEvent(EventType.OnTextPopupQueue, new(1.0f, $"Not Enough Souls. Requires : {ability.ActivationCost}"));
-        }
+        abilityHolder.UseAbility(characterData);
 
         await Task.Delay(TimeSpan.FromSeconds(abilityCooldown));
         canUseAbility = true;
@@ -152,7 +142,6 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
         EventManagerGeneric<int>.RemoveListener(EventType.UponHarvestSoul, Collect);
         EventManagerGeneric<Transform>.RemoveListener(EventType.TargetSelection, ( transform ) => characterData.TargetedTransform = transform);
         characterData.Reset();
-        abilities.Clear();
         StopAllCoroutines();
     }
 
@@ -215,13 +204,12 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
     //Returns if the player already owns the ability, otherwise adds it.
     public void AcquireAbility ( Ability ability )
     {
-        Debug.Log(ability);
-
         ability.Initialize(this, characterData);
 
         EventManagerGeneric<TextPopup>.InvokeEvent(EventType.OnTextPopupQueue, new(2.0f, $"Acquired : {ability.GetType()}"));
         EventManagerGeneric<Transform>.InvokeEvent(EventType.TargetSelection, null);
-        abilities.Add(ability);
+
+        abilityHolder.AddAbility(ability);
     }
 
     public Ability HarvestAbility ()
@@ -235,3 +223,106 @@ public class PlayerManager : MonoBehaviour, IDamageable, ISoulCollector, IAbilit
     {
     }
 }
+
+//To abstract the usage of the abilities a bit.
+public interface IAbilityHolder
+{
+    public void AddAbility ( Ability ability );
+    public void UseAbility ( object data );
+}
+
+public class PlayerAbilityHolder : IAbilityHolder
+{
+    private List<Ability> abilities = new(2);
+
+    public void AddAbility ( Ability ability )
+    {
+        if ( abilities.Contains(ability) )
+            return;
+
+        abilities.Add(ability);
+    }
+
+    public void UseAbility ( object data )
+    {
+        CharacterData characterData;
+        try
+        {
+            characterData = data as CharacterData;
+        }
+        catch ( Exception )
+        {
+            return;
+        }
+
+        var ability = abilities[^1];
+        if ( ability.Trigger() )
+        {
+            if ( ability.Execute(characterData) )
+            {
+                abilities.Remove(ability);
+                return;
+            }
+        }
+        else
+        {
+            EventManagerGeneric<TextPopup>.InvokeEvent(EventType.OnTextPopupQueue, new(1.0f, $"Not Enough Souls. Requires : {ability.ActivationCost}"));
+        }
+    }
+}
+
+//public interface IUpgradeHolder
+//{
+//    public IUpgrade GetUpgrade ();
+//    public void AcquireUpgrade ( IUpgrade upgrade );
+//    public void ReleaseUpgrade ( IUpgrade upgrade );
+//}
+
+//public interface IUpgrade
+//{
+//    public void Add ( object ctx );
+//    public void Remove ( object ctx );
+//}
+
+//public class ManaUpgrade : IUpgrade
+//{
+//    private float increaseAmount = 5;
+
+//    public void Add ( object ctx )
+//    {
+//        if ( ctx is not CharacterData data )
+//            return;
+
+//    }
+
+//    public void Remove ( object ctx )
+//    {
+//        if ( ctx is not CharacterData data )
+//            return;
+
+//    }
+//}
+
+//public class UpgradeHolder : MonoBehaviour, IUpgradeHolder
+//{
+//    private List<IUpgrade> upgrades = new();
+
+//    public void AcquireUpgrade ( IUpgrade upgrade )
+//    {
+//        upgrades.Add(upgrade);
+//    }
+
+//    public IUpgrade GetUpgrade ()
+//    {
+//        var randomIndex = UnityEngine.Random.Range(0, upgrades.Count);
+//        var upgrade = upgrades[randomIndex];
+//        upgrades.RemoveAt(randomIndex);
+//        return upgrade;
+//    }
+
+//    public void ReleaseUpgrade ( IUpgrade upgrade )
+//    {
+//        if ( upgrades.Contains(upgrade) )
+//            upgrades.Remove(upgrade);
+//    }
+//}

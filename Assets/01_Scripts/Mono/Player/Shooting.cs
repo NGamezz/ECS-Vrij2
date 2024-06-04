@@ -140,7 +140,9 @@ public class Shooting
     {
         while ( running )
         {
-            yield return waitUntilShoot;
+            yield return new WaitUntil(()=> shootHeld);
+
+            Debug.Log("Shoot");
 
             while ( shootHeld && !reloading )
             {

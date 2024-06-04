@@ -13,10 +13,7 @@ MonoBehaviour:
   m_Name: MainEnemyStats
   m_EditorClassIdentifier: 
   EnemyType: 0
-  maxHealth: 100
-  moveSpeed: 2.5
-  damage: 10
+  statMultiplier: 1
   attackRange: 10
   spawnSpeed: 5
-  attackSpeed: 1
-  enemiesPerBatch: 15
+  enemiesPerBatch: 5

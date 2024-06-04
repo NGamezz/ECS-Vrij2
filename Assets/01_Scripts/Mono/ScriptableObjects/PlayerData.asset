@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Player: 1
   PlayerMousePosition:
-    x: -3.655664
+    x: 29.146437
     y: 0
-    z: 14.183846
+    z: 58.284615
   souls: 0
   Health: 500
   Stamina: 150
