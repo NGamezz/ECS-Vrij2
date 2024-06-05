@@ -138,13 +138,15 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
     //Intialization
     private void Start ()
     {
-        characterData.Reset();
         characterData.CharacterTransform = transform;
 
         characterData.Player = true;
 
         upgradeHolder = new(characterData);
 
+        characterData.MoveTarget = enemyMoveTarget;
+        characterData.Initialize(UpdateSoulsUI);
+        
         playerMovement.characterData = characterData;
         playerMovement.OnStart();
 
@@ -153,10 +155,6 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
         Souls = 0;
         UpdateSoulsUI();
-
-        characterData.MoveTarget = enemyMoveTarget;
-
-        characterData.Initialize(UpdateSoulsUI);
 
         AcquireAbility(new ReapAbility());
 
@@ -190,6 +188,12 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Collect ( int amount )
     {
+        if(characterData.Souls + amount > characterData.soulBankLimit)
+        {
+            Souls = characterData.soulBankLimit;
+            return;
+        }
+
         Souls += amount;
     }
 
@@ -225,6 +229,11 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
         playerMovement.characterData = characterData;
         playerShooting.ownerData = characterData;
         this.characterData = characterData;
+    }
+
+    public void RemoveRandomUpgrade ()
+    {
+        upgradeHolder.UndoRandomAction();
     }
 }
 
@@ -291,6 +300,8 @@ public interface IUpgrade
 public interface IUpgradable
 {
     public void Upgrade ( IUpgrade upgrade );
+
+    public void RemoveRandomUpgrade ();
 }
 
 public class UpgradeHolder : IUpgradeHolder

@@ -45,6 +45,6 @@ public class ReapAbility : Ability
 
         ActivationCooldown = 3;
         ActivationCost = 5;
-        Trigger = () => { return ownerData.Souls >= ActivationCost; };
+        Trigger = () => { return ownerData.Souls >= (ActivationCost * ownerData.abilityCostMultiplier); };
     }
 }

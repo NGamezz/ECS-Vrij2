@@ -321,7 +321,6 @@ public class EnemyCreator : IEnemyCreator
         data.Speed = currentDifficultyGrade.enemyStats.MoveSpeed;
 
         data.MoveTarget = enemyTarget;
-        data.Reset();
 
         return data;
     }

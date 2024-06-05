@@ -38,7 +38,7 @@ public class AttackBoostAbility : Ability
 
         ActivationCooldown = 3;
 
-        Trigger = () => ownerData.Souls >= ActivationCost;
+        Trigger = () => ownerData.Souls >= (ActivationCost * ownerData.abilityCostMultiplier);
 
         if ( !ownerData.Player )
             ownerData.DamageMultiplier += damageMultiplierBoost;

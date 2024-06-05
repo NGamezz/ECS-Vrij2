@@ -91,6 +91,6 @@ public class LieAbility : Ability
 
         ActivationCost = 10;
 
-        Trigger = () => { return ownerData.Souls >= ActivationCost; };
+        Trigger = () => { return ownerData.Souls >= (ActivationCost * ownerData.abilityCostMultiplier); };
     }
 }

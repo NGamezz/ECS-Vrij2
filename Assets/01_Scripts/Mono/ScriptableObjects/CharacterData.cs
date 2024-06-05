@@ -2,14 +2,6 @@ using System;
 using Unity.Mathematics;
 using UnityEngine;
 
-[Flags]
-public enum CharacterStatusEffect
-{
-    Default = 0,
-    Stunned = 1,
-}
-
-//Should be reworked.
 [CreateAssetMenu]
 public class CharacterData : ScriptableObject
 {
@@ -35,12 +27,24 @@ public class CharacterData : ScriptableObject
         }
     }
 
+    public int soulBankLimit = 20;
+
+    public bool hasShield = false;
+    [NonSerialized] public bool shieldActive = false;
+    public float shieldRechargeSpeed = 5.0f;
+
     [NonSerialized] public Action UponSoulValueChanged;
+
+    public Action OnHit;
+
+    public bool canTakeDamage = true;
+
+    public float abilityCostMultiplier = 1;
 
     public float Health;
     public float Stamina;
 
-    [NonSerialized] public GameObject decoyPrefab;
+    public GameObject decoyPrefab;
 
     public float MaxStamina;
     public float MaxHealth;
@@ -52,47 +56,87 @@ public class CharacterData : ScriptableObject
 
     public float Armour;
 
-    public CharacterStatusEffect StatusEffects = CharacterStatusEffect.Default;
-
-    public event Action OnStunned
+    private CharacterDataCache _cache;
+    private CharacterDataCache cache
     {
-        add => OnStunned += value;
-        remove => OnStunned -= value;
-    }
+        get
+        {
+            if ( _cache == null )
+                return new(this);
 
-    public void ApplyStatusEffect ( CharacterStatusEffect effect, float duration )
-    {
-        TimedStatusEffect(duration, effect);
-    }
-
-    private async void TimedStatusEffect ( float duration, CharacterStatusEffect effect )
-    {
-        StatusEffects |= effect;
-        await Awaitable.WaitForSecondsAsync(duration);
-        StatusEffects &= ~(effect);
+            return _cache;
+        }
     }
 
     public void Initialize ( Action uponSoulChanged )
     {
-        Reset();
+        _cache = new(this);
         UponSoulValueChanged = uponSoulChanged;
     }
 
-    public void SetMousePosition(Vector3 pos)
+    public void SetMousePosition ( Vector3 pos )
     {
         PlayerMousePosition = pos;
     }
 
     public void Reset ()
     {
-        Souls = 0;
-
+        OnHit = null;
+        hasShield = false;
         UponSoulValueChanged = null;
+        abilityCostMultiplier = cache.abilityCostMultiplier;
+        MaxHealth = cache.MaxHealth;
+        MaxStamina = cache.MaxStamina;
+        Armour = cache.Armour;
+        Speed = cache.Speed;
+        SpeedMultiplier = cache.SpeedMultiplier;
+        DamageMultiplier = cache.DamageMultiplier;
+        Health = cache.Health;
+        decoyPrefab = cache.decoyPrefab;
+        Souls = cache.souls;
+        Player = cache.Player;
+        Stamina = cache.Stamina;
+    }
+}
 
-        StatusEffects = CharacterStatusEffect.Default;
+class CharacterDataCache
+{
+    [NonSerialized] public Transform CharacterTransform;
+    [NonSerialized] public Transform TargetedTransform;
+    [NonSerialized] public Rigidbody Rigidbody;
+    [NonSerialized] public MoveTarget MoveTarget;
 
-        Stamina = MaxStamina;
-        Health = MaxHealth;
-        Souls = 0;
+    public bool Player = false;
+    public float3 PlayerMousePosition;
+    public GunStats currentGun;
+
+    public int souls;
+    [NonSerialized] public Action UponSoulValueChanged;
+    public float abilityCostMultiplier = 1;
+    public float Health;
+    public float Stamina;
+
+    public GameObject decoyPrefab;
+    public float MaxStamina;
+    public float MaxHealth;
+    public float Speed;
+    public float DamageMultiplier;
+    public float SpeedMultiplier;
+    public float Armour;
+
+    public CharacterDataCache ( CharacterData data )
+    {
+        abilityCostMultiplier = data.abilityCostMultiplier;
+        MaxHealth = data.MaxHealth;
+        MaxStamina = data.MaxStamina;
+        Armour = data.Armour;
+        Speed = data.Speed;
+        SpeedMultiplier = data.SpeedMultiplier;
+        DamageMultiplier = data.DamageMultiplier;
+        Health = data.Health;
+        decoyPrefab = data.decoyPrefab;
+        data.Souls = souls;
+        Player = data.Player;
+        Stamina = data.Stamina;
     }
 }

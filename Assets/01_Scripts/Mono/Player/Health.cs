@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class Health : MonoBehaviour, IDamageable, ICharacterDataHolder
@@ -8,15 +9,36 @@ public class Health : MonoBehaviour, IDamageable, ICharacterDataHolder
 
     public void AfflictDamage ( float amount )
     {
-        Debug.Log(amount);
+        if ( data.shieldActive )
+        {
+            ResetShield(data);
+            EventManagerGeneric<TextPopup>.InvokeEvent(EventType.OnTextPopupQueue, new(1.0f, "Shield Used"));
+            return;
+        }
+
+        if ( !data.canTakeDamage )
+            return;
 
         data.Health -= amount;
 
         if ( data.Health <= 0 )
         {
-            Debug.Log("You Died.");
             gameObject.SetActive(false);
         }
+
+        data.OnHit?.Invoke();
+    }
+
+    private async void ResetShield ( CharacterData data )
+    {
+        data.shieldActive = false;
+        await Task.Delay(System.TimeSpan.FromSeconds(data.shieldRechargeSpeed));
+
+        if ( !data.hasShield )
+            return;
+
+        data.shieldActive = true;
+
     }
 
     public void SetCharacterData ( CharacterData characterData )
