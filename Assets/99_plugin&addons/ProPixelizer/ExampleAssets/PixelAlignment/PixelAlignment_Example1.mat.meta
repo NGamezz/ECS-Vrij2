@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 9b0f43e03c033144b939c51f53c6575c
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 177877
+  packageName: ProPixelizer
+  packageVersion: 1.8
+  assetPath: Assets/ProPixelizer/ExampleAssets/PixelAlignment/PixelAlignment_Example1.mat
+  uploadId: 636081
