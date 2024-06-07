@@ -36,7 +36,7 @@ public class PlayerMovement
         characterData.Stamina -= halfStamina;
 
         canDash = false;
-        rb.AddForce((characterData.SpeedMultiplier) * direction, ForceMode.Impulse);
+        rb.AddForce((characterData.Speed) * direction.normalized, ForceMode.Impulse);
 
         ResetDashCooldown().Forget();
     }
@@ -81,5 +81,15 @@ public class PlayerMovement
     {
         ApplyForce();
         VelocityLimiting();
+
+        if ( characterData.Stamina < characterData.MaxStamina )
+        {
+            characterData.Stamina += Time.fixedDeltaTime;
+
+            if ( characterData.Stamina > characterData.MaxStamina )
+            {
+                characterData.Stamina = characterData.MaxStamina;
+            }
+        }
     }
 }

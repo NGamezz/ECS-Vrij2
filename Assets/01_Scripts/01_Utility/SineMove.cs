@@ -16,6 +16,8 @@ public class SineMove : MonoBehaviour
 
     private Vector3 cachedPosition = Vector3.zero;
 
+    [SerializeField] private Axis moveAxis = Axis.Y;
+
     private Transform cachedTransform;
     private GameObject cachedGameObject;
 
@@ -30,7 +32,7 @@ public class SineMove : MonoBehaviour
     private void Animate ()
     {
         var position = cachedTransform.position;
-        position.y = cachedPosition.y + math.sin(Time.time * frequency) * sineStrength;
+        position[(int)moveAxis] += cachedPosition[(int)moveAxis] + math.sin(Time.time * frequency) * sineStrength;
         cachedTransform.position = position;
     }
 

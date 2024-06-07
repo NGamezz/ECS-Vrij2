@@ -2,8 +2,7 @@ using Cysharp.Threading.Tasks;
 using System;
 using UnityEngine;
 
-
-public class LieEnemy : Enemy, IAbilityOwner, ILockOnAble
+public class LieEnemy : Enemy, IAbilityOwner
 {
     private Ability ability = new LieAbility();
     private bool canUseAbility = true;
@@ -13,17 +12,6 @@ public class LieEnemy : Enemy, IAbilityOwner, ILockOnAble
         EnemyType = EnemyType.LieEnemy;
         base.OnStart(stats, moveTarget, startPosition, characterData, manager);
         ability.Initialize(this, characterData());
-    }
-
-    private void Attack ()
-    {
-        if ( !canShoot )
-            return;
-        canShoot = false;
-
-        shooting.ShootSingle();
-
-        Utility.Async.ChangeValueAfterSeconds(shooting.currentGun.attackSpeed, ( x ) => canShoot = x, true, this.GetCancellationTokenOnDestroy()).Forget();
     }
 
     private void UseAbility ()
@@ -49,14 +37,13 @@ public class LieEnemy : Enemy, IAbilityOwner, ILockOnAble
         }
 
         MeshTransform.forward = (moveTarget.target.position - MeshTransform.position).normalized;
-        Attack();
         UseAbility();
     }
 
     public Ability HarvestAbility ()
     {
         gameObject.SetActive(false);
-        return ability;
+        return null;
     }
 
     public void AcquireAbility ( Ability ability ) { }

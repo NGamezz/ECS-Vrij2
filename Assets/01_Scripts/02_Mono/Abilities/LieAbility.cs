@@ -16,7 +16,9 @@ public class LieAbility : Ability
     private async UniTaskVoid ActivateDecoy ( Vector3 refPos, bool player, Action<CharacterData, Enemy> contextCallBackStart, Action<CharacterData, Enemy> contextCallBackFinish )
     {
         refPos.y = ownerData.CharacterTransform.position.y;
+
         var enemy = EnemyManager.Instance.CreateEnemy(refPos);
+        
         enemy.GameObject.SetActive(true);
         contextCallBackStart(ownerData, enemy);
 
@@ -59,8 +61,9 @@ public class LieAbility : Ability
 
         ownerData.Souls -= (int)ActivationCost;
 
+        var position = ownerData.CharacterTransform.position + (UnityEngine.Random.insideUnitSphere.normalized * UnityEngine.Random.Range(spawnRange.x, spawnRange.y));
         var cachedTarget = ownerData.MoveTarget.target;
-        ActivateDecoy(ownerData.PlayerMousePosition, true, ( data, enemy ) =>
+        ActivateDecoy(position, true, ( data, enemy ) =>
         {
             ownerData.MoveTarget.target = enemy.MeshTransform;
             return;
