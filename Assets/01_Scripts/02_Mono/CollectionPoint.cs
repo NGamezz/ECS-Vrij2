@@ -64,9 +64,10 @@ public class CollectionPoint : MonoBehaviour
 
         var lenght = math.length(pos - ownPosition);
 
+        await UniTask.SwitchToMainThread();
+        
         if ( lenght > range )
         {
-            await UniTask.SwitchToMainThread();
 
             EventManagerGeneric<VectorAndTransformAndCallBack>.InvokeEvent(EventType.ActivateSoulEffect, new(pos, playerTransform, () =>
             {

@@ -85,10 +85,7 @@ public static class EventManagerGeneric<T>
         }
         else if ( events.ContainsKey(type) )
         {
-            lock ( events[type] )
-            {
-                events[type] += action;
-            }
+            events[type] += action;
         }
     }
 
@@ -99,10 +96,7 @@ public static class EventManagerGeneric<T>
 
         if ( events.ContainsKey(type) )
         {
-            lock ( events[type] )
-            {
-                events[type] -= action;
-            }
+            events[type] -= action;
         }
     }
 
@@ -111,10 +105,7 @@ public static class EventManagerGeneric<T>
         if ( !events.ContainsKey(type) )
             return;
 
-        lock ( events[type] )
-        {
-            events[type]?.Invoke(input);
-        }
+        events[type]?.Invoke(input);
     }
 
     public static void ClearListeners ()
@@ -123,10 +114,7 @@ public static class EventManagerGeneric<T>
 
         for ( int i = amount; i > 0; i-- )
         {
-            lock ( events[(EventType)i] )
-            {
-                events[(EventType)i] = null;
-            }
+            events[(EventType)i] = null;
         }
 
         events.Clear();

@@ -58,7 +58,7 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
     [SerializeField] private Shooting playerShooting = new();
 
-    private GameState gameState;
+    private GameState gameState = GameState.Running;
 
     [Space(2)]
 
@@ -68,11 +68,10 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
     public void OnShoot ( InputAction.CallbackContext context )
     {
-        if ( context.phase != InputActionPhase.Performed )
-            return;
-
         if ( gameState == GameState.Pauzed )
+        {
             return;
+        }
 
         playerShooting.OnShoot(context);
     }
@@ -234,7 +233,7 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
         EventManagerGeneric<Transform>.RemoveListener(EventType.TargetSelection, ( transform ) => characterData.TargetedTransform = transform);
         EventManagerGeneric<GameState>.RemoveListener(EventType.OnGameStateChange, SetGameState);
         characterData.Reset();
-        upgradeHolder.RemoveAll();
+        upgradeHolder?.RemoveAll();
         StopAllCoroutines();
     }
 
@@ -272,18 +271,20 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
         soulsUiText.SetText($"Amount of Souls = {characterData.Souls}");
     }
 
+    private void CheckSlider ( int index, Ability abil, int count )
+    {
+        if ( index + 1 >= count )
+            return;
+
+        sliders[index + 1].value = characterData.Souls;
+    }
+
     private void Update ()
     {
         if ( gameState == GameState.Pauzed )
             return;
 
-        abilityHolder.ForeachAbility(( Index, abil, count ) =>
-        {
-            if ( Index + 1 >= count )
-                return;
-
-            sliders[Index + 1].value = characterData.Souls;
-        });
+        abilityHolder.ForeachAbility(CheckSlider);
 
         playerMovement.OnUpdate();
     }

@@ -155,6 +155,11 @@ public class EnemyManager : MonoBehaviour
                 var position = playerPos + (UnityEngine.Random.insideUnitSphere.normalized * UnityEngine.Random.Range(spawnRange.x, spawnRange.y));
                 position.y = ownPosition.y;
 
+                var floor = Physics.CheckSphere(position, 1.0f, 1 << 3);
+
+                if ( !floor )
+                    continue;
+
                 var succes = objectPool.GetPooledObject(out var enemy);
 
                 if ( !succes )

@@ -82,7 +82,7 @@ public class Enemy : Soulable, IDamageable
             return Vector3.Distance(MeshTransform.position, moveTarget.target.position) < enemyStats.attackRange;
         }, () =>
         {
-            if ( !agent.isStopped )
+            if ( agent.isActiveAndEnabled && !agent.isStopped )
             {
                 agent.isStopped = true;
                 agent.ResetPath();
