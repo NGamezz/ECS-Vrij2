@@ -377,7 +377,10 @@ public class PlayerAbilityHolder : IAbilityHolder
 
     public Ability GetAbility ( int index )
     {
-        return abilities[index] ?? null;
+        if ( index >= abilities.Count )
+            return null;
+
+        return abilities[index];
     }
 
     public void ForeachAbility ( Action<int, Ability, int> body )
