@@ -68,13 +68,17 @@ public class CollectionPoint : MonoBehaviour
         {
             await UniTask.SwitchToMainThread();
 
-            EventManagerGeneric<VectorAndTransform>.InvokeEvent(EventType.ActivateSoulEffect, new(pos, playerTransform));
-            EventManagerGeneric<int>.InvokeEvent(EventType.UponHarvestSoul, 1);
+            EventManagerGeneric<VectorAndTransformAndCallBack>.InvokeEvent(EventType.ActivateSoulEffect, new(pos, playerTransform, () =>
+            {
+                EventManagerGeneric<int>.InvokeEvent(EventType.UponHarvestSoul, 1);
+            }));
             return;
         }
 
-        EventManagerGeneric<DoubleVector3>.InvokeEvent(EventType.ActivateSoulEffect, new(pos, ownPosition));
-        AddSoul(1);
+        EventManagerGeneric<VectorAndTransformAndCallBack>.InvokeEvent(EventType.ActivateSoulEffect, new(pos, transform, () =>
+        {
+            AddSoul(1).Forget();
+        }));
     }
 
     public async UniTaskVoid OnStart ( Transform playerTransform )
@@ -96,12 +100,12 @@ public class CollectionPoint : MonoBehaviour
         cellPositions.Clear();
     }
 
-    private void AddSoul ( int amount )
+    private async UniTaskVoid AddSoul ( int amount )
     {
         if ( amount < 0 )
             return;
 
-        UnityEngine.Debug.Log(amount);
+        await UniTask.SwitchToThreadPool();
 
         souls += amount;
 

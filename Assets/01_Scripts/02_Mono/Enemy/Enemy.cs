@@ -1,7 +1,6 @@
 using Cysharp.Threading.Tasks;
 using System;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -118,9 +117,6 @@ public class Enemy : Soulable, IDamageable
 
     public void OnFixedUpdate ()
     {
-        if ( gameOver )
-            return;
-
         stateManager?.OnFixedUpdate();
     }
 
@@ -173,6 +169,8 @@ public class Enemy : Soulable, IDamageable
             OnDeath?.Invoke(this);
             OnDeath = null;
             OnDisabled = null;
+
+            GameObject.SetActive(false);
         }
     }
 }

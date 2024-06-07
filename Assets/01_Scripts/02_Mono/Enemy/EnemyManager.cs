@@ -1,8 +1,8 @@
 using Cysharp.Threading.Tasks;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -31,6 +31,8 @@ public class EnemyManager : MonoBehaviour
 
     private Transform currentlySelectedTarget = null;
 
+    private GameState gameState = GameState.Running;
+
     [Header("Difficulty Scaling.")]
     [SerializeField] private List<DifficultyGrade> difficultyGrades = new();
     [SerializeField] private float currentDifficultyIndex = 0;
@@ -39,6 +41,8 @@ public class EnemyManager : MonoBehaviour
 
     private DifficultyGrade currentDifficultyGrade;
     private int requiredIndexForDifficultyAdvancement = 5;
+
+    private CancellationTokenSource tokenSrc = new();
 
     private bool spawnEnemies = false;
     private Transform playerTransform;
@@ -85,8 +89,8 @@ public class EnemyManager : MonoBehaviour
         GenerateObjects();
 
         SpawnEnemies = true;
-        SpawnEnemiesIE().Forget();
-        CleanUpLostEnemies().Forget();
+        SpawnEnemiesIE(tokenSrc.Token).Forget();
+        CleanUpLostEnemies(tokenSrc.Token).Forget();
     }
 
     private void RemoveEnemy ( Enemy sender )
@@ -119,10 +123,10 @@ public class EnemyManager : MonoBehaviour
         var succes = WorldManager.InvokeCellEvent(CellEventType.OnEntityDeath, position, position);
         if ( !succes )
         {
-            EventManagerGeneric<int>.InvokeEvent(EventType.UponHarvestSoul, 1);
-
-            await UniTask.SwitchToMainThread();
-            EventManagerGeneric<VectorAndTransform>.InvokeEvent(EventType.ActivateSoulEffect, new(position, playerTransform));
+            EventManagerGeneric<VectorAndTransformAndCallBack>.InvokeEvent(EventType.ActivateSoulEffect, new(position, playerTransform, () =>
+            {
+                EventManagerGeneric<int>.InvokeEvent(EventType.UponHarvestSoul, 1);
+            }));
         }
     }
 
@@ -135,15 +139,19 @@ public class EnemyManager : MonoBehaviour
         }
     }
 
-    private async UniTaskVoid SpawnEnemiesIE ()
+    private async UniTaskVoid SpawnEnemiesIE ( CancellationToken token )
     {
         while ( spawnEnemies )
         {
+            token.ThrowIfCancellationRequested();
+
             var currentEnemyStats = currentDifficultyGrade.enemyStats;
             Vector3 playerPos = playerTransform.position;
 
             for ( int i = 0; i < currentEnemyStats.enemiesPerBatch; i++ )
             {
+                token.ThrowIfCancellationRequested();
+
                 var position = playerPos + (UnityEngine.Random.insideUnitSphere.normalized * UnityEngine.Random.Range(spawnRange.x, spawnRange.y));
                 position.y = ownPosition.y;
 
@@ -165,7 +173,7 @@ public class EnemyManager : MonoBehaviour
                 activeEnemies.Add(enemy);
             }
 
-            await UniTask.Delay(TimeSpan.FromSeconds(currentDifficultyGrade.enemyStats.spawnSpeed));
+            await UniTask.Delay(TimeSpan.FromSeconds(currentDifficultyGrade.enemyStats.spawnSpeed), cancellationToken: tokenSrc.Token);
         }
     }
 
@@ -178,10 +186,30 @@ public class EnemyManager : MonoBehaviour
     private void OnEnable ()
     {
         EventManagerGeneric<Transform>.AddListener(EventType.TargetSelection, ( target ) => currentlySelectedTarget = target);
+        EventManagerGeneric<GameState>.RemoveListener(EventType.OnGameStateChange, SetGameState);
+    }
+
+    private void SetGameState ( GameState state )
+    {
+        if ( gameState == GameState.Running && state == GameState.Pauzed )
+        {
+            tokenSrc.Cancel();
+            spawnEnemies = false;
+            gameState = state;
+        }
+        else if ( gameState == GameState.Pauzed && state == GameState.Running )
+        {
+            spawnEnemies = true;
+            gameState = state;
+            SpawnEnemiesIE(tokenSrc.Token).Forget();
+            CleanUpLostEnemies(tokenSrc.Token).Forget();
+        }
     }
 
     private void OnDisable ()
     {
+        EventManagerGeneric<GameState>.RemoveListener(EventType.OnGameStateChange, SetGameState);
+
         EventManagerGeneric<UnityEngine.Transform>.RemoveListener(EventType.TargetSelection, ( target ) => currentlySelectedTarget = target);
         foreach ( var enemy in activeEnemies )
         {
@@ -210,11 +238,13 @@ public class EnemyManager : MonoBehaviour
         currentDifficultyGrade.enemyStats.statMultiplier += 0.001f * Time.fixedDeltaTime;
     }
 
-    private async UniTaskVoid CleanUpLostEnemies ()
+    private async UniTaskVoid CleanUpLostEnemies ( CancellationToken token )
     {
         while ( spawnEnemies )
         {
             Vector3 playerPos = playerTransform.position;
+
+            token.ThrowIfCancellationRequested();
 
             for ( int i = 0; i < activeEnemies.Count; i++ )
             {
@@ -222,21 +252,26 @@ public class EnemyManager : MonoBehaviour
                 if ( enemy == null )
                     continue;
 
+                token.ThrowIfCancellationRequested();
+
                 if ( Vector3.Distance(enemy.MeshTransform.position, playerPos) > maxDistanceToPlayer )
                 {
                     RemoveEnemy(enemy);
                 }
 
                 if ( i != 0 && i % 10 == 0 )
-                    await UniTask.NextFrame();
+                    await UniTask.NextFrame(cancellationToken: token);
             }
 
-            await UniTask.WaitForFixedUpdate();
+            await UniTask.WaitForFixedUpdate(cancellationToken: token);
         }
     }
 
     private void FixedUpdate ()
     {
+        if ( gameState == GameState.Pauzed )
+            return;
+
         if ( activeEnemies.Count < 1 )
             return;
 

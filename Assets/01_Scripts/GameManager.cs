@@ -1,5 +1,10 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
+
+public enum GameState
+{
+    Pauzed = 0,
+    Running = 1,
+}
 
 public class GameManager : MonoBehaviour
 {

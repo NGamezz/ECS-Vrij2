@@ -8,7 +8,6 @@ using Unity.Jobs;
 using Unity.Collections;
 using System.Runtime.CompilerServices;
 using Cysharp.Threading.Tasks;
-using UnityEditor.Tilemaps;
 
 [BurstCompile]
 public static class WorldManager

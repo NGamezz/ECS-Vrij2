@@ -1,5 +1,5 @@
 using Cysharp.Threading.Tasks;
-using System.Collections;
+using System;
 using UnityEngine;
 
 public class SoulEffectManager : MonoBehaviour
@@ -33,12 +33,31 @@ public class SoulEffectManager : MonoBehaviour
     {
         EventManagerGeneric<DoubleVector3>.AddListener(EventType.ActivateSoulEffect, SpawnEffectWrapper);
         EventManagerGeneric<VectorAndTransform>.AddListener(EventType.ActivateSoulEffect, SpawnEffectWrapper);
+        EventManagerGeneric<VectorAndTransformAndCallBack>.AddListener(EventType.ActivateSoulEffect, SpawnEffectWrapper);
     }
 
     private void OnDisable ()
     {
         EventManagerGeneric<DoubleVector3>.RemoveListener(EventType.ActivateSoulEffect, SpawnEffectWrapper);
         EventManagerGeneric<VectorAndTransform>.RemoveListener(EventType.ActivateSoulEffect, SpawnEffectWrapper);
+        EventManagerGeneric<VectorAndTransformAndCallBack>.RemoveListener(EventType.ActivateSoulEffect, SpawnEffectWrapper);
+    }
+
+    private void SpawnEffectWrapper ( VectorAndTransformAndCallBack data )
+    {
+        SpawnEffect(data).Forget();
+    }
+
+    private async UniTaskVoid SpawnEffect ( VectorAndTransformAndCallBack data )
+    {
+        await UniTask.SwitchToMainThread();
+
+        var gameObject = Instantiate(soulEffectPrefab);
+
+        data.origin.y = positionOffset.y;
+        gameObject.transform.position = data.origin;
+
+        DispatchObject(data.target, gameObject.transform, effectSpeed, data.callBack).Forget();
     }
 
     private async UniTaskVoid SpawnEffect ( DoubleVector3 positions )
@@ -50,7 +69,7 @@ public class SoulEffectManager : MonoBehaviour
         positions.a.y = positionOffset.y;
         gameObject.transform.position = positions.a;
 
-        StartCoroutine(DispatchObject(positions.b + positionOffset, gameObject.transform, effectSpeed));
+        DispatchObject(positions.b + positionOffset, gameObject.transform, effectSpeed).Forget();
     }
 
     private async UniTaskVoid SpawnEffect ( VectorAndTransform originAndTarget )
@@ -62,10 +81,10 @@ public class SoulEffectManager : MonoBehaviour
         originAndTarget.origin.y = positionOffset.y;
         gameObject.transform.position = originAndTarget.origin;
 
-        StartCoroutine(DispatchObject(originAndTarget.target, gameObject.transform, effectSpeed));
+        DispatchObject(originAndTarget.target, gameObject.transform, effectSpeed).Forget();
     }
 
-    private IEnumerator DispatchObject ( Transform target, Transform transform, float speed )
+    private async UniTaskVoid DispatchObject ( Transform target, Transform transform, float speed )
     {
         int count = 0;
 
@@ -85,13 +104,41 @@ public class SoulEffectManager : MonoBehaviour
 
             transform.Translate(speed * Time.deltaTime * dir);
 
-            yield return null;
+            await UniTask.NextFrame();
         }
 
         Destroy(transform.gameObject);
     }
 
-    private IEnumerator DispatchObject ( Vector3 target, Transform transform, float speed )
+    private async UniTaskVoid DispatchObject ( Transform target, Transform transform, float speed, Action completionCallBack )
+    {
+        int count = 0;
+
+        var targetPos = target.position;
+        var otherPos = transform.position;
+
+        while ( Vector3.Distance(targetPos, otherPos) > minDistanceToTarget && count < 10000 )
+        {
+            targetPos = target.position;
+            targetPos.y = ownPosition.y;
+
+            otherPos = transform.position;
+            otherPos.y = ownPosition.y;
+
+            var dir = (targetPos + positionOffset) - otherPos;
+            dir.y = 0.0f;
+
+            transform.Translate(speed * Time.deltaTime * dir);
+
+            await UniTask.NextFrame();
+        }
+
+        completionCallBack?.Invoke();
+
+        Destroy(transform.gameObject);
+    }
+
+    private async UniTaskVoid DispatchObject ( Vector3 target, Transform transform, float speed )
     {
         int count = 0;
 
@@ -107,7 +154,7 @@ public class SoulEffectManager : MonoBehaviour
 
             transform.Translate(speed * Time.deltaTime * dir);
 
-            yield return null;
+            await UniTask.NextFrame();
         }
 
         Destroy(transform.gameObject);
@@ -135,5 +182,19 @@ public struct VectorAndTransform
     {
         this.origin = origin;
         this.target = target;
+    }
+}
+
+public struct VectorAndTransformAndCallBack
+{
+    public Vector3 origin;
+    public Transform target;
+    public Action callBack;
+
+    public VectorAndTransformAndCallBack ( Vector3 origin, Transform target, Action callBack )
+    {
+        this.origin = origin;
+        this.target = target;
+        this.callBack = callBack;
     }
 }

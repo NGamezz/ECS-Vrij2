@@ -1,5 +1,4 @@
 using NaughtyAttributes;
-using System.Collections.Generic;
 using Unity.AI.Navigation;
 using Unity.Mathematics;
 using UnityEngine;
@@ -7,8 +6,6 @@ using UnityEngine;
 public class CreateColliders : MonoBehaviour
 {
     [SerializeField] GameObject[] objects;
-
-    private List<GameObject> generatedColliderObjects;
 
     private struct CalculationData
     {
@@ -71,43 +68,6 @@ public class CreateColliders : MonoBehaviour
             collider.bounds.Encapsulate(datas[i].gameObject.transform.position);
         }
     }
-
-    private void MergeColliders ( params CalculationData[] data )
-    {
-        List<CalculationData> currentBatchToCalculate = new();
-
-        for ( int i = 0; i < data.Length; ++i )
-        {
-            var currentNode = data[i];
-
-            currentBatchToCalculate.Add(currentNode);
-
-            int count = 0;
-
-            if ( data[++i].hasCollider )
-            {
-                SetColliders(currentBatchToCalculate.ToArray());
-                continue;
-            }
-
-
-            for ( int z = 0; z < data.Length; z++ )
-            {
-
-
-
-            }
-
-
-            for ( int z = -2; z < 2; ++z )
-            {
-                for ( int x = -2; x < 2; ++x )
-                {
-
-                }
-            }
-        }
-    }
 }
 
 public enum AdjacentObjects
@@ -118,4 +78,3 @@ public enum AdjacentObjects
     Left = 3,
     Right = 4,
 }
-

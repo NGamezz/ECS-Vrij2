@@ -10,6 +10,7 @@ public enum EventType
     PortalActivation = 4,
     ActivateSoulEffect = 5,
     GameOver = 6,
+    OnGameStateChange = 7,
 }
 
 public static class EventManager

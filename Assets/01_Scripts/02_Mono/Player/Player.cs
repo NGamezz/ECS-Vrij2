@@ -45,6 +45,11 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
     [SerializeField] private MoveTarget enemyMoveTarget;
 
+    [SerializeField] private UnityEvent<AbilityType> OnReapUse;
+    [SerializeField] private UnityEvent<AbilityType> OnAbility1Use;
+    [SerializeField] private UnityEvent<AbilityType> OnAbility2Use;
+    [SerializeField] private UnityEvent<AbilityType> OnAbility3Use;
+
     public Transform meshTransform;
 
     private UpgradeHolder upgradeHolder;
@@ -52,6 +57,8 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
     [SerializeField] private float abilityCooldown = 0.2f;
 
     [SerializeField] private Shooting playerShooting = new();
+
+    private GameState gameState;
 
     [Space(2)]
 
@@ -61,14 +68,28 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
     public void OnShoot ( InputAction.CallbackContext context )
     {
+        if ( context.phase != InputActionPhase.Performed )
+            return;
+
+        if ( gameState == GameState.Pauzed )
+            return;
+
         playerShooting.OnShoot(context);
     }
 
     public void OnMove ( InputAction.CallbackContext ctx )
     {
+        if ( gameState == GameState.Pauzed )
+            return;
+
         var inputVector = ctx.ReadValue<Vector2>();
         ApplyWalkEffects(inputVector != Vector2.zero);
         playerMovement.OnMove(ctx);
+    }
+
+    private void SetGameState ( GameState state )
+    {
+        gameState = state;
     }
 
     //The walking Effects.
@@ -96,6 +117,9 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
     //Gets Activated when the dash key gets pressed, passes it onto the actual logic.
     public void OnDash ( InputAction.CallbackContext ctx )
     {
+        if ( gameState == GameState.Pauzed )
+            return;
+
         if ( ctx.phase != InputActionPhase.Performed )
             return;
 
@@ -105,11 +129,19 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
     #region abilityTriggers
     public void OnUseReapAbility ( InputAction.CallbackContext ctx )
     {
+        if ( gameState == GameState.Pauzed )
+            return;
+
         if ( !canUseAbility || ctx.phase != InputActionPhase.Performed )
             return;
 
         canUseAbility = false;
+
+        var ability = abilityHolder.GetAbility(0);
+
         abilityHolder.UseAbility(0, characterData, null);
+
+        OnReapUse?.Invoke(ability.Type);
 
         Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true).Forget();
     }
@@ -117,11 +149,19 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
     //Use the ability, if it fails due to not having enough souls, re-add it.
     public void OnUseAbilityA ( InputAction.CallbackContext ctx )
     {
+        if ( gameState == GameState.Pauzed )
+            return;
+
         if ( !canUseAbility || ctx.phase != InputActionPhase.Performed )
             return;
+        canUseAbility = false;
+
         int index = 1;
 
-        canUseAbility = false;
+        var ability = abilityHolder.GetAbility(index);
+
+        OnReapUse?.Invoke(ability.Type);
+
         abilityHolder.UseAbility(index, characterData, () => sliders[index].gameObject.SetActive(false));
 
         Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true).Forget();
@@ -130,12 +170,18 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
     //Use the ability, if it fails due to not having enough souls, re-add it.
     public void OnUseAbilityB ( InputAction.CallbackContext ctx )
     {
-        if ( !canUseAbility || ctx.phase != InputActionPhase.Performed )
+        if ( gameState == GameState.Pauzed )
             return;
 
-        int index = 2;
-
+        if ( !canUseAbility || ctx.phase != InputActionPhase.Performed )
+            return;
         canUseAbility = false;
+
+        int index = 2;
+        var ability = abilityHolder.GetAbility(index);
+
+        OnReapUse?.Invoke(ability.Type);
+
         abilityHolder.UseAbility(index, characterData, () => sliders[index].gameObject.SetActive(false));
 
         Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true).Forget();
@@ -144,11 +190,19 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
     //Use the ability, if it fails due to not having enough souls, re-add it.
     public void OnUseAbilityC ( InputAction.CallbackContext ctx )
     {
+        if ( gameState == GameState.Pauzed )
+            return;
+
         if ( !canUseAbility || ctx.phase != InputActionPhase.Performed )
             return;
+        canUseAbility = false;
+
         int index = 3;
 
-        canUseAbility = false;
+        var ability = abilityHolder.GetAbility(index);
+
+        OnReapUse?.Invoke(ability.Type);
+
         abilityHolder.UseAbility(index, characterData, () => sliders[index].gameObject.SetActive(false));
 
         Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true).Forget();
@@ -157,6 +211,9 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
     public void OnReload ( InputAction.CallbackContext ctx )
     {
+        if ( gameState == GameState.Pauzed )
+            return;
+
         if ( ctx.phase != InputActionPhase.Performed )
             return;
 
@@ -168,12 +225,14 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
     {
         EventManagerGeneric<int>.AddListener(EventType.UponHarvestSoul, Collect);
         EventManagerGeneric<Transform>.AddListener(EventType.TargetSelection, ( transform ) => characterData.TargetedTransform = transform);
+        EventManagerGeneric<GameState>.AddListener(EventType.OnGameStateChange, SetGameState);
     }
 
     private void OnDisable ()
     {
         EventManagerGeneric<int>.RemoveListener(EventType.UponHarvestSoul, Collect);
         EventManagerGeneric<Transform>.RemoveListener(EventType.TargetSelection, ( transform ) => characterData.TargetedTransform = transform);
+        EventManagerGeneric<GameState>.RemoveListener(EventType.OnGameStateChange, SetGameState);
         characterData.Reset();
         upgradeHolder.RemoveAll();
         StopAllCoroutines();
@@ -215,6 +274,9 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
     private void Update ()
     {
+        if ( gameState == GameState.Pauzed )
+            return;
+
         abilityHolder.ForeachAbility(( Index, abil, count ) =>
         {
             if ( Index + 1 >= count )
@@ -228,6 +290,9 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
     private void FixedUpdate ()
     {
+        if ( gameState == GameState.Pauzed )
+            return;
+
         playerMovement.OnFixedUpdate();
     }
 
@@ -289,6 +354,7 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 //To abstract the usage of the abilities a bit.
 public interface IAbilityHolder
 {
+    public Ability GetAbility ( int index );
     public int AddAbility ( Ability ability );
     public void ForeachAbility ( Action<int, Ability, int> body );
     public void UseAbility ( int index, object data, Action succesCallBack );
@@ -306,6 +372,11 @@ public class PlayerAbilityHolder : IAbilityHolder
 
         abilities.Add(ability);
         return abilities.Count - 1;
+    }
+
+    public Ability GetAbility ( int index )
+    {
+        return abilities[index] ?? null;
     }
 
     public void ForeachAbility ( Action<int, Ability, int> body )

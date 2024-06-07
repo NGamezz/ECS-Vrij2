@@ -27,6 +27,11 @@ public class LieAbility : Ability
 
         contextCallBackFinish(ownerData, enemy);
 
+        if ( enemy != null && ownerData.TargetedTransform == enemy.MeshTransform )
+        {
+            EventManagerGeneric<Transform>.InvokeEvent(EventType.TargetSelection, null);
+        }
+
         activeCount--;
         if ( enemy != null )
         {
