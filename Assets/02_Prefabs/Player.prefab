@@ -590,7 +590,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   meshTransform: {fileID: 7958336873015185994}
-  aimType: 0
+  aimType: 1
 --- !u!114 &5163124172975904353
 MonoBehaviour:
   m_ObjectHideFlags: 0
