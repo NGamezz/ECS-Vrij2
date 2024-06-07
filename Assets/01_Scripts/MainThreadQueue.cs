@@ -1,7 +1,7 @@
+using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Concurrent;
 using System.Threading;
-using System.Threading.Tasks;
 using UnityEngine;
 
 public class MainThreadQueue : MonoBehaviour
@@ -53,15 +53,15 @@ public class MainThreadQueue : MonoBehaviour
     /// <typeparam name="T"></typeparam>
     /// <param name="action"></param>
     /// <returns></returns>
-    public Task<T> AsyncEnqueueFunc<T> ( Func<T> action )
+    public UniTask<T> AsyncEnqueueFunc<T> ( Func<T> action )
     {
-        var src = new TaskCompletionSource<T>();
+        var src = new UniTaskCompletionSource<T>();
 
         void Action ()
         {
             try
             {
-                src.SetResult(action());
+                src.TrySetResult(action());
             }
             catch ( Exception e )
             {
@@ -78,9 +78,9 @@ public class MainThreadQueue : MonoBehaviour
     /// </summary>
     /// <param name="action"></param>
     /// <returns></returns>
-    public Task AsyncEnqueue ( Action action )
+    public UniTask AsyncEnqueue ( Action action )
     {
-        var src = new TaskCompletionSource<bool>();
+        var src = new UniTaskCompletionSource<bool>();
 
         void Action ()
         {

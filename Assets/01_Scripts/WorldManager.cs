@@ -4,11 +4,11 @@ using Vector3 = UnityEngine.Vector3;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Unity.Burst;
-using System.Threading.Tasks;
 using Unity.Jobs;
 using Unity.Collections;
-using System.Threading;
 using System.Runtime.CompilerServices;
+using Cysharp.Threading.Tasks;
+using UnityEditor.Tilemaps;
 
 [BurstCompile]
 public static class WorldManager
@@ -31,7 +31,7 @@ public static class WorldManager
         AddListener(cellPos, action, type);
     }
 
-    public static HashSet<int2> AddGridListener ( float3 position, float radius, Action<object> action, CellEventType type )
+    public static UniTask<HashSet<int2>> AddGridListener ( float3 position, float radius, Action<object> action, CellEventType type )
     {
         var cellPositions = CalculateCellPositions(position, radius, cellSize);
 
@@ -46,7 +46,7 @@ public static class WorldManager
             AddListener(cellPos, action, type);
         }
 
-        return cellPositions;
+        return UniTask.FromResult(cellPositions);
     }
 
     //Work in Progress.
@@ -94,10 +94,8 @@ public static class WorldManager
     }
 
     //Improve the grid listener removal.
-    public async static void RemoveGridListener ( float3 fPosition, float radius, Action<object> action, CellEventType type )
+    public static void RemoveGridListener ( float3 fPosition, float radius, Action<object> action, CellEventType type )
     {
-        await Task.Yield();
-
         var cellPositions = CalculateCellPositions(fPosition, radius, cellSize);
 
         foreach ( var cellPos in cellPositions )
@@ -108,6 +106,17 @@ public static class WorldManager
             }
 
             RemoveListener(cellPos, action, type);
+        }
+    }
+
+    public static void RemoveGridListeners ( IEnumerable<int2> collection, Action<object> action, CellEventType type )
+    {
+        foreach ( var pos in collection )
+        {
+            if ( !grid.ContainsKey(pos) )
+                continue;
+
+            RemoveListener(pos, action, type);
         }
     }
 
@@ -180,58 +189,58 @@ public static class WorldManager
         return positions;
     }
 
-    ////Work in progress.
-    //private static async Task<List<int2>> CalculatePositionsParallelJobbed ( float3 position, float radius, int cellSize )
-    //{
-    //    NativeArray<PositionHolder> jobList = new(49, Allocator.Persistent);
-    //    List<int2> positions = new();
+    //Work in progress.
+    private static async UniTask<List<int2>> CalculatePositionsParallelJobbed ( float3 position, float radius, int cellSize )
+    {
+        NativeArray<PositionHolder> jobList = new(49, Allocator.Persistent);
+        List<int2> positions = new();
 
-    //    try
-    //    {
-    //        const int indexOffSet = -3;
-    //        const int iterations = 4;
+        try
+        {
+            const int indexOffSet = -3;
+            const int iterations = 4;
 
-    //        CalculateIntersectinCellPositionsParallelJob job = new()
-    //        {
-    //            indexOffset = indexOffSet,
-    //            position = position,
-    //            radius = radius,
-    //            cellSize = cellSize,
-    //            positions = jobList
-    //        };
+            CalculateIntersectinCellPositionsParallelJob job = new()
+            {
+                indexOffset = indexOffSet,
+                position = position,
+                radius = radius,
+                cellSize = cellSize,
+                positions = jobList
+            };
 
-    //        JobHandle handle = job.Schedule(-indexOffSet + iterations, 64);
+            JobHandle handle = job.Schedule(-indexOffSet + iterations, 64);
 
-    //        await Utility.Async.WaitWhileAsync(CancellationToken.None, () => !handle.IsCompleted);
-    //        handle.Complete();
+            await UniTask.WaitWhile(() => !handle.IsCompleted);
+            handle.Complete();
 
-    //        for ( int i = 0; i < job.positions.Length; i++ )
-    //        {
-    //            var pos = job.positions[i];
+            for ( int i = 0; i < job.positions.Length; i++ )
+            {
+                var pos = job.positions[i];
 
-    //            if ( pos.PositionSet == false )
-    //                continue;
+                if ( pos.PositionSet == false )
+                    continue;
 
-    //            if ( positions.Contains(pos.Position) )
-    //                continue;
+                if ( positions.Contains(pos.Position) )
+                    continue;
 
-    //            positions.Add(pos.Position);
-    //        }
-    //    }
-    //    catch ( Exception e )
-    //    {
-    //        UnityEngine.Debug.LogException(e);
-    //    }
-    //    finally
-    //    {
-    //        jobList.Dispose();
-    //    }
+                positions.Add(pos.Position);
+            }
+        }
+        catch ( Exception e )
+        {
+            UnityEngine.Debug.LogException(e);
+        }
+        finally
+        {
+            jobList.Dispose();
+        }
 
-    //    return positions;
-    //}
+        return positions;
+    }
 
     //Work in Progress.
-    private static async Task<List<int2>> CalculeCellPositionsJobbed ( float3 position, float radius, int cellSize )
+    private static async UniTask<HashSet<int2>> CalculeCellPositionsJobbed ( float3 position, float radius, int cellSize )
     {
         NativeList<int2> jobList = new(Allocator.Persistent);
 
@@ -245,11 +254,10 @@ public static class WorldManager
 
         JobHandle handle = job.Schedule();
 
-        await Utility.Async.WaitWhileAsync(CancellationToken.None, () => { return handle.IsCompleted == false; });
-
+        await UniTask.WaitWhile(() => { return handle.IsCompleted == false; });
         handle.Complete();
 
-        List<int2> positions = new();
+        HashSet<int2> positions = new();
 
         for ( int i = 0; i < job.positions.Length; i++ )
         {
