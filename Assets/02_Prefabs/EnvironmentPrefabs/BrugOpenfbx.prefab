@@ -51,7 +51,7 @@ PrefabInstance:
     - target: {fileID: -3339245444640473525, guid: e0d0ef215498deb4db2a4c4b674efcb4, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: e044ed3264fcb1440ba71fab57398419, type: 2}
+      objectReference: {fileID: 2100000, guid: d52577348b8d40744a5a5d4736b8a3ff, type: 2}
     - target: {fileID: 919132149155446097, guid: e0d0ef215498deb4db2a4c4b674efcb4, type: 3}
       propertyPath: m_Name
       value: BrugOpenfbx
@@ -59,7 +59,7 @@ PrefabInstance:
     - target: {fileID: 8133103820712792079, guid: e0d0ef215498deb4db2a4c4b674efcb4, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: 6460f7adb03ad2d4a865379dc7a63906, type: 2}
+      objectReference: {fileID: 2100000, guid: d9d41042fb2ba0649941911e20b7d97d, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

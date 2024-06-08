@@ -63,11 +63,11 @@ PrefabInstance:
     - target: {fileID: -7664728788398519507, guid: 91db169c500eaeb42bf27126363068cf, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: c851797ae3643104c9da9014fd78404f, type: 2}
+      objectReference: {fileID: 2100000, guid: e8c24334e4f089d4892a95af6a9c602d, type: 2}
     - target: {fileID: -6559483813632536350, guid: 91db169c500eaeb42bf27126363068cf, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: 1992b5cd48219db41a933d00d3cb734b, type: 2}
+      objectReference: {fileID: 2100000, guid: a4f37799e9ac42d4d9ac92a8f4542299, type: 2}
     - target: {fileID: 919132149155446097, guid: 91db169c500eaeb42bf27126363068cf, type: 3}
       propertyPath: m_Name
       value: chest
