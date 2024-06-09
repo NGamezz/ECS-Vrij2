@@ -31,7 +31,9 @@ public class Health : MonoBehaviour, IDamageable, ICharacterDataHolder
         }
 
         data.OnHit?.Invoke();
+
         healthBar.fillAmount = data.Health / data.MaxHealth;
+
     }
 
     private async UniTaskVoid ResetShield ( CharacterData data )

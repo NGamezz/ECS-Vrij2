@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Player: 1
   PlayerMousePosition:
-    x: 39.85911
+    x: 7.5681086
     y: 0
-    z: 27.026264
+    z: 5.8568935
   currentGun: {fileID: 11400000, guid: 438c0530b40d20b4399dd2a270c2507f, type: 2}
   souls: 0
   soulBankLimit: 20
@@ -24,7 +24,7 @@ MonoBehaviour:
   shieldRechargeSpeed: 5
   canTakeDamage: 1
   abilityCostMultiplier: 1
-  Health: 50
+  Health: 100
   Stamina: 150
   decoyPrefab: {fileID: 0}
   MaxStamina: 150

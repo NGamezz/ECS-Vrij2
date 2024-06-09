@@ -208,6 +208,7 @@ public class Shooting
 
     private void ShootBody ()
     {
+
         if ( currentGun.CurrentAmmo - 1 < 0 )
             return;
 
