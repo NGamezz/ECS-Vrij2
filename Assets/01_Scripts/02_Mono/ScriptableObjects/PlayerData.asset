@@ -14,17 +14,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Player: 1
   PlayerMousePosition:
-    x: 17.909798
+    x: 7.5681086
     y: 0
-    z: 70.79242
+    z: 5.8568935
   currentGun: {fileID: 11400000, guid: 438c0530b40d20b4399dd2a270c2507f, type: 2}
   souls: 0
-  Health: 500
+  soulBankLimit: 20
+  hasShield: 0
+  shieldRechargeSpeed: 5
+  canTakeDamage: 1
+  abilityCostMultiplier: 1
+  Health: 100
   Stamina: 150
+  decoyPrefab: {fileID: 0}
   MaxStamina: 150
-  MaxHealth: 500
-  Speed: 16
+  MaxHealth: 100
+  Speed: 14.4
   DamageMultiplier: 1
   SpeedMultiplier: 5
   Armour: 15
-  StatusEffects: 0

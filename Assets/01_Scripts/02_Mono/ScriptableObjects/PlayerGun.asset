@@ -12,19 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8e347ca54d5d0a4097d1f40456601fa, type: 3}
   m_Name: PlayerGun
   m_EditorClassIdentifier: 
-  attackSpeed: 0.5
+  attackSpeed: 10
   GunType: 0
   damage: 100
   projectileLifeTime: 5
-  projectileSpeed: 5
+  projectileSpeed: 200
   spreadOffset:
-    x: -0.2
-    y: 0.2
+    x: -1
+    y: 1
   ReloadSpeed: 1
-  Recoil: 0.5
+  Recoil: 10
   CurrentAmmo: 50
   MagSize: 50
   amountOfBulletsPer: 1
-  damageProjectileLifeTimeSpeed: 329060
+  damageProjectileLifeTimeSpeed: 378980
   prefab: {fileID: 4120230577132574208, guid: 99345b48c7a11944d82e5bf97126101f, type: 3}
-  projectTilePrefab: {fileID: 707548780560738199, guid: 1680428cdcdae8c4fa53fcafe2840dae, type: 3}
+  projectTilePrefab: {fileID: 7756166069389141944, guid: 512628ef0ecfe3b459b1bab22fbd32be, type: 3}

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   attackSpeed: 1
   GunType: 2
-  damage: 5
+  damage: 1
   projectileLifeTime: 3
   projectileSpeed: 10
   spreadOffset:
@@ -22,9 +22,9 @@ MonoBehaviour:
     y: 0
   ReloadSpeed: 1
   Recoil: 1
-  CurrentAmmo: 18
+  CurrentAmmo: 32
   MagSize: 35
   amountOfBulletsPer: 1
-  damageProjectileLifeTimeSpeed: 199173
+  damageProjectileLifeTimeSpeed: 199169
   prefab: {fileID: 4120230577132574208, guid: 99345b48c7a11944d82e5bf97126101f, type: 3}
   projectTilePrefab: {fileID: 707548780560738199, guid: 1680428cdcdae8c4fa53fcafe2840dae, type: 3}

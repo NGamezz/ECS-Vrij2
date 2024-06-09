@@ -63,7 +63,7 @@ PrefabInstance:
     - target: {fileID: -7918335002988649766, guid: 849cf3e46cd3b164991bd62617df4560, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: 5c9a37beb398f0a43bbebc759eda7e70, type: 2}
+      objectReference: {fileID: 2100000, guid: c2dd1b6505ecd0e41b3c17e95c489a32, type: 2}
     - target: {fileID: 919132149155446097, guid: 849cf3e46cd3b164991bd62617df4560, type: 3}
       propertyPath: m_Name
       value: movingplatform
@@ -71,11 +71,11 @@ PrefabInstance:
     - target: {fileID: 1746654310787607633, guid: 849cf3e46cd3b164991bd62617df4560, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: 66daad4f4d41556469a369dc83871259, type: 2}
+      objectReference: {fileID: 2100000, guid: 417aa8948de71ee48aa0e514784b9c7b, type: 2}
     - target: {fileID: 7174356292610368348, guid: 849cf3e46cd3b164991bd62617df4560, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: 14a6ecf343feac84d9729a7d854113f4, type: 2}
+      objectReference: {fileID: 2100000, guid: 00a55908f2e56cf408de76946cae1bd7, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

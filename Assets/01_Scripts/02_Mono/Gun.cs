@@ -11,6 +11,7 @@ public class Gun : MonoBehaviour
 
     public int playerLayer;
 
+
     [SerializeField] private float projectileLifeTime;
     public float ProjectileLifeTime
     {
@@ -66,6 +67,7 @@ public class Gun : MonoBehaviour
         currentLifeTime -= deltaTime;
 
         Transform.Translate(Speed * deltaTime * Transform.forward, Space.World);
+
 
         if ( currentLifeTime <= 0 )
         {
