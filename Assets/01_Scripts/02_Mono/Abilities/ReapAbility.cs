@@ -3,17 +3,17 @@ using System.Diagnostics;
 
 public class ReapAbility : Ability
 {
-    public override bool Execute ( object context )
+    private void Player ( CharacterData ownerData )
     {
         if ( ownerData.TargetedTransform == null )
         {
             UnityEngine.Debug.Log("No Targeted Transform.");
-            return false;
+            return;
         }
 
         var enemyTransform = ownerData.TargetedTransform;
         if ( enemyTransform.gameObject.activeInHierarchy == false )
-            return false;
+            return;
 
         IAbilityOwner abilityOwner;
 
@@ -25,7 +25,7 @@ public class ReapAbility : Ability
         if ( abilityOwner == null )
         {
             EventManagerGeneric<TextPopup>.InvokeEvent(EventType.OnTextPopupQueue, new(1.0f, "Enemy Doesn't have an ability."));
-            return false;
+            return;
         }
 
         var ability = abilityOwner.HarvestAbility();
@@ -34,6 +34,50 @@ public class ReapAbility : Ability
         Owner.AcquireAbility(ability);
 
         Owner.OnExecuteAbility(Type);
+    }
+
+    private void Enemy ( CharacterData ownerData )
+    {
+        if ( ownerData.MoveTarget.target == null )
+        {
+            return;
+        }
+
+        var enemyTransform = ownerData.MoveTarget.target;
+        if ( enemyTransform.gameObject.activeInHierarchy == false )
+            return;
+
+        //Not the right way of doing it but oh well. Better way would be with an interface, both in terms of principle and performance.
+        PlayerManager abilityOwner;
+        if ( enemyTransform.root == enemyTransform )
+            abilityOwner = (PlayerManager)enemyTransform.gameObject.GetComponent(typeof(PlayerManager));
+        else
+            abilityOwner = (PlayerManager)enemyTransform.gameObject.GetComponentInParent(typeof(PlayerManager));
+
+        if ( abilityOwner == null )
+        {
+            return;
+        }
+
+        abilityOwner.RemoveRandomUpgrade();
+        Owner.OnExecuteAbility(AbilityType.None);
+
+    }
+
+    public override bool Execute ( object context )
+    {
+        if ( context is not CharacterData data )
+            return false;
+
+        if ( data.Player )
+        {
+            Player(data);
+        }
+        else
+        {
+            Enemy(data);
+        }
+
         return false;
     }
 

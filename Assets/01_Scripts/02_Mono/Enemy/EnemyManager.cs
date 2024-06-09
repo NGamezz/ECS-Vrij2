@@ -68,7 +68,39 @@ public class EnemyManager : MonoBehaviour
         if ( Instance != null )
             Destroy(Instance);
 
+        DontDestroyOnLoad(gameObject);
+
         Instance = this;
+    }
+
+    private void OnSceneChange ()
+    {
+        var projectiles = GetComponentsInChildren(typeof(Gun), true);
+
+        for ( int i = 0; i < projectiles.Length; ++i )
+        {
+            Destroy(projectiles[i].gameObject);
+        }
+
+        var pooledEnemies = objectPool.GetAllPooledObjects();
+
+        for ( int i = 0; i < pooledEnemies.Length; ++i )
+        {
+            if ( pooledEnemies[i] != null && pooledEnemies[i].gameObject != null )
+                Destroy(pooledEnemies[i].gameObject);
+        }
+
+        for ( int i = 0; i < activeEnemies.Count; ++i )
+        {
+            if ( activeEnemies[i] != null && activeEnemies[i].gameObject != null )
+                Destroy(activeEnemies[i].gameObject);
+        }
+
+        EnemyCreator ??= new EnemyCreator();
+
+        spawnEnemies = true;
+
+        GenerateObjects();
     }
 
     private void Start ()
@@ -134,7 +166,7 @@ public class EnemyManager : MonoBehaviour
     {
         for ( int i = 0; i < startingAmountOfPooledObjects; i++ )
         {
-            var enemy = EnemyCreator.CreateEnemy(currentDifficultyGrade, transform, RemoveEnemy, ( sender ) => OnEnemyDeath(sender).Forget(), enemyTarget, ownPosition);
+            var enemy = EnemyCreator.CreateEnemy(currentDifficultyGrade, transform, RemoveEnemy, ( sender ) => OnEnemyDeath(sender).Forget(), enemyTarget, ownPosition, transform);
             objectPool.PoolObject(enemy);
         }
     }
@@ -164,7 +196,7 @@ public class EnemyManager : MonoBehaviour
 
                 if ( !succes )
                 {
-                    enemy = EnemyCreator.CreateEnemy(currentDifficultyGrade, transform, RemoveEnemy, ( sender ) => OnEnemyDeath(sender).Forget(), enemyTarget, position);
+                    enemy = EnemyCreator.CreateEnemy(currentDifficultyGrade, transform, RemoveEnemy, ( sender ) => OnEnemyDeath(sender).Forget(), enemyTarget, position, transform);
                 }
                 else
                 {
@@ -185,13 +217,14 @@ public class EnemyManager : MonoBehaviour
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Enemy CreateEnemy ( Vector3 position )
     {
-        return EnemyCreator.CreateEnemy(currentDifficultyGrade, transform, null, null, enemyTarget, position);
+        return EnemyCreator.CreateEnemy(currentDifficultyGrade, transform, null, null, enemyTarget, position, transform);
     }
 
     private void OnEnable ()
     {
         EventManagerGeneric<Transform>.AddListener(EventType.TargetSelection, ( target ) => currentlySelectedTarget = target);
-        EventManagerGeneric<GameState>.RemoveListener(EventType.OnGameStateChange, SetGameState);
+        EventManagerGeneric<GameState>.AddListener(EventType.OnGameStateChange, SetGameState);
+        EventManager.AddListener(EventType.OnSceneChange, OnSceneChange);
     }
 
     private void SetGameState ( GameState state )
@@ -201,9 +234,17 @@ public class EnemyManager : MonoBehaviour
             tokenSrc.Cancel();
             spawnEnemies = false;
             gameState = state;
+
+            foreach ( var enemy in activeEnemies )
+            {
+                enemy.agent.ResetPath();
+            }
         }
         else if ( gameState == GameState.Pauzed && state == GameState.Running )
         {
+            //Reset the token Source.
+            tokenSrc = new();
+
             spawnEnemies = true;
             gameState = state;
             SpawnEnemiesIE(tokenSrc.Token).Forget();
@@ -214,8 +255,8 @@ public class EnemyManager : MonoBehaviour
     private void OnDisable ()
     {
         EventManagerGeneric<GameState>.RemoveListener(EventType.OnGameStateChange, SetGameState);
-
-        EventManagerGeneric<UnityEngine.Transform>.RemoveListener(EventType.TargetSelection, ( target ) => currentlySelectedTarget = target);
+        EventManager.RemoveListener(EventType.OnSceneChange, OnSceneChange);
+        EventManagerGeneric<Transform>.RemoveListener(EventType.TargetSelection, ( target ) => currentlySelectedTarget = target);
         foreach ( var enemy in activeEnemies )
         {
             enemy.OnDeath = null;
@@ -331,9 +372,9 @@ public class EnemyPrefab
 
 public class EnemyCreator : IEnemyCreator
 {
-    public Enemy CreateEnemy ( DifficultyGrade difficulty, Transform transform, Action<Enemy> onDisable, Action<Enemy> onDeath, MoveTarget enemyTarget, Vector3 position )
+    public Enemy CreateEnemy ( DifficultyGrade difficulty, Transform transform, Action<Enemy> onDisable, Action<Enemy> onDeath, MoveTarget enemyTarget, Vector3 position, Transform parentTransform )
     {
-        var gameObject = UnityEngine.Object.Instantiate(difficulty.enemyPrefabs[UnityEngine.Random.Range(0, difficulty.enemyPrefabs.Count)].meshPrefab);
+        var gameObject = UnityEngine.Object.Instantiate(difficulty.enemyPrefabs[UnityEngine.Random.Range(0, difficulty.enemyPrefabs.Count)].meshPrefab, parentTransform);
 
         var enemy = gameObject.GetOrAddComponent<Enemy>();
         enemy.OnDisabled = onDisable;
@@ -352,7 +393,6 @@ public class EnemyCreator : IEnemyCreator
         var defaultStats = prefab.defaultStats;
 
         data.Speed = defaultStats.MoveSpeed;
-        data.SpeedMultiplier = 1;
         data.Souls = 0;
         data.Stamina = 0;
         data.DamageMultiplier = 1;
@@ -374,6 +414,6 @@ public class EnemyCreator : IEnemyCreator
 
 public interface IEnemyCreator
 {
-    public Enemy CreateEnemy ( DifficultyGrade difficulty, Transform transform, Action<Enemy> onDisable, Action<Enemy> onDeath, MoveTarget enemyTarget, Vector3 position );
+    public Enemy CreateEnemy ( DifficultyGrade difficulty, Transform transform, Action<Enemy> onDisable, Action<Enemy> onDeath, MoveTarget enemyTarget, Vector3 position, Transform parentTransform );
     public CharacterData CreateEnemyDataObject ( Enemy enemy, DifficultyGrade currentDifficultyGrade, MoveTarget enemyTarget );
 }
