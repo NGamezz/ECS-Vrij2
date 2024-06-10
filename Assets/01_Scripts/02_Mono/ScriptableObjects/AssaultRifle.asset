@@ -12,19 +12,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8e347ca54d5d0a4097d1f40456601fa, type: 3}
   m_Name: AssaultRifle
   m_EditorClassIdentifier: 
-  attackSpeed: 1
+  attackSpeed: 1.5
   GunType: 2
   damage: 1
-  projectileLifeTime: 3
-  projectileSpeed: 10
+  projectileLifeTime: 5
+  projectileSpeed: 13
   spreadOffset:
     x: 0
     y: 0
   ReloadSpeed: 1
   Recoil: 1
-  CurrentAmmo: 32
+  CurrentAmmo: 35
   MagSize: 35
   amountOfBulletsPer: 1
-  damageProjectileLifeTimeSpeed: 199169
+  damageProjectileLifeTimeSpeed: 331009
   prefab: {fileID: 4120230577132574208, guid: 99345b48c7a11944d82e5bf97126101f, type: 3}
-  projectTilePrefab: {fileID: 707548780560738199, guid: 1680428cdcdae8c4fa53fcafe2840dae, type: 3}
+  projectTilePrefab: {fileID: 4739970611096636412, guid: bb6d7af5457eb8741a61d9f0abccdb00, type: 3}

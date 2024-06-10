@@ -76,6 +76,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc34545c0de43fe41a681921324bea53, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  blackBoardObject: {fileID: 0}
   EnemyType: 1
   MeshTransform: {fileID: 6318512992867901670}
   shooting:
@@ -83,11 +84,9 @@ MonoBehaviour:
     recoilMultiplier: 0
     ownerData: {fileID: 0}
     gunPosition: {fileID: 3000256657631749709}
-    guns: []
     meshTransform: {fileID: 6318512992867901670}
     defaultAmountOfPooledObjects: 25
     ownLayer: 8
-  Decoy: 0
 --- !u!1 &9076463077428152315
 GameObject:
   m_ObjectHideFlags: 0
