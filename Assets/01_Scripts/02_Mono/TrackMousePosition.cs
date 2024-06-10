@@ -1,9 +1,8 @@
 using UnityEngine;
-using UnityEngine.Events;
 
 public class TrackMousePosition : MonoBehaviour
 {
-    [SerializeField] private UnityEvent<Vector3> uponMouseSelection;
+    [SerializeField] private CharacterData data;
 
     private Camera mainCamera;
     private Plane plane = new(Vector3.up, 0);
@@ -15,8 +14,6 @@ public class TrackMousePosition : MonoBehaviour
         {
             return;
         }
-
-        uponMouseSelection?.Invoke(ray.GetPoint(distance));
     }
 
     void Start ()

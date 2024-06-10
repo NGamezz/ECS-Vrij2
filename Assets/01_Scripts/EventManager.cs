@@ -11,6 +11,7 @@ public enum EventType
     ActivateSoulEffect = 5,
     GameOver = 6,
     OnGameStateChange = 7,
+    OnSceneChange = 8,
 }
 
 public static class EventManager
@@ -39,10 +40,7 @@ public static class EventManager
 
         if ( events.ContainsKey(type) )
         {
-            lock ( events[type] )
-            {
-                events[type] -= action;
-            }
+            events[type] -= action;
         }
     }
 
@@ -51,10 +49,7 @@ public static class EventManager
         if ( !events.ContainsKey(type) )
             return;
 
-        lock ( events[type] )
-        {
-            events[type]?.Invoke();
-        }
+        events[type]?.Invoke();
     }
 
     public static void ClearListeners ()
@@ -63,10 +58,10 @@ public static class EventManager
 
         for ( int i = amount; i > 0; i-- )
         {
-            lock ( events[(EventType)i] )
-            {
-                events[(EventType)i] = null;
-            }
+            if ( !events.ContainsKey((EventType)i) )
+                continue;
+
+            events[(EventType)i] = null;
         }
 
         events.Clear();
@@ -114,6 +109,9 @@ public static class EventManagerGeneric<T>
 
         for ( int i = amount; i > 0; i-- )
         {
+            if ( !events.ContainsKey((EventType)i) )
+                continue;
+
             events[(EventType)i] = null;
         }
 

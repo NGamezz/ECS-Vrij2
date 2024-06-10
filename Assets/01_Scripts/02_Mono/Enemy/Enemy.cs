@@ -11,6 +11,7 @@ public enum EnemyType
     ShockWaveEnemy = 2,
     LieEnemy = 3,
     AngryEnemy = 4,
+    ReapEnemy = 5,
 }
 
 public class Enemy : Soulable, IDamageable
@@ -47,7 +48,9 @@ public class Enemy : Soulable, IDamageable
 
     protected StateManager stateManager = new();
 
-    protected NavMeshAgent agent;
+    protected bool overrideChase = false;
+
+    public NavMeshAgent agent { get; protected set; }
 
     public virtual void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData, Transform manager )
     {
@@ -94,6 +97,9 @@ public class Enemy : Soulable, IDamageable
 
     public void OnReuse ( EnemyStats stats, Vector3 startPosition )
     {
+        if ( GameObject == null )
+            return;
+
         GameObject.SetActive(true);
         Dead = false;
         enemyStats = stats;
@@ -131,6 +137,9 @@ public class Enemy : Soulable, IDamageable
 
     protected virtual void Chasing ()
     {
+        if ( overrideChase )
+            return;
+
         if ( agent.isActiveAndEnabled == false || agent.isOnNavMesh == false )
         {
             return;

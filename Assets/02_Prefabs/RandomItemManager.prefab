@@ -121,6 +121,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 8483583867660712821}
     m_Modifications:
+    - target: {fileID: 4192781231740083659, guid: d615be8ee0fc5284c8ee90eede10a88a, type: 3}
+      propertyPath: randomItemType
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7843304247998742377, guid: d615be8ee0fc5284c8ee90eede10a88a, type: 3}
       propertyPath: m_Name
       value: RandomItemWaypoint (1)

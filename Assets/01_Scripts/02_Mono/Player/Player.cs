@@ -39,7 +39,7 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
     [SerializeField] private UnityEvent OnReloadEvent;
 
-    [SerializeField] private Slider[] sliders;
+    [SerializeField] private Image[] sliders;
 
     [SerializeField] private CharacterData characterData;
 
@@ -255,6 +255,8 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
         playerShooting.ownerData = characterData;
         playerShooting.OnStart(transform, this);
 
+        DontDestroyOnLoad(gameObject);
+
         Souls = 0;
         UpdateSoulsUI().Forget();
 
@@ -276,7 +278,13 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
         if ( index + 1 >= count )
             return;
 
-        sliders[index + 1].value = characterData.Souls;
+        //Normalize the value with the max value, if it exceeds it, make it 1.
+        var amount = characterData.Souls / abil.ActivationCost;
+
+        if ( amount > abil.ActivationCost )
+            amount = 1;
+
+        sliders[index + 1].fillAmount = amount;
     }
 
     private void Update ()
@@ -313,6 +321,9 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
     //Returns if the player already owns the ability, otherwise adds it.
     public void AcquireAbility ( Ability ability )
     {
+        if ( ability == null )
+            return;
+
         ability.Initialize(this, characterData);
 
         EventManagerGeneric<TextPopup>.InvokeEvent(EventType.OnTextPopupQueue, new(2.0f, $"Acquired : {ability.GetType()}"));
@@ -320,7 +331,6 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
         var index = abilityHolder.AddAbility(ability);
         sliders[index].gameObject.SetActive(true);
-        sliders[index].maxValue = ability.ActivationCost;
     }
 
     public Ability HarvestAbility ()

@@ -1,11 +1,9 @@
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class LoadSceneByIndex : MonoBehaviour
 {
     [SerializeField] private int sceneIndex;
-    [SerializeField] private LoadSceneMode mode;
 
     public void Load ()
     {
@@ -30,9 +28,7 @@ public class LoadSceneByIndex : MonoBehaviour
 
     private async UniTaskVoid StartLoad ()
     {
-        await LoadScene.LoadSceneByIndex(sceneIndex, mode);
-
-        gameObject.SetActive(false);
+        await CutsceneManager.SharedInstance.StartCutScene(sceneIndex);
     }
 
     private async UniTask StartDeLoad ()
