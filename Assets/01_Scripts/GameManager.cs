@@ -12,6 +12,8 @@ public class GameManager : MonoBehaviour
 
     public static GameManager SharedInstance;
 
+    private EventSubscription subscription;
+
     private void Awake ()
     {
         if ( SharedInstance != null )
@@ -36,7 +38,7 @@ public class GameManager : MonoBehaviour
 
     private void OnEnable ()
     {
-        EventManager.AddListener(EventType.OnSceneChange, OnSceneChange);
+        EventManager.AddListener(EventType.OnSceneChange, OnSceneChange, ref subscription);
     }
 
     private void OnSceneChange ()
@@ -46,7 +48,7 @@ public class GameManager : MonoBehaviour
 
     private void OnDisable ()
     {
-        EventManager.AddListener(EventType.OnSceneChange, OnSceneChange);
+        subscription.UnsubscribeAll();
         EventManager.ClearListeners();
         EventManagerGeneric<bool>.ClearListeners();
         Destroy(SharedInstance);

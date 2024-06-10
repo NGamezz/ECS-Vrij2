@@ -31,6 +31,7 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
     [SerializeField] private Image soulsBar;
     [SerializeField] private Image reloadBar;
+    [SerializeField] private Image dashBar;
 
     [SerializeField] private PlayerMovement playerMovement;
 
@@ -123,7 +124,7 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
         if ( ctx.phase != InputActionPhase.Performed )
             return;
 
-        playerMovement.OnDash();
+        playerMovement.OnDash(( count ) => dashBar.fillAmount = count / playerMovement.dashCooldown, () => dashBar.fillAmount = 0);
     }
 
     #region abilityTriggers
@@ -146,7 +147,7 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
         OnReapUse?.Invoke(ability.Type);
 
-        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true).Forget();
+        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true, this.GetCancellationTokenOnDestroy()).Forget();
     }
 
     //Use the ability, if it fails due to not having enough souls, re-add it.
@@ -166,14 +167,11 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
         if ( hasAbility == false )
             return;
 
-        Debug.Log(ability);
-        Debug.Log(index);
-
         OnReapUse?.Invoke(ability.Type);
 
         abilityHolder.UseAbility(index, characterData, () => abilityCooldownBars[index].gameObject.SetActive(false));
 
-        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true).Forget();
+        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true, this.GetCancellationTokenOnDestroy()).Forget();
     }
 
     //Use the ability, if it fails due to not having enough souls, re-add it.
@@ -192,13 +190,11 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
         if ( hasAbility == false )
             return;
 
-        Debug.Log(ability);
-        Debug.Log(index);
         OnReapUse?.Invoke(ability.Type);
 
         abilityHolder.UseAbility(index, characterData, () => abilityCooldownBars[index].gameObject.SetActive(false));
 
-        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true).Forget();
+        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true, this.GetCancellationTokenOnDestroy()).Forget();
     }
 
     //Use the ability, if it fails due to not having enough souls, re-add it.
@@ -222,7 +218,7 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
         abilityHolder.UseAbility(index, characterData, () => abilityCooldownBars[index].gameObject.SetActive(false));
 
-        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true).Forget();
+        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true, this.GetCancellationTokenOnDestroy()).Forget();
     }
     #endregion
 
@@ -250,6 +246,7 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
         EventManagerGeneric<int>.RemoveListener(EventType.UponHarvestSoul, Collect);
         EventManagerGeneric<Transform>.RemoveListener(EventType.TargetSelection, ( transform ) => characterData.TargetedTransform = transform);
         EventManagerGeneric<GameState>.RemoveListener(EventType.OnGameStateChange, SetGameState);
+
         characterData.Reset();
         upgradeHolder?.RemoveAll();
         StopAllCoroutines();

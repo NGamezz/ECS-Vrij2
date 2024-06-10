@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
+using Cysharp.Threading.Tasks.Triggers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,6 +10,7 @@ using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
+using Utility;
 using Debug = UnityEngine.Debug;
 
 public class EnemyManager : MonoBehaviour
@@ -51,6 +53,8 @@ public class EnemyManager : MonoBehaviour
     private Transform playerTransform;
 
     IEnemyCreator EnemyCreator = new EnemyCreator();
+
+    private EventSubscription subscription;
 
     public bool SpawnEnemies
     {
@@ -224,7 +228,7 @@ public class EnemyManager : MonoBehaviour
     {
         EventManagerGeneric<Transform>.AddListener(EventType.TargetSelection, ( target ) => currentlySelectedTarget = target);
         EventManagerGeneric<GameState>.AddListener(EventType.OnGameStateChange, SetGameState);
-        EventManager.AddListener(EventType.OnSceneChange, OnSceneChange);
+        EventManager.AddListener(EventType.OnSceneChange, OnSceneChange, ref subscription);
     }
 
     private void SetGameState ( GameState state )
@@ -254,8 +258,8 @@ public class EnemyManager : MonoBehaviour
 
     private void OnDisable ()
     {
+        subscription.UnsubscribeAll();
         EventManagerGeneric<GameState>.RemoveListener(EventType.OnGameStateChange, SetGameState);
-        EventManager.RemoveListener(EventType.OnSceneChange, OnSceneChange);
         EventManagerGeneric<Transform>.RemoveListener(EventType.TargetSelection, ( target ) => currentlySelectedTarget = target);
         foreach ( var enemy in activeEnemies )
         {
