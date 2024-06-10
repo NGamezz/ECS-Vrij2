@@ -59,16 +59,19 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _DIsplacement: 1
     - _Distortion: 0.05
     - _Normal_Strength: 2
-    - _Normal_Tiling: 1
+    - _Normal_Tiling: 3
+    - _PositionTiling: 10
     - _QueueControl: 1
     - _QueueOffset: 0
     - _Smoothness: 0
     - _SoulIntensity: 1
-    - _Speed: 0.05
+    - _Speed: 0.01
     - _Vertex_Displacement: 0.2
     m_Colors:
+    - _Displacement: {r: 0, g: 0.02, b: 0, a: 0}
     - _Specular_Color: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
