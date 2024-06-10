@@ -1,11 +1,13 @@
 using Cysharp.Threading.Tasks;
 using System;
-using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class ShockWaveEnemy : Enemy, IAbilityOwner, ILockOnAble
 {
     private readonly Ability ability = new ShockWaveAbility();
+
+    public UnityEvent OnAttackEvent;
 
     private bool canUseAbility = true;
 
@@ -35,6 +37,8 @@ public class ShockWaveEnemy : Enemy, IAbilityOwner, ILockOnAble
         if ( !canUseAbility )
             return;
         canUseAbility = false;
+
+        OnAttackEvent?.Invoke();
 
         ability.Execute(characterData);
         Utility.Async.ChangeValueAfterSeconds(ability.ActivationCooldown, ( x ) => canUseAbility = x, true, this.GetCancellationTokenOnDestroy()).Forget();

@@ -55,6 +55,16 @@ namespace Utility
             return component;
         }
 
+        public static T GetOrAddComponentI<T> ( this GameObject gameObject ) where T : Component
+        {
+            if ( !gameObject.TryGetComponent<T>(out var component) )
+            {
+                return gameObject.AddComponent<T>();
+            }
+
+            return component;
+        }
+
         public static void QuickFor ( int start, int iterations, Action<int> actions )
         {
             Queue<Exception> exceptions = new();

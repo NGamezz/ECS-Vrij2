@@ -1,8 +1,5 @@
 using Cysharp.Threading.Tasks;
 using System;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using Unity.VisualScripting.Antlr3.Runtime.Misc;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -173,8 +170,9 @@ public class Enemy : Soulable, IDamageable
         else
         {
             OnDisabled?.Invoke(this);
-            shooting.OnDisable();
+            //shooting.OnDisable();
         }
+
         OnDeath = null;
         OnDisabled = null;
     }
@@ -189,7 +187,9 @@ public class Enemy : Soulable, IDamageable
         if ( health <= 0 )
         {
             Dead = true;
-            GameObject.SetActive(false);
+
+            if ( GameObject != null )
+                GameObject.SetActive(false);
         }
     }
 }

@@ -1,7 +1,9 @@
 using Cysharp.Threading.Tasks;
 using System;
 using Unity.Mathematics;
+using Unity.VisualScripting;
 using UnityEngine;
+using Utility;
 
 //Should be Improved. Maybe check for a close vicinity player/decoy instead of using the movetarget.
 public class LieAbility : Ability
@@ -20,7 +22,7 @@ public class LieAbility : Ability
 
         transform.gameObject.SetActive(true);
 
-        var enemy = (Enemy)transform.gameObject.GetComponent(typeof(Enemy));
+        var enemy = transform.gameObject.GetOrAddComponentI<Enemy>();
 
         contextCallBackStart?.Invoke(ownerData, enemy);
 
