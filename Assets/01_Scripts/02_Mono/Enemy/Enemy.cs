@@ -170,7 +170,7 @@ public class Enemy : Soulable, IDamageable
         else
         {
             OnDisabled?.Invoke(this);
-            //shooting.OnDisable();
+            shooting.OnDisable();
         }
 
         OnDeath = null;
