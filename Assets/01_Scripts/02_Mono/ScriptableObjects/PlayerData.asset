@@ -13,13 +13,9 @@ MonoBehaviour:
   m_Name: PlayerData
   m_EditorClassIdentifier: 
   Player: 1
-  PlayerMousePosition:
-    x: 7.5681086
-    y: 0
-    z: 5.8568935
   currentGun: {fileID: 11400000, guid: 438c0530b40d20b4399dd2a270c2507f, type: 2}
   souls: 0
-  soulBankLimit: 20
+  soulBankLimit: 30
   hasShield: 0
   shieldRechargeSpeed: 5
   canTakeDamage: 1
@@ -31,5 +27,4 @@ MonoBehaviour:
   MaxHealth: 100
   Speed: 14.4
   DamageMultiplier: 1
-  SpeedMultiplier: 5
   Armour: 15

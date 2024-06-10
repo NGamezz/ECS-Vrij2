@@ -9,12 +9,14 @@ public class ShockWaveEnemy : Enemy, IAbilityOwner, ILockOnAble
 
     private bool canUseAbility = true;
 
-    public override void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData, Transform manager )
+    public override void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData, Transform manager, bool inAnimate = false )
     {
         EnemyType = EnemyType.ShockWaveEnemy;
-        this.characterData = characterData();
         base.OnStart(stats, moveTarget, startPosition, characterData, manager);
-        ability.Initialize(this, this.characterData);
+
+        if ( inAnimate )
+            return;
+        ability.Initialize(this, characterData());
     }
 
     private void Attack ()

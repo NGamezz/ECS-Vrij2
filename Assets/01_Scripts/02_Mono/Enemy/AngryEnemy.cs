@@ -5,9 +5,13 @@ public class AngryEnemy : Enemy, IAbilityOwner, ILockOnAble
 {
     private Ability ability = new AttackBoostAbility();
 
-    public override void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData, Transform manager )
+    public override void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData, Transform manager, bool inAnimate = false )
     {
+        EnemyType = EnemyType.AngryEnemy;
         base.OnStart(stats, moveTarget, startPosition, characterData, manager);
+
+        if ( inAnimate )
+            return;
         ability.Initialize(this, this.characterData);
     }
 

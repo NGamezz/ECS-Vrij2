@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using UnityEngine;
 
 public class Gun : MonoBehaviour
@@ -11,6 +12,20 @@ public class Gun : MonoBehaviour
 
     public int playerLayer;
 
+    [SerializeField] private TrailRenderer _tr;
+    public TrailRenderer Tr
+    {
+        get
+        {
+            if ( _tr == null )
+            {
+                _tr = (TrailRenderer)GetComponent(typeof(TrailRenderer));
+                if ( _tr == null )
+                    _tr = GameObject.AddComponent<TrailRenderer>();
+            }
+            return _tr;
+        }
+    }
 
     [SerializeField] private float projectileLifeTime;
     public float ProjectileLifeTime
@@ -30,7 +45,7 @@ public class Gun : MonoBehaviour
     private void OnTriggerEnter ( Collider other )
     {
         var layer = other.gameObject.layer;
-        if ( layer == playerLayer || layer == GameObject.layer)
+        if ( layer == playerLayer || layer == GameObject.layer )
         {
             return;
         }

@@ -7,10 +7,13 @@ public class LieEnemy : Enemy, IAbilityOwner
     private Ability ability = new LieAbility();
     private bool canUseAbility = true;
 
-    public override void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData, Transform manager )
+    public override void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData, Transform manager, bool inAnimate = false )
     {
         EnemyType = EnemyType.LieEnemy;
         base.OnStart(stats, moveTarget, startPosition, characterData, manager);
+
+        if ( inAnimate )
+            return;
         ability.Initialize(this, characterData());
     }
 
@@ -43,7 +46,7 @@ public class LieEnemy : Enemy, IAbilityOwner
     public Ability HarvestAbility ()
     {
         gameObject.SetActive(false);
-        return null;
+        return ability;
     }
 
     public void AcquireAbility ( Ability ability ) { }

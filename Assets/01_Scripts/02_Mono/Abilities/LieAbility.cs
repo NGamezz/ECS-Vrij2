@@ -1,43 +1,45 @@
 using Cysharp.Threading.Tasks;
 using System;
-using System.Threading.Tasks;
 using Unity.Mathematics;
 using UnityEngine;
 
 //Should be Improved. Maybe check for a close vicinity player/decoy instead of using the movetarget.
 public class LieAbility : Ability
 {
-    //In ms.
-    private readonly int abilityDuration = 2000;
+    //In seconds.
+    private readonly int abilityDuration = 2;
 
     private float2 spawnRange = new(5.0f, 5.0f);
     private int activeCount = 0;
 
-    private async UniTaskVoid ActivateDecoy ( Vector3 refPos, bool player, Action<CharacterData, Enemy> contextCallBackStart, Action<CharacterData, Enemy> contextCallBackFinish )
+    private async UniTaskVoid ActivateDecoy ( Vector3 refPos, Action<CharacterData, Enemy> contextCallBackStart, Action<CharacterData, Enemy> contextCallBackFinish, Transform objectToCopy )
     {
         refPos.y = ownerData.CharacterTransform.position.y;
 
-        var enemy = EnemyManager.Instance.CreateEnemy(refPos);
-        
-        enemy.GameObject.SetActive(true);
-        contextCallBackStart(ownerData, enemy);
+        var transform = GameObject.Instantiate(objectToCopy);
+
+        transform.gameObject.SetActive(true);
+
+        var enemy = (Enemy)transform.gameObject.GetComponent(typeof(Enemy));
+
+        contextCallBackStart?.Invoke(ownerData, enemy);
 
         activeCount++;
         Owner.OnExecuteAbility(Type);
 
-        await UniTask.Delay(abilityDuration);
+        await UniTask.Delay(TimeSpan.FromSeconds(abilityDuration));
 
-        contextCallBackFinish(ownerData, enemy);
+        contextCallBackFinish?.Invoke(ownerData, enemy);
 
-        if ( enemy != null && ownerData.TargetedTransform == enemy.MeshTransform )
+        if ( enemy != null && ownerData.TargetedTransform == transform )
         {
             EventManagerGeneric<Transform>.InvokeEvent(EventType.TargetSelection, null);
         }
 
         activeCount--;
-        if ( enemy != null )
+        if ( transform != null )
         {
-            UnityEngine.Object.Destroy(enemy.GameObject);
+            UnityEngine.Object.Destroy(transform.gameObject);
         }
     }
 
@@ -63,7 +65,8 @@ public class LieAbility : Ability
 
         var position = ownerData.CharacterTransform.position + (UnityEngine.Random.insideUnitSphere.normalized * UnityEngine.Random.Range(spawnRange.x, spawnRange.y));
         var cachedTarget = ownerData.MoveTarget.target;
-        ActivateDecoy(position, true, ( data, enemy ) =>
+
+        ActivateDecoy(position, ( data, enemy ) =>
         {
             ownerData.MoveTarget.target = enemy.MeshTransform;
             return;
@@ -74,20 +77,15 @@ public class LieAbility : Ability
 
             ownerData.MoveTarget.target = cachedTarget;
             return;
-        }).Forget();
+        }, ownerData.CharacterTransform).Forget();
         return true;
     }
 
     private bool EnemyBehaviour ()
     {
         var position = ownerData.CharacterTransform.position + (UnityEngine.Random.insideUnitSphere.normalized * UnityEngine.Random.Range(spawnRange.x, spawnRange.y));
-        ActivateDecoy(position, false, ( data, enemy ) =>
-        {
-            return;
-        }, ( data, enemy ) =>
-        {
-            return;
-        }).Forget();
+
+        ActivateDecoy(position, null, null, ownerData.CharacterTransform).Forget();
         return true;
     }
 

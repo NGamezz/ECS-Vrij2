@@ -7,6 +7,8 @@ using System.Linq;
 using System.Diagnostics;
 using Unity.VisualScripting;
 using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks.Linq;
+using Cysharp.Threading.Tasks.CompilerServices;
 
 namespace Utility
 {
@@ -76,6 +78,15 @@ namespace Utility
             }
         }
 
+        public static IEnumerable<float> Timer(float duration)
+        {
+            float t = 0f;
+            while(t < duration)
+            {
+                yield return t;
+            }
+        }
+
         public static void MultiAddElementToList<T> ( ref List<T> list, params T[] elements )
         {
             list.AddRange(elements);
@@ -111,6 +122,22 @@ namespace Utility
         {
             await UniTask.Delay(TimeSpan.FromSeconds(duration), cancellationToken: token);
             callBack?.Invoke(endState);
+        }
+
+        public static async UniTaskVoid StreamedTimerAsync ( Action<float> stream, Action finishCallback, float duration )
+        {
+            float t = 0;
+            await foreach ( var _ in UniTaskAsyncEnumerable.EveryUpdate() )
+            {
+                t += Time.deltaTime;
+                stream?.Invoke(t);
+
+                if ( t >= duration )
+                {
+                    break;
+                }
+            }
+            finishCallback?.Invoke();
         }
 
         public static async UniTask WaitWhileAsync ( CancellationToken ct, Func<bool> condition, int pollDelay = 25 )

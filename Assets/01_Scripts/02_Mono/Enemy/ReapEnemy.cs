@@ -1,5 +1,4 @@
 using Cysharp.Threading.Tasks;
-using Cysharp.Threading.Tasks.CompilerServices;
 using System;
 using UnityEngine;
 
@@ -8,11 +7,15 @@ public class ReapEnemy : Enemy, IAbilityOwner
     private Ability ability = new ReapAbility();
     private bool canUseAbility = true;
 
-    public override void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData, Transform manager )
+  
+    public override void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData, Transform manager, bool inAnimate = false )
     {
-        EnemyType = EnemyType.LieEnemy;
+        EnemyType = EnemyType.ReapEnemy;
         base.OnStart(stats, moveTarget, startPosition, characterData, manager);
-        ability.Initialize(this, characterData());
+
+        if ( inAnimate )
+            return;
+        ability.Initialize(this, this.characterData);
     }
 
     private void UseAbility ()
