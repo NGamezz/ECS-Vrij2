@@ -21,17 +21,6 @@ public class ShockWaveEnemy : Enemy, IAbilityOwner, ILockOnAble
         ability.Initialize(this, characterData());
     }
 
-    private void Attack ()
-    {
-        if ( !canShoot )
-            return;
-        canShoot = false;
-
-        shooting.ShootSingle();
-
-        Utility.Async.ChangeValueAfterSeconds(shooting.currentGun.attackSpeed, ( x ) => canShoot = x, true, this.GetCancellationTokenOnDestroy()).Forget();
-    }
-
     private void UseAbility ()
     {
         if ( !canUseAbility )
@@ -47,7 +36,10 @@ public class ShockWaveEnemy : Enemy, IAbilityOwner, ILockOnAble
     protected override void Attacking ()
     {
         if ( agent.isActiveAndEnabled == false || agent.isOnNavMesh == false )
+        {
+            Debug.Log("Agent is not on a navMesh or is inactive.");
             return;
+        }
 
         if ( !agent.isStopped )
         {
@@ -56,7 +48,6 @@ public class ShockWaveEnemy : Enemy, IAbilityOwner, ILockOnAble
         }
 
         MeshTransform.forward = (moveTarget.target.position - MeshTransform.position).normalized;
-        Attack();
         UseAbility();
     }
 
