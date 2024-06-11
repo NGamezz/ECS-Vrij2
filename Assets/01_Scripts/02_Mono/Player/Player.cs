@@ -135,16 +135,13 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
         if ( !canUseAbility || ctx.phase != InputActionPhase.Performed )
             return;
-
         canUseAbility = false;
+
         const int index = 0;
 
-        var succes = abilityHolder.UseAbility(index, characterData, () => abilityCooldownBars[index].gameObject.SetActive(false));
+        abilityHolder.UseAbility(index, characterData, () => abilityCooldownBars[index].gameObject.SetActive(false));
 
-        if ( !succes )
-            return;
-
-        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true, this.GetCancellationTokenOnDestroy()).Forget();
+        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => { canUseAbility = x; Debug.Log("FinishCallBack"); }, true).Forget();
     }
 
     //Use the ability, if it fails due to not having enough souls, re-add it.
@@ -159,11 +156,9 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
         const int index = 1;
 
-        var succes = abilityHolder.UseAbility(index, characterData, () => abilityCooldownBars[index].gameObject.SetActive(false));
+        abilityHolder.UseAbility(index, characterData, () => abilityCooldownBars[index].gameObject.SetActive(false));
 
-        if ( !succes )
-            return;
-        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true, this.GetCancellationTokenOnDestroy()).Forget();
+        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true).Forget();
     }
 
     //Use the ability, if it fails due to not having enough souls, re-add it.
@@ -178,11 +173,9 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
         const int index = 2;
 
-        var succes = abilityHolder.UseAbility(index, characterData, () => abilityCooldownBars[index].gameObject.SetActive(false));
+        abilityHolder.UseAbility(index, characterData, () => abilityCooldownBars[index].gameObject.SetActive(false));
 
-        if ( !succes )
-            return;
-        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true, this.GetCancellationTokenOnDestroy()).Forget();
+        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true).Forget();
     }
 
     //Use the ability, if it fails due to not having enough souls, re-add it.
@@ -193,19 +186,13 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
         if ( !canUseAbility || ctx.phase != InputActionPhase.Performed )
             return;
-
         canUseAbility = false;
 
         const int index = 3;
 
-        var succes = abilityHolder.UseAbility(index, characterData, () => abilityCooldownBars[index].gameObject.SetActive(false));
+        abilityHolder.UseAbility(index, characterData, () => abilityCooldownBars[index].gameObject.SetActive(false));
 
-        Debug.Log(succes);
-
-        if ( !succes )
-            return;
-
-        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true, this.GetCancellationTokenOnDestroy()).Forget();
+        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => { canUseAbility = x; Debug.Log("FinishCallBack"); }, true).Forget();
     }
     #endregion
 
@@ -243,7 +230,6 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
     private void Start ()
     {
         characterData.CharacterTransform = meshTransform;
-
 
         characterData.Player = true;
 
@@ -340,7 +326,7 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
         ability.Initialize(this, characterData);
 
-        EventManagerGeneric<TextPopup>.InvokeEvent(EventType.OnTextPopupQueue, new(2.0f, $"Acquired : {ability.GetType()}"));
+        EventManagerGeneric<TextPopup>.InvokeEvent(EventType.OnTextPopupQueue, new(1.0f, $"Acquired : {ability.GetType()}"));
         EventManagerGeneric<Transform>.InvokeEvent(EventType.TargetSelection, null);
 
         var index = abilityHolder.AddAbility(ability);
@@ -461,7 +447,7 @@ public class PlayerAbilityHolder : IAbilityHolder
             return false;
         }
 
-        if ( !abilty.Execute(data) )
+        if ( abilty.Execute(data) == false )
             return false;
 
         succesCallBack?.Invoke();

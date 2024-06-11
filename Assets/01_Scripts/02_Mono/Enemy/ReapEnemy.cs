@@ -58,7 +58,7 @@ public class ReapEnemy : Enemy, IAbilityOwner
         Vector3 newPos = UnityEngine.Random.insideUnitCircle * UnityEngine.Random.Range(10, 20);
         var result = agent.SetDestination(newPos);
 
-        await UniTask.WaitUntil(() => Vector3.Distance(MeshTransform.position, newPos) <= 4.0f || !result);
+        await UniTask.WaitUntil(() => MeshTransform == null || Vector3.Distance(MeshTransform.position, newPos) <= 4.0f || !result);
 
         blackBoard.SetVariable("OverrideChase", false);
     }

@@ -1,3 +1,6 @@
+using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks.CompilerServices;
+using System;
 using UnityEngine;
 
 public class ShockWaveAbility : Ability
@@ -7,12 +10,17 @@ public class ShockWaveAbility : Ability
     private float shockWaveRadius;
     private readonly Collider[] hits = new Collider[10];
 
+    public float attackDelay = 1;
+
     public override bool Execute ( object context )
     {
         if ( !initialized )
         { return false; }
 
         var ownerPos = ownerData.CharacterTransform.position;
+        var ownLayer = ownerData.CharacterTransform.gameObject.layer;
+
+        Owner.OnExecuteAbility(Type);
 
         var hitCount = Physics.OverlapSphereNonAlloc(ownerPos, shockWaveRadius, this.hits);
         if ( hitCount == 0 )
@@ -24,7 +32,7 @@ public class ShockWaveAbility : Ability
         ownerData.Souls -= (int)ActivationCost;
         for ( int i = 0; i < hitCount; i++ )
         {
-            if ( hits[i].transform == ownerData.CharacterTransform )
+            if ( hits[i].gameObject.layer == ownLayer )
                 continue;
 
             IDamageable hit;
@@ -39,7 +47,9 @@ public class ShockWaveAbility : Ability
             hit.AfflictDamage(float.MaxValue);
         }
 
-        Owner.OnExecuteAbility(Type);
+        if ( Owner == null )
+            return false;
+
         return true;
     }
 
@@ -47,6 +57,9 @@ public class ShockWaveAbility : Ability
     {
         initialized = true;
         ownerData = context;
+
+        Type = AbilityType.ShockWaveAbility;
+        Owner = owner;
 
         ActivationCooldown = 5;
 

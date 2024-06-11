@@ -6,8 +6,16 @@ using UnityEngine.Events;
 public class ShockWaveEnemy : Enemy, IAbilityOwner, ILockOnAble
 {
     private readonly Ability ability = new ShockWaveAbility();
+    private ShockWaveAbility shockAbil;
 
     public UnityEvent OnAttackEvent;
+
+    public Animator animator;
+
+    const string animBaseLayer = "Base Layer";
+    int animAttackHash = Animator.StringToHash(animBaseLayer + ".Attack");
+
+    [SerializeField] private float shockwaveDelay = 3;
 
     private bool canUseAbility = true;
 
@@ -18,19 +26,32 @@ public class ShockWaveEnemy : Enemy, IAbilityOwner, ILockOnAble
 
         if ( inAnimate )
             return;
-        ability.Initialize(this, characterData());
+        shockAbil = ability as ShockWaveAbility;
+
+        shockAbil.Initialize(this, characterData());
+        shockAbil.attackDelay = shockwaveDelay;
     }
 
-    private void UseAbility ()
+    private async UniTaskVoid UseAbility ()
     {
         if ( !canUseAbility )
             return;
         canUseAbility = false;
 
         OnAttackEvent?.Invoke();
+        animator.CrossFadeInFixedTime("Attack", 0.6f);
 
-        ability.Execute(characterData);
-        Utility.Async.ChangeValueAfterSeconds(ability.ActivationCooldown, ( x ) => canUseAbility = x, true, this.GetCancellationTokenOnDestroy()).Forget();
+        while ( animator.GetCurrentAnimatorStateInfo(0).fullPathHash != animAttackHash )
+        {
+            await UniTask.NextFrame();
+        }
+
+        var time = animator.GetCurrentAnimatorStateInfo(0).length / 2.0f;
+
+        await UniTask.Delay(TimeSpan.FromSeconds(time));
+
+        shockAbil.Execute(characterData);
+        Utility.Async.ChangeValueAfterSeconds(shockAbil.ActivationCooldown, ( x ) => canUseAbility = x, true, this.GetCancellationTokenOnDestroy()).Forget();
     }
 
     protected override void Attacking ()
@@ -56,7 +77,7 @@ public class ShockWaveEnemy : Enemy, IAbilityOwner, ILockOnAble
     public Ability HarvestAbility ()
     {
         gameObject.SetActive(false);
-        return ability;
+        return shockAbil;
     }
 
     public void OnExecuteAbility ( AbilityType type ) { }

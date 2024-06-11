@@ -2,6 +2,7 @@ using NaughtyAttributes;
 using Unity.AI.Navigation;
 using Unity.Mathematics;
 using UnityEngine;
+using Utility;
 
 public class CreateColliders : MonoBehaviour
 {
@@ -48,7 +49,7 @@ public class CreateColliders : MonoBehaviour
 
         Physics.BakeMesh(mesh.GetInstanceID(), false);
 
-        var collider = transform.GetComponent<MeshCollider>();
+        var collider = gameObject.GetOrAddComponentI<MeshCollider>();
         collider.sharedMesh = mesh;
 
         var navSurface = (NavMeshSurface)GetComponent(typeof(NavMeshSurface));

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 
 public class StateManager
 {
@@ -10,9 +11,9 @@ public class StateManager
     {
         bool active = false;
 
-        foreach(var state in states)
+        foreach ( var state in states )
         {
-            if(state.EnterCondition())
+            if ( state.EnterCondition() )
             {
                 active = true;
             }

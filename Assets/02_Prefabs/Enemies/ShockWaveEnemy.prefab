@@ -179,6 +179,8 @@ MonoBehaviour:
           m_StringArgument: Attack
           m_BoolArgument: 0
         m_CallState: 2
+  animator: {fileID: 5099437954961680297}
+  shockwaveDelay: 2
 --- !u!1 &7921244761559078194
 GameObject:
   m_ObjectHideFlags: 0

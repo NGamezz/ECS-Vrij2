@@ -16,7 +16,7 @@ public class AttackBoostAbility : Ability
         return true;
     }
 
-    private async UniTaskVoid ActivateBoost ()
+    private async UniTask ActivateBoost ()
     {
         if ( isActive )
         { return; }
