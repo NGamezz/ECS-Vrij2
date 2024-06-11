@@ -12,7 +12,7 @@ using Cysharp.Threading.Tasks;
 [BurstCompile]
 public static class WorldManager
 {
-    private static readonly int cellSize = 5;
+    private static readonly int cellSize = 3;
     public static int CellSize { get => cellSize; }
 
     private static readonly ConcurrentDictionary<int2, Cell> grid = new();
@@ -162,16 +162,16 @@ public static class WorldManager
         HashSet<int2> positions = new();
         positions.Clear();
 
-        const float divisor = 1 / 2;
+        const float divisor = 1;
         var cellMargin = cellSize * divisor;
         var radiusSquared = (radius + cellMargin) * (radius + cellMargin);
 
         int posX = (int)math.round(position.x);
         int posY = (int)math.round(position.z);
 
-        for ( int i = -3; i < 4; i++ )
+        for ( int i = -5; i < 6; i++ )
         {
-            for ( int t = -3; t < 4; t++ )
+            for ( int t = -5; t < 6; t++ )
             {
                 int x = SnapFloatToGrid(position.x + (i * cellSize), cellSize);
                 int y = SnapFloatToGrid(position.z + (t * cellSize), cellSize);
