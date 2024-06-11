@@ -12,7 +12,7 @@ using Cysharp.Threading.Tasks;
 [BurstCompile]
 public static class WorldManager
 {
-    private static readonly int cellSize = 4;
+    private static readonly int cellSize = 5;
     public static int CellSize { get => cellSize; }
 
     private static readonly ConcurrentDictionary<int2, Cell> grid = new();

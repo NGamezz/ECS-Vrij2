@@ -28,6 +28,8 @@ public class Enemy : Soulable, IDamageable
 
     protected CharacterData characterData;
 
+    public UnityEvent OnAttack;
+
     public GameObject GameObject
     {
         get => cachedGameObject;
@@ -136,6 +138,7 @@ public class Enemy : Soulable, IDamageable
             return;
 
         MeshTransform.forward = (moveTarget.target.position - MeshTransform.position).normalized;
+        OnAttack?.Invoke();
         Attack();
     }
 
