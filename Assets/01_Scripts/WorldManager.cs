@@ -12,7 +12,7 @@ using Cysharp.Threading.Tasks;
 [BurstCompile]
 public static class WorldManager
 {
-    private static readonly int cellSize = 15;
+    private static readonly int cellSize = 5;
     public static int CellSize { get => cellSize; }
 
     private static readonly ConcurrentDictionary<int2, Cell> grid = new();
@@ -162,8 +162,9 @@ public static class WorldManager
         HashSet<int2> positions = new();
         positions.Clear();
 
-        var halfCelSize = cellSize / 2;
-        var radiusSquared = (radius + halfCelSize) * (radius + halfCelSize);
+        const float divisor = 1;
+        var cellMargin = cellSize * divisor;
+        var radiusSquared = (radius + cellMargin) * (radius + cellMargin);
 
         int posX = (int)math.round(position.x);
         int posY = (int)math.round(position.z);
@@ -391,70 +392,54 @@ public class Cell
 
     public Cell ( CellEventType type, Action<object> action )
     {
-        lock ( events )
+        if ( events.ContainsKey(type) )
         {
-            if ( events.ContainsKey(type) )
-            {
-                events[type] += action;
-                return;
-            }
-            events.TryAdd(type, action);
+            events[type] += action;
+            return;
         }
+        events.TryAdd(type, action);
     }
 
     public void AddListener ( CellEventType type, Action<object> action )
     {
-        lock ( events )
+        if ( events.ContainsKey(type) )
         {
-            if ( events.ContainsKey(type) )
-            {
-                events[type] += action;
-                return;
-            }
-            events.TryAdd(type, action);
+            events[type] += action;
+            return;
         }
+        events.TryAdd(type, action);
     }
 
     public void RemoveListener ( CellEventType type, Action<object> action )
     {
-        lock ( events )
-        {
-            if ( !events.ContainsKey(type) )
-                return;
+        if ( !events.ContainsKey(type) )
+            return;
 
-            events[type] -= action;
-        }
+        events[type] -= action;
     }
 
     public void ClearEvents ()
     {
         int amount = Enum.GetValues(typeof(CellEventType)).Length;
 
-        lock ( events )
+        for ( int i = amount - 1; i >= 0; i-- )
         {
-            for ( int i = amount - 1; i >= 0; i-- )
-            {
-                events[(CellEventType)i] = null;
-            }
-
-            events.Clear();
+            events[(CellEventType)i] = null;
         }
+
+        events.Clear();
     }
 
     public bool IsEventEmpty ( CellEventType type )
     {
-        lock ( events )
-            return events[type] == null || events[type].GetInvocationList() == null;
+        return events[type] == null || events[type].GetInvocationList() == null;
     }
 
     public void InvokeEvent ( CellEventType type, object input )
     {
-        lock ( events )
-        {
-            if ( !events.ContainsKey(type) )
-                return;
+        if ( !events.ContainsKey(type) )
+            return;
 
-            events[type]?.Invoke(input);
-        }
+        events[type]?.Invoke(input);
     }
 }

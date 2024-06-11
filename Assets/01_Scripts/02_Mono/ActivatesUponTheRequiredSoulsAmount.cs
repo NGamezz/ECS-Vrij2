@@ -91,6 +91,8 @@ public class ActivatesUponTheRequiredSoulsAmount : MonoBehaviour
         if ( cellPositions == null )
             return;
 
+        Gizmos.DrawWireSphere(ownPosition, range);
+
         foreach ( var cell in cellPositions )
         {
             Gizmos.DrawWireCube(new(cell.x, 0.0f, cell.y), Vector3.one * WorldManager.CellSize);

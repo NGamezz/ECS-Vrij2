@@ -1,5 +1,6 @@
 //To be improved.
 using System.Diagnostics;
+using UnityEngine;
 
 public class ReapAbility : Ability
 {
@@ -32,6 +33,7 @@ public class ReapAbility : Ability
         ownerData.Souls -= (int)ActivationCost;
 
         Owner.AcquireAbility(ability);
+        EventManagerGeneric<Transform>.InvokeEvent(EventType.TargetSelection, null);
 
         Owner.OnExecuteAbility(Type);
     }

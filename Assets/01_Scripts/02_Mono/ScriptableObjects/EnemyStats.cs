@@ -8,7 +8,8 @@ public class EnemyStats : ScriptableObject
     public float statMultiplier = 1;
 
     [SerializeField] private float _maxHealth;
-    public float MaxHealth {
+    public float MaxHealth
+    {
         get
         {
             return _maxHealth * statMultiplier;

@@ -11,10 +11,11 @@ public class CollectionPointManager : MonoBehaviour
     [SerializeField] private UnityEvent UponCompletionOfPoints;
 
     private CollectionPoint[] collectionPoints;
+    private EventSubscription subscription;
 
     private void OnEnable ()
     {
-        EventManager.AddListener(EventType.UponDesiredSoulsAmount, ()=> ActivateCompletion().Forget());
+        EventManager.AddListener(EventType.UponDesiredSoulsAmount, () => ActivateCompletion().Forget(), ref subscription);
     }
 
     private async UniTaskVoid ActivateCompletion ()
@@ -33,7 +34,7 @@ public class CollectionPointManager : MonoBehaviour
 
     private void OnDisable ()
     {
-        EventManager.RemoveListener(EventType.UponDesiredSoulsAmount, () => ActivateCompletion().Forget());
+        subscription.UnsubscribeAll();
     }
 
     private void Start ()

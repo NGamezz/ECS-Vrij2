@@ -1,5 +1,9 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.ComponentModel;
+using UnityEditor.Tilemaps;
+using Utility;
 
 public enum EventType
 {
@@ -14,11 +18,50 @@ public enum EventType
     OnSceneChange = 8,
 }
 
+public struct EventHolder
+{
+    public EventType type;
+    public Action action;
+
+    public EventHolder ( EventType type, Action action )
+    {
+        this.type = type;
+        this.action = action;
+    }
+}
+
+public struct EventSubscription
+{
+    private List<EventHolder> events;
+
+    public EventSubscription ( EventHolder eventHandle )
+    {
+        events = new()
+        {
+            eventHandle
+        };
+    }
+
+    public void Subscribe ( EventHolder eventHandle )
+    {
+        events ??= new();
+        events.Add(eventHandle);
+    }
+
+    public readonly void UnsubscribeAll ()
+    {
+        for ( int i = events.Count - 1; i >= 0; --i )
+        {
+            EventManager.RemoveListener(events[i].type, events[i].action);
+        }
+    }
+}
+
 public static class EventManager
 {
-    private static ConcurrentDictionary<EventType, Action> events = new();
+    private static readonly ConcurrentDictionary<EventType, Action> events = new();
 
-    public static void AddListener ( EventType type, Action action )
+    public static void AddListener ( EventType type, Action action, ref EventSubscription sub )
     {
         if ( !events.ContainsKey(type) )
         {
@@ -26,11 +69,25 @@ public static class EventManager
         }
         else if ( events.ContainsKey(type) )
         {
-            lock ( events[type] )
-            {
-                events[type] += action;
-            }
+            events[type] += action;
         }
+
+        sub.Subscribe(new(type, action));
+    }
+
+    //The component is for automatic unsubscribing.
+    public static void AddListener ( EventType type, Action action, UnityEngine.Component component )
+    {
+        if ( !events.ContainsKey(type) )
+        {
+            events.TryAdd(type, action);
+        }
+        else if ( events.ContainsKey(type) )
+        {
+            events[type] += action;
+        }
+
+        component.GetAsyncGameObjectDeactivationTrigger().Subscribe(() => RemoveListener(type, action));
     }
 
     public static void RemoveListener ( EventType type, Action action )

@@ -12,6 +12,8 @@ public class Portal : MonoBehaviour
 
     private bool active = true;
 
+    private EventSubscription subscription;
+
     private void Start ()
     {
         activationAction.performed += Activate;
@@ -33,11 +35,11 @@ public class Portal : MonoBehaviour
 
     void OnEnable ()
     {
-        EventManager.AddListener(EventType.PortalActivation, ActivatePortal);
+        EventManager.AddListener(EventType.PortalActivation, ActivatePortal, ref subscription);
     }
 
     void OnDisable ()
     {
-        EventManager.RemoveListener(EventType.PortalActivation, ActivatePortal);
+        subscription.UnsubscribeAll();
     }
 }
