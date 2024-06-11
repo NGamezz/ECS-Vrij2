@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e1e281de68d6734485f9018eb9162aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  range: 10
+  range: 5
   requiredSoulsAmount: 10
   uponComepletion:
     m_PersistentCalls:

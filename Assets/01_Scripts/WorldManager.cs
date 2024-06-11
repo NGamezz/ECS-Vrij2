@@ -162,7 +162,7 @@ public static class WorldManager
         HashSet<int2> positions = new();
         positions.Clear();
 
-        const float divisor = 1;
+        const float divisor = 1 / 2;
         var cellMargin = cellSize * divisor;
         var radiusSquared = (radius + cellMargin) * (radius + cellMargin);
 
