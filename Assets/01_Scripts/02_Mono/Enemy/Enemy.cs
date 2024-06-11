@@ -39,7 +39,7 @@ public class Enemy : Soulable, IDamageable
 
     private float health;
 
-    public UnityEvent<float, Vector3> OnHit;
+    public UnityEvent<float, Transform> OnHit;
 
     protected MoveTarget moveTarget;
 
@@ -193,7 +193,7 @@ public class Enemy : Soulable, IDamageable
             return;
 
         health -= amount;
-        OnHit?.Invoke(amount, MeshTransform.position);
+        OnHit?.Invoke(amount, MeshTransform);
 
         if ( health > 0 )
             return;

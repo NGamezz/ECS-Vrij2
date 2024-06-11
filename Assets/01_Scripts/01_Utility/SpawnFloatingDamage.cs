@@ -10,17 +10,23 @@ public class SpawnFloatingDamage : MonoBehaviour
     [SerializeField] private float lifeTime = 1;
     [SerializeField] private int2 spawnRange = new(1, 3);
 
-    public void Activate ( float amount, Vector3 spawnPosition )
+    public void Activate ( float amount, Transform target )
     {
-        var pos = spawnPosition + (UnityEngine.Random.insideUnitSphere * UnityEngine.Random.Range(spawnRange.x, spawnRange.y));
-        pos.y = spawnPosition.y + 10.0f;
+        var random = UnityEngine.Random.insideUnitSphere * UnityEngine.Random.Range(spawnRange.x, spawnRange.y);
+        Debug.Log(target.position);
 
-        var instance = Instantiate(prefab);
+        var pos = target.position + random;
+        pos.y += 5.0f;
+
+        Debug.Log(pos);
+
+        var instance = Instantiate(prefab, target);
         instance.transform.position = pos;
 
         var text = instance.GetComponent<TMP_Text>();
+
         text.text = amount.ToString();
-        instance.transform.forward = transform.forward;
+        instance.transform.forward = target.forward;
 
         DestroyAfterTime(instance).Forget();
     }

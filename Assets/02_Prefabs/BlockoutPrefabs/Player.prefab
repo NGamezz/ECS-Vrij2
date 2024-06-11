@@ -161,6 +161,8 @@ GameObject:
   - component: {fileID: 3507798751246371763}
   - component: {fileID: 1615459774767442155}
   - component: {fileID: 5205605679426113518}
+  - component: {fileID: 7022107267119586695}
+  - component: {fileID: 7200307741866082516}
   m_Layer: 6
   m_Name: VCam
   m_TagString: Untagged
@@ -177,7 +179,7 @@ Transform:
   m_GameObject: {fileID: 991518963263016555}
   serializedVersion: 2
   m_LocalRotation: {x: 0.31299797, y: 0, z: 0, w: 0.94975376}
-  m_LocalPosition: {x: 0, y: 12.43, z: -14}
+  m_LocalPosition: {x: -5.59, y: 12.43, z: -14}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -246,6 +248,35 @@ MonoBehaviour:
     m_FrequencyGain: 1
     m_Duration: 1
     m_NoiseOffsets: {x: 0, y: 0, z: 0}
+--- !u!114 &7022107267119586695
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 991518963263016555}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 449ef5ebbe24720439ec31d15f7b6f3d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_FocusTracksTarget: 0
+  m_FocusTracking: 0
+  m_FocusTarget: {fileID: 0}
+  m_FocusOffset: 0
+  m_Profile: {fileID: 11400000, guid: 1c5830d9aa26b3d488e109d859792192, type: 2}
+--- !u!114 &7200307741866082516
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 991518963263016555}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 729aad4491e915a41bda2b8325cf757a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1121241201178674762
 GameObject:
   m_ObjectHideFlags: 0
@@ -6002,7 +6033,7 @@ Transform:
   m_GameObject: {fileID: 3447117377280551177}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 5.59, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -6611,7 +6642,6 @@ GameObject:
   m_Component:
   - component: {fileID: 7005942118787718978}
   - component: {fileID: 1096177187423764652}
-  - component: {fileID: 3032570730322489612}
   - component: {fileID: 3255777968639262585}
   - component: {fileID: 6048699037056876982}
   m_Layer: 6
@@ -6630,7 +6660,7 @@ Transform:
   m_GameObject: {fileID: 7237298956814736193}
   serializedVersion: 2
   m_LocalRotation: {x: 0.312998, y: -0, z: -0, w: 0.9497538}
-  m_LocalPosition: {x: 0, y: 12.43, z: -14}
+  m_LocalPosition: {x: -5.59, y: 12.43, z: -14}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6687,14 +6717,6 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!81 &3032570730322489612
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7237298956814736193}
-  m_Enabled: 1
 --- !u!114 &3255777968639262585
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6718,7 +6740,7 @@ MonoBehaviour:
     m_Bits: 1
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 0
+  m_RenderPostProcessing: 1
   m_Antialiasing: 0
   m_AntialiasingQuality: 2
   m_StopNaN: 0
@@ -7165,6 +7187,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 4578d86e5e42db5459ea1fd69888cfaa, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5450994382336969503}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 4578d86e5e42db5459ea1fd69888cfaa, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3345851018252512235}
   m_SourcePrefab: {fileID: 100100000, guid: 4578d86e5e42db5459ea1fd69888cfaa, type: 3}
 --- !u!1 &7294249835103176944 stripped
 GameObject:
@@ -7255,6 +7280,14 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!81 &3345851018252512235
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7294249835103176944}
+  m_Enabled: 1
 --- !u!4 &7958336873015185994 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 4578d86e5e42db5459ea1fd69888cfaa, type: 3}

@@ -48,10 +48,8 @@ public class CameraShake : MonoBehaviour
             var pos = new Vector3(random.x, UnityEngine.Random.Range(-intensity, intensity), random.y);
 
             Target.localPosition += pos * Time.deltaTime;
-
             t += Time.deltaTime;
-            await UniTask.NextFrame();
-
+            
             await UniTask.Delay(TimeSpan.FromSeconds(timeBetweenShake));
         }
 
