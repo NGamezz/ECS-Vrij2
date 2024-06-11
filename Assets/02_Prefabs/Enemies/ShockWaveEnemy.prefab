@@ -35,6 +35,7 @@ Transform:
   - {fileID: 6373827368194751219}
   - {fileID: 4595152677949020639}
   - {fileID: 6515937641187304022}
+  - {fileID: 6293493651519418975}
   m_Father: {fileID: 5573488587322962286}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!195 &1786112733166538991
@@ -231,10 +232,34 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 5383749321518778354}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
   OnFinishAttack:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 7282199935986586311}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 5383749321518778354}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
         m_Mode: 6
@@ -261,6 +286,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prefab: {fileID: 896930638078634540, guid: 250de82ba91dd8d4d8997e2b4493ad1b, type: 3}
+  lifeTime: 1
   spawnRange:
     x: 1
     y: 3
@@ -408,6 +434,125 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1808295935842128988}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &2033318445389095441
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1808295935842128988}
+    m_Modifications:
+    - target: {fileID: 26359681370835349, guid: 6492c9c1a14e3cc458b1e5eec474113a, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 26359681370835349, guid: 6492c9c1a14e3cc458b1e5eec474113a, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 1260571288535494328, guid: 6492c9c1a14e3cc458b1e5eec474113a, type: 3}
+      propertyPath: ShapeModule.radius.value
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 4506053415982108190, guid: 6492c9c1a14e3cc458b1e5eec474113a, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 4506053415982108190, guid: 6492c9c1a14e3cc458b1e5eec474113a, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 4506053415982108190, guid: 6492c9c1a14e3cc458b1e5eec474113a, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5431683630534955086, guid: 6492c9c1a14e3cc458b1e5eec474113a, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5431683630534955086, guid: 6492c9c1a14e3cc458b1e5eec474113a, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5431683630534955086, guid: 6492c9c1a14e3cc458b1e5eec474113a, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5431683630534955086, guid: 6492c9c1a14e3cc458b1e5eec474113a, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5431683630534955086, guid: 6492c9c1a14e3cc458b1e5eec474113a, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5431683630534955086, guid: 6492c9c1a14e3cc458b1e5eec474113a, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5431683630534955086, guid: 6492c9c1a14e3cc458b1e5eec474113a, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5431683630534955086, guid: 6492c9c1a14e3cc458b1e5eec474113a, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5431683630534955086, guid: 6492c9c1a14e3cc458b1e5eec474113a, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5431683630534955086, guid: 6492c9c1a14e3cc458b1e5eec474113a, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5431683630534955086, guid: 6492c9c1a14e3cc458b1e5eec474113a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5431683630534955086, guid: 6492c9c1a14e3cc458b1e5eec474113a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5431683630534955086, guid: 6492c9c1a14e3cc458b1e5eec474113a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5431683630534955086, guid: 6492c9c1a14e3cc458b1e5eec474113a, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5463476345168058635, guid: 6492c9c1a14e3cc458b1e5eec474113a, type: 3}
+      propertyPath: ShapeModule.radius.value
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 6150442428056175552, guid: 6492c9c1a14e3cc458b1e5eec474113a, type: 3}
+      propertyPath: ShapeModule.radius.value
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 6233306384768312803, guid: 6492c9c1a14e3cc458b1e5eec474113a, type: 3}
+      propertyPath: m_Name
+      value: SoulRing
+      objectReference: {fileID: 0}
+    - target: {fileID: 6233306384768312803, guid: 6492c9c1a14e3cc458b1e5eec474113a, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 6492c9c1a14e3cc458b1e5eec474113a, type: 3}
+--- !u!1 &5383749321518778354 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6233306384768312803, guid: 6492c9c1a14e3cc458b1e5eec474113a, type: 3}
+  m_PrefabInstance: {fileID: 2033318445389095441}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &6293493651519418975 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5431683630534955086, guid: 6492c9c1a14e3cc458b1e5eec474113a, type: 3}
+  m_PrefabInstance: {fileID: 2033318445389095441}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &4057737211836857908
 PrefabInstance:
   m_ObjectHideFlags: 0
