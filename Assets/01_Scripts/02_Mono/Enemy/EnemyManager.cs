@@ -123,7 +123,7 @@ public class EnemyManager : MonoBehaviour
 
         SpawnEnemies = true;
         SpawnEnemiesIE(tokenSrc.Token).Forget();
-        CleanUpLostEnemies(tokenSrc.Token).Forget();
+        //CleanUpLostEnemies(tokenSrc.Token).Forget();
     }
 
     private void RemoveEnemy ( Enemy sender )
@@ -246,7 +246,7 @@ public class EnemyManager : MonoBehaviour
             spawnEnemies = true;
             gameState = state;
             SpawnEnemiesIE(tokenSrc.Token).Forget();
-            CleanUpLostEnemies(tokenSrc.Token).Forget();
+            //CleanUpLostEnemies(tokenSrc.Token).Forget();
         }
     }
 

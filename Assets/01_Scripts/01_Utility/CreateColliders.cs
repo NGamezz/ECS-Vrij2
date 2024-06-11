@@ -42,7 +42,11 @@ public class CreateColliders : MonoBehaviour
             objects[i].SetActive(false);
         }
 
-        Mesh mesh = new();
+        Mesh mesh = new()
+        {
+            indexFormat = UnityEngine.Rendering.IndexFormat.UInt32
+        };
+
         mesh.CombineMeshes(combineInstance);
         transform.GetComponent<MeshFilter>().sharedMesh = mesh;
         transform.gameObject.SetActive(true);

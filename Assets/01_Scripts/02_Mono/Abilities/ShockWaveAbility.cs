@@ -1,6 +1,3 @@
-using Cysharp.Threading.Tasks;
-using Cysharp.Threading.Tasks.CompilerServices;
-using System;
 using UnityEngine;
 
 public class ShockWaveAbility : Ability
@@ -44,7 +41,7 @@ public class ShockWaveAbility : Ability
             if ( hit == null )
                 continue;
 
-            hit.AfflictDamage(float.MaxValue);
+            hit.AfflictDamage(50.0f);
         }
 
         if ( Owner == null )
