@@ -259,6 +259,34 @@ PrefabInstance:
       propertyPath: m_ConstrainProportionsScale
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: -1632135985204403864, guid: 5558ce405cb6ec54ea1cb388999fd92d, type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 13
+      objectReference: {fileID: 0}
+    - target: {fileID: -1632135985204403864, guid: 5558ce405cb6ec54ea1cb388999fd92d, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: a2609e8645d8c4c46a94634dd829ef22, type: 2}
+    - target: {fileID: -1632135985204403864, guid: 5558ce405cb6ec54ea1cb388999fd92d, type: 3}
+      propertyPath: 'm_Materials.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2100000, guid: d135b38a53d81cb4c8225f82a5925a0f, type: 2}
+    - target: {fileID: -1632135985204403864, guid: 5558ce405cb6ec54ea1cb388999fd92d, type: 3}
+      propertyPath: 'm_Materials.Array.data[3]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 2d14181892f16db41b4c6b29ec85f01e, type: 2}
+    - target: {fileID: -1632135985204403864, guid: 5558ce405cb6ec54ea1cb388999fd92d, type: 3}
+      propertyPath: 'm_Materials.Array.data[8]'
+      value: 
+      objectReference: {fileID: 2100000, guid: e0a42e00b2cdac84f8e945b1abc46d8f, type: 2}
+    - target: {fileID: -1632135985204403864, guid: 5558ce405cb6ec54ea1cb388999fd92d, type: 3}
+      propertyPath: 'm_Materials.Array.data[9]'
+      value: 
+      objectReference: {fileID: 2100000, guid: a5b60dc3f2f25194b8e1fa325ff57653, type: 2}
+    - target: {fileID: -1632135985204403864, guid: 5558ce405cb6ec54ea1cb388999fd92d, type: 3}
+      propertyPath: 'm_Materials.Array.data[13]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 2ee77d74e19e0384b8fdb8c64eb763d5, type: 2}
     - target: {fileID: 919132149155446097, guid: 5558ce405cb6ec54ea1cb388999fd92d, type: 3}
       propertyPath: m_Name
       value: ability steal guy
