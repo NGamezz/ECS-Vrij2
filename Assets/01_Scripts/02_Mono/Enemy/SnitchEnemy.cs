@@ -9,11 +9,14 @@ public class SnitchEnemy : Enemy, IAbilityOwner, ILockOnAble
 
     private bool canUseAbility = true;
 
-    public override void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData, Transform manager )
+    public override void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData, Transform manager, bool inAnimate = false )
     {
         EnemyType = EnemyType.SnitchEnemy;
         base.OnStart(stats, moveTarget, startPosition, characterData, manager);
-        shooting.recoilMultiplier = 0;
+
+        if ( inAnimate )
+            return;
+        ability.Initialize(this, characterData());
     }
 
     private void Attack ()

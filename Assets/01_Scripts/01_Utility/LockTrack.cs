@@ -45,7 +45,13 @@ public class LockTrack : MonoBehaviour
     private void FixedUpdate ()
     {
         if ( !tracking || trackingTarget == null )
-        { return; }
+        {
+            if ( trackingIdentifier.gameObject.activeInHierarchy )
+            {
+                trackingIdentifier.gameObject.SetActive(false);
+            }
+            return;
+        }
 
         var position = trackingTarget.position;
         position.y = 1.0f;

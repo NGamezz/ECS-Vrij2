@@ -1,6 +1,5 @@
 using Cysharp.Threading.Tasks;
 using System;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -11,6 +10,7 @@ public enum EnemyType
     ShockWaveEnemy = 2,
     LieEnemy = 3,
     AngryEnemy = 4,
+    ReapEnemy = 5,
 }
 
 public class Enemy : Soulable, IDamageable
@@ -33,7 +33,6 @@ public class Enemy : Soulable, IDamageable
 
     public GameObject GameObject
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => cachedGameObject;
     }
 
@@ -47,13 +46,19 @@ public class Enemy : Soulable, IDamageable
 
     protected StateManager stateManager = new();
 
-    protected NavMeshAgent agent;
+    protected bool overrideChase = false;
 
-    public virtual void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData, Transform manager )
+    public NavMeshAgent agent { get; protected set; }
+
+    public virtual void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData, Transform manager, bool inAnimate = false )
     {
         enemyStats = stats;
         cachedGameObject = gameObject;
         Dead = false;
+        health = stats.MaxHealth;
+
+        if ( inAnimate )
+            return;
 
         agent = (NavMeshAgent)MeshTransform.GetComponent(typeof(NavMeshAgent));
         agent.Warp(startPosition);
@@ -63,7 +68,6 @@ public class Enemy : Soulable, IDamageable
         shooting.ownerData = this.characterData;
 
         shooting.OnStart(manager, this);
-        health = stats.MaxHealth;
 
         this.moveTarget = moveTarget;
 
@@ -94,6 +98,9 @@ public class Enemy : Soulable, IDamageable
 
     public void OnReuse ( EnemyStats stats, Vector3 startPosition )
     {
+        if ( GameObject == null )
+            return;
+
         GameObject.SetActive(true);
         Dead = false;
         enemyStats = stats;
@@ -131,6 +138,9 @@ public class Enemy : Soulable, IDamageable
 
     protected virtual void Chasing ()
     {
+        if ( overrideChase )
+            return;
+
         if ( agent.isActiveAndEnabled == false || agent.isOnNavMesh == false )
         {
             return;
@@ -150,10 +160,21 @@ public class Enemy : Soulable, IDamageable
 
     protected void OnDisable ()
     {
-        gameOver = true;
         StopAllCoroutines();
-        shooting.OnDisable();
-        OnDisabled?.Invoke(this);
+        gameOver = true;
+
+        if ( Dead )
+        {
+            OnDeath?.Invoke(this);
+        }
+        else
+        {
+            OnDisabled?.Invoke(this);
+            shooting.OnDisable();
+        }
+
+        OnDeath = null;
+        OnDisabled = null;
     }
 
     public void AfflictDamage ( float amount )
@@ -166,11 +187,9 @@ public class Enemy : Soulable, IDamageable
         if ( health <= 0 )
         {
             Dead = true;
-            OnDeath?.Invoke(this);
-            OnDeath = null;
-            OnDisabled = null;
 
-            GameObject.SetActive(false);
+            if ( GameObject != null )
+                GameObject.SetActive(false);
         }
     }
 }

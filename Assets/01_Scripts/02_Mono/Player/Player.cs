@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using static UnityEngine.Rendering.DebugUI;
 
 public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgradable, ICharacterDataHolder
 {
@@ -24,22 +25,23 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
             if ( characterData.Souls != value )
             {
                 characterData.Souls = value;
-
-                //Kind of dirty but oh well.
-                UpdateSoulsUI().Forget();
             }
         }
     }
 
+    [SerializeField] private Image soulsBar;
+    [SerializeField] private Image reloadBar;
+    [SerializeField] private Image dashBar;
+
     [SerializeField] private PlayerMovement playerMovement;
 
-    [SerializeField] TMP_Text soulsUiText;
+    //[SerializeField] TMP_Text soulsUiText;
 
     [SerializeField] private ParticleSystem walkEffects;
 
     [SerializeField] private UnityEvent OnReloadEvent;
 
-    [SerializeField] private Slider[] sliders;
+    [SerializeField] private Image[] abilityCooldownBars;
 
     [SerializeField] private CharacterData characterData;
 
@@ -122,7 +124,7 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
         if ( ctx.phase != InputActionPhase.Performed )
             return;
 
-        playerMovement.OnDash();
+        playerMovement.OnDash(( count ) => dashBar.fillAmount = count / playerMovement.dashCooldown, () => dashBar.fillAmount = 0);
     }
 
     #region abilityTriggers
@@ -136,13 +138,16 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
         canUseAbility = false;
 
-        var ability = abilityHolder.GetAbility(0);
+        var hasAbility = abilityHolder.GetAbility(0, out var ability);
+
+        if ( hasAbility == false )
+            return;
 
         abilityHolder.UseAbility(0, characterData, null);
 
         OnReapUse?.Invoke(ability.Type);
 
-        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true).Forget();
+        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true, this.GetCancellationTokenOnDestroy()).Forget();
     }
 
     //Use the ability, if it fails due to not having enough souls, re-add it.
@@ -157,13 +162,16 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
         int index = 1;
 
-        var ability = abilityHolder.GetAbility(index);
+        var hasAbility = abilityHolder.GetAbility(index, out var ability);
+
+        if ( hasAbility == false )
+            return;
 
         OnReapUse?.Invoke(ability.Type);
 
-        abilityHolder.UseAbility(index, characterData, () => sliders[index].gameObject.SetActive(false));
+        abilityHolder.UseAbility(index, characterData, () => abilityCooldownBars[index].gameObject.SetActive(false));
 
-        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true).Forget();
+        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true, this.GetCancellationTokenOnDestroy()).Forget();
     }
 
     //Use the ability, if it fails due to not having enough souls, re-add it.
@@ -177,13 +185,16 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
         canUseAbility = false;
 
         int index = 2;
-        var ability = abilityHolder.GetAbility(index);
+        var hasAbility = abilityHolder.GetAbility(index, out var ability);
+
+        if ( hasAbility == false )
+            return;
 
         OnReapUse?.Invoke(ability.Type);
 
-        abilityHolder.UseAbility(index, characterData, () => sliders[index].gameObject.SetActive(false));
+        abilityHolder.UseAbility(index, characterData, () => abilityCooldownBars[index].gameObject.SetActive(false));
 
-        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true).Forget();
+        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true, this.GetCancellationTokenOnDestroy()).Forget();
     }
 
     //Use the ability, if it fails due to not having enough souls, re-add it.
@@ -198,13 +209,16 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
         int index = 3;
 
-        var ability = abilityHolder.GetAbility(index);
+        var hasAbility = abilityHolder.GetAbility(index, out var ability);
+
+        if ( hasAbility == false )
+            return;
 
         OnReapUse?.Invoke(ability.Type);
 
-        abilityHolder.UseAbility(index, characterData, () => sliders[index].gameObject.SetActive(false));
+        abilityHolder.UseAbility(index, characterData, () => abilityCooldownBars[index].gameObject.SetActive(false));
 
-        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true).Forget();
+        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true, this.GetCancellationTokenOnDestroy()).Forget();
     }
     #endregion
 
@@ -232,6 +246,7 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
         EventManagerGeneric<int>.RemoveListener(EventType.UponHarvestSoul, Collect);
         EventManagerGeneric<Transform>.RemoveListener(EventType.TargetSelection, ( transform ) => characterData.TargetedTransform = transform);
         EventManagerGeneric<GameState>.RemoveListener(EventType.OnGameStateChange, SetGameState);
+
         characterData.Reset();
         upgradeHolder?.RemoveAll();
         StopAllCoroutines();
@@ -240,14 +255,15 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
     //Intialization
     private void Start ()
     {
-        characterData.CharacterTransform = transform;
+        characterData.CharacterTransform = meshTransform;
+
 
         characterData.Player = true;
 
         upgradeHolder = new(characterData);
 
         characterData.MoveTarget = enemyMoveTarget;
-        characterData.Initialize(() => UpdateSoulsUI().Forget());
+        characterData.Initialize(UpdateSoulsUI);
 
         playerMovement.characterData = characterData;
         playerMovement.OnStart();
@@ -255,8 +271,13 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
         playerShooting.ownerData = characterData;
         playerShooting.OnStart(transform, this);
 
+        playerShooting.onFinishReload = () => reloadBar.fillAmount = 0;
+        playerShooting.reloadTimeStream = ( amount ) => reloadBar.fillAmount = amount / playerShooting.currentGun.ReloadSpeed;
+
+        DontDestroyOnLoad(gameObject);
+
         Souls = 0;
-        UpdateSoulsUI().Forget();
+        UpdateSoulsUI();
 
         AcquireAbility(new ReapAbility());
 
@@ -264,11 +285,16 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private async UniTaskVoid UpdateSoulsUI ()
+    private void UpdateSoulsUI ()
     {
-        await UniTask.SwitchToMainThread();
+        MainThreadQueue.Instance.Enqueue(SetSoulsUI);
+    }
 
-        soulsUiText.SetText($"Amount of Souls = {characterData.Souls}");
+    private void SetSoulsUI ()
+    {
+        var value = characterData.Souls / (float)characterData.soulBankLimit;
+        soulsBar.fillAmount = value;
+        //soulsUiText.SetText($"Amount of Souls = {characterData.Souls}");
     }
 
     private void CheckSlider ( int index, Ability abil, int count )
@@ -276,7 +302,16 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
         if ( index + 1 >= count )
             return;
 
-        sliders[index + 1].value = characterData.Souls;
+        //Normalize the value with the max value, if it exceeds it, make it 1.
+        var amount = characterData.Souls / abil.ActivationCost;
+
+        if ( amount > abil.ActivationCost )
+            amount = 1;
+
+        if ( index >= abilityCooldownBars.Length )
+            return;
+
+        abilityCooldownBars[index].fillAmount = amount;
     }
 
     private void Update ()
@@ -313,14 +348,19 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
     //Returns if the player already owns the ability, otherwise adds it.
     public void AcquireAbility ( Ability ability )
     {
+        if ( ability == null )
+            return;
+
         ability.Initialize(this, characterData);
 
         EventManagerGeneric<TextPopup>.InvokeEvent(EventType.OnTextPopupQueue, new(2.0f, $"Acquired : {ability.GetType()}"));
         EventManagerGeneric<Transform>.InvokeEvent(EventType.TargetSelection, null);
 
         var index = abilityHolder.AddAbility(ability);
-        sliders[index].gameObject.SetActive(true);
-        sliders[index].maxValue = ability.ActivationCost;
+
+        if ( index == 0 )
+            return;
+        abilityCooldownBars[index].gameObject.SetActive(true);
     }
 
     public Ability HarvestAbility ()
@@ -355,7 +395,7 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 //To abstract the usage of the abilities a bit.
 public interface IAbilityHolder
 {
-    public Ability GetAbility ( int index );
+    public bool GetAbility ( int index, out Ability ability );
     public int AddAbility ( Ability ability );
     public void ForeachAbility ( Action<int, Ability, int> body );
     public void UseAbility ( int index, object data, Action succesCallBack );
@@ -375,9 +415,16 @@ public class PlayerAbilityHolder : IAbilityHolder
         return abilities.Count - 1;
     }
 
-    public Ability GetAbility ( int index )
+    public bool GetAbility ( int index, out Ability ability )
     {
-        return abilities[index] ?? null;
+        if ( index >= abilities.Count )
+        {
+            ability = null;
+            return false;
+        }
+
+        ability = abilities[index];
+        return true;
     }
 
     public void ForeachAbility ( Action<int, Ability, int> body )

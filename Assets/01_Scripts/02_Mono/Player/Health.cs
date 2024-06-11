@@ -1,12 +1,15 @@
 using Cysharp.Threading.Tasks;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Health : MonoBehaviour, IDamageable, ICharacterDataHolder
 {
     public bool Dead => false;
 
     [SerializeField] private CharacterData data;
+
+    public Image healthBar;
 
     public void AfflictDamage ( float amount )
     {
@@ -28,6 +31,9 @@ public class Health : MonoBehaviour, IDamageable, ICharacterDataHolder
         }
 
         data.OnHit?.Invoke();
+
+        healthBar.fillAmount = data.Health / data.MaxHealth;
+
     }
 
     private async UniTaskVoid ResetShield ( CharacterData data )

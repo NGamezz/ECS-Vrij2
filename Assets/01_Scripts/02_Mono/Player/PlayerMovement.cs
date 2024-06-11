@@ -7,7 +7,7 @@ using UnityEngine.InputSystem;
 [Serializable]
 public class PlayerMovement
 {
-    [SerializeField] private float dashCooldown = 0.2f;
+    public float dashCooldown = 0.2f;
 
     [SerializeField] private GameObject meshObject;
     private Transform cachedMeshTransform;
@@ -25,10 +25,11 @@ public class PlayerMovement
         inputVector = ctx.ReadValue<Vector2>();
     }
 
-    public void OnDash ()
+    public void OnDash ( Action<float> coolDownStream, Action completionCallback )
     {
         var ownPos = cachedMeshTransform.position;
         var halfStamina = characterData.MaxStamina / 2.0f;
+
         if ( !canDash || characterData.Stamina < halfStamina || !Physics.CheckSphere(ownPos - new Vector3(ownPos.x, ownPos.y + 0.25f, ownPos.z), 0.5f, 1 << groundLayerMask) )
             return;
 
@@ -36,16 +37,9 @@ public class PlayerMovement
         characterData.Stamina -= halfStamina;
 
         canDash = false;
-        rb.AddForce((characterData.SpeedMultiplier) * direction, ForceMode.Impulse);
+        rb.AddForce((characterData.Speed) * direction.normalized, ForceMode.Impulse);
 
-        ResetDashCooldown().Forget();
-    }
-
-    private async UniTaskVoid ResetDashCooldown ()
-    {
-        canDash = false;
-        await UniTask.Delay(TimeSpan.FromSeconds(dashCooldown));
-        canDash = true;
+        Utility.Async.StreamedTimerAsync(coolDownStream, () => { completionCallback?.Invoke(); canDash = true; }, dashCooldown).Forget();
     }
 
     public void OnStart ()
@@ -81,5 +75,15 @@ public class PlayerMovement
     {
         ApplyForce();
         VelocityLimiting();
+
+        if ( characterData.Stamina < characterData.MaxStamina )
+        {
+            characterData.Stamina += Time.fixedDeltaTime;
+
+            if ( characterData.Stamina > characterData.MaxStamina )
+            {
+                characterData.Stamina = characterData.MaxStamina;
+            }
+        }
     }
 }

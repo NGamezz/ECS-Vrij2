@@ -5,12 +5,12 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
-using Unity.VisualScripting;
 using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks.Linq;
 
 namespace Utility
 {
-    public class Yielders
+    public static class Yielders
     {
         private static readonly Dictionary<float, WaitForSeconds> timeInterval = new();
 
@@ -35,7 +35,7 @@ namespace Utility
         }
     }
 
-    public class Utility : MonoBehaviour
+    public static class Utility
     {
         public static void SetArrayValuesToDefault<T> ( ref T[] array )
         {
@@ -45,9 +45,29 @@ namespace Utility
             }
         }
 
+        public static T GetOrAddComponent<T> ( GameObject gameObject ) where T : Component
+        {
+            if ( !gameObject.TryGetComponent<T>(out var component) )
+            {
+                return gameObject.AddComponent<T>();
+            }
+
+            return component;
+        }
+
+        public static T GetOrAddComponentI<T> ( this GameObject gameObject ) where T : Component
+        {
+            if ( !gameObject.TryGetComponent<T>(out var component) )
+            {
+                return gameObject.AddComponent<T>();
+            }
+
+            return component;
+        }
+
         public static void QuickFor ( int start, int iterations, Action<int> actions )
         {
-            Queue<(int index, Exception e)> exceptions = new();
+            Queue<Exception> exceptions = new();
 
             if ( start > iterations )
                 return;
@@ -60,7 +80,7 @@ namespace Utility
                 }
                 catch ( Exception e )
                 {
-                    exceptions.Enqueue((i, e));
+                    exceptions.Enqueue(e);
                 }
             }
 
@@ -68,11 +88,18 @@ namespace Utility
             {
                 for ( int i = 0; i < exceptions.Count; i++ )
                 {
-                    var (index, e) = exceptions.Dequeue();
-
-                    LogWarning($"Exception Thrown At Index : {index}");
+                    var e = exceptions.Dequeue();
                     LogException(e);
                 }
+            }
+        }
+
+        public static IEnumerable<float> Timer ( float duration )
+        {
+            float t = 0f;
+            while ( t < duration )
+            {
+                yield return t;
             }
         }
 
@@ -87,15 +114,9 @@ namespace Utility
         }
 
         [Conditional("ENABLE_LOGS")]
-        public static void Log ( string msg )
+        public static void Log ( object msg )
         {
             UnityEngine.Debug.Log(msg);
-        }
-
-        [Conditional("ENABLE_LOGS")]
-        public static void LogWarning ( string msg )
-        {
-            UnityEngine.Debug.LogWarning(msg);
         }
 
         [Conditional("ENABLE_LOGS")]
@@ -105,12 +126,60 @@ namespace Utility
         }
     }
 
-    public class Async
+    //Might make a custom one, using structs and a linkded list design.
+    [DisallowMultipleComponent]
+    public class AsyncGameObjectDeactivationTrigger : MonoBehaviour
+    {
+        private bool isDeactivated;
+        private Action delegates;
+
+        private void OnDisable ()
+        {
+            isDeactivated = true;
+            delegates?.Invoke();
+        }
+
+        public void Subscribe ( Action action )
+        {
+            if ( isDeactivated )
+                return;
+
+            delegates += action;
+        }
+    }
+
+    public static class Async
     {
         public static async UniTask ChangeValueAfterSeconds<T> ( float duration, Action<T> callBack, T endState, CancellationToken token = default )
         {
             await UniTask.Delay(TimeSpan.FromSeconds(duration), cancellationToken: token);
             callBack?.Invoke(endState);
+        }
+
+        public static AsyncGameObjectDeactivationTrigger GetAsyncGameObjectDeactivationTrigger ( this GameObject component )
+        {
+            return Utility.GetOrAddComponent<AsyncGameObjectDeactivationTrigger>(component);
+        }
+
+        public static AsyncGameObjectDeactivationTrigger GetAsyncGameObjectDeactivationTrigger ( this Component component )
+        {
+            return component.gameObject.GetAsyncGameObjectDeactivationTrigger();
+        }
+
+        public static async UniTaskVoid StreamedTimerAsync ( Action<float> stream, Action finishCallback, float duration )
+        {
+            float t = 0;
+            await foreach ( var _ in UniTaskAsyncEnumerable.EveryUpdate() )
+            {
+                t += Time.deltaTime;
+                stream?.Invoke(t);
+
+                if ( t >= duration )
+                {
+                    break;
+                }
+            }
+            finishCallback?.Invoke();
         }
 
         public static async UniTask WaitWhileAsync ( CancellationToken ct, Func<bool> condition, int pollDelay = 25 )

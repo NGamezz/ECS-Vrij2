@@ -12,10 +12,14 @@ public class GameManager : MonoBehaviour
 
     public static GameManager SharedInstance;
 
+    private EventSubscription subscription;
+
     private void Awake ()
     {
         if ( SharedInstance != null )
             Destroy(SharedInstance);
+
+        DontDestroyOnLoad(gameObject);
 
         SharedInstance = this;
     }
@@ -32,9 +36,21 @@ public class GameManager : MonoBehaviour
         Application.targetFrameRate = Mathf.CeilToInt((float)Screen.currentResolution.refreshRateRatio.value);
     }
 
-    private void OnDisable ()
+    private void OnEnable ()
+    {
+        EventManager.AddListener(EventType.OnSceneChange, OnSceneChange, ref subscription);
+    }
+
+    private void OnSceneChange ()
     {
         WorldManager.ClearAllEvents();
+    }
+
+    private void OnDisable ()
+    {
+        subscription.UnsubscribeAll();
+        EventManager.ClearListeners();
+        EventManagerGeneric<bool>.ClearListeners();
         Destroy(SharedInstance);
     }
 

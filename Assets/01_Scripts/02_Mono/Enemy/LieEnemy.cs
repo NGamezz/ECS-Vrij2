@@ -2,28 +2,19 @@ using Cysharp.Threading.Tasks;
 using System;
 using UnityEngine;
 
-
-public class LieEnemy : Enemy, IAbilityOwner, ILockOnAble
+public class LieEnemy : Enemy, IAbilityOwner
 {
     private Ability ability = new LieAbility();
     private bool canUseAbility = true;
 
-    public override void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData, Transform manager )
+    public override void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData, Transform manager, bool inAnimate = false )
     {
         EnemyType = EnemyType.LieEnemy;
         base.OnStart(stats, moveTarget, startPosition, characterData, manager);
-        ability.Initialize(this, characterData());
-    }
 
-    private void Attack ()
-    {
-        if ( !canShoot )
+        if ( inAnimate )
             return;
-        canShoot = false;
-
-        shooting.ShootSingle();
-
-        Utility.Async.ChangeValueAfterSeconds(shooting.currentGun.attackSpeed, ( x ) => canShoot = x, true, this.GetCancellationTokenOnDestroy()).Forget();
+        ability.Initialize(this, characterData());
     }
 
     private void UseAbility ()
@@ -49,7 +40,6 @@ public class LieEnemy : Enemy, IAbilityOwner, ILockOnAble
         }
 
         MeshTransform.forward = (moveTarget.target.position - MeshTransform.position).normalized;
-        Attack();
         UseAbility();
     }
 

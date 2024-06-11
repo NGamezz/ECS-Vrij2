@@ -1,12 +1,11 @@
 using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks.Linq;
+using Cysharp.Threading.Tasks.Triggers;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Tasks;
 using Unity.VisualScripting;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Random = UnityEngine.Random;
@@ -17,6 +16,9 @@ public class Shooting
     public GunStats currentGun;
     public float recoilMultiplier = 1;
     public CharacterData ownerData;
+
+    public Action<float> reloadTimeStream;
+    public Action onFinishReload;
 
     [SerializeField] private Transform gunPosition;
     [SerializeField] private Transform meshTransform;
@@ -33,7 +35,6 @@ public class Shooting
     private Transform bulletHolder;
     private bool running = false;
 
-    private Coroutine shootRoutine;
     private bool reloading = false;
 
     private CancellationTokenSource tokenSrc = new();
@@ -90,25 +91,32 @@ public class Shooting
 
         currentGun = gun;
         gun.CurrentAmmo = gun.MagSize;
+
+        running = true;
         Shoot(tokenSrc.Token).Forget();
     }
 
     public void OnReload ()
     {
-        if ( reloading == false )
+        if ( reloading != false )
+            return;
+
+        reloading = true;
+
+        if ( ownerData.Player )
         {
-            reloading = true;
-
-            if ( ownerData.Player )
-                EventManagerGeneric<TextPopup>.InvokeEvent(EventType.OnTextPopupQueue, new(1.0f, "Reloading."));
-
-            owner.StartCoroutine(Reload());
+            Utility.Async.StreamedTimerAsync(reloadTimeStream, () => { reloading = false; onFinishReload?.Invoke(); }, currentGun.attackSpeed).Forget();
+            EventManagerGeneric<TextPopup>.InvokeEvent(EventType.OnTextPopupQueue, new(1.0f, "Reloading."));
+        }
+        else
+        {
+            Reload().Forget();
         }
     }
 
-    private IEnumerator Reload ()
+    private async UniTaskVoid Reload ()
     {
-        yield return Utility.Yielders.Get(currentGun.ReloadSpeed);
+        await UniTask.Delay(TimeSpan.FromSeconds(currentGun.ReloadSpeed));
         currentGun.CurrentAmmo = currentGun.MagSize;
         reloading = false;
     }
@@ -127,6 +135,9 @@ public class Shooting
 
     public void OnDisable ()
     {
+        running = false;
+        return;
+
         tokenSrc.Cancel();
 
         for ( int i = activeBullets.Count - 1; i >= 0; i-- )
@@ -208,6 +219,7 @@ public class Shooting
 
     private void ShootBody ()
     {
+
         if ( currentGun.CurrentAmmo - 1 < 0 )
             return;
 
@@ -219,6 +231,7 @@ public class Shooting
         }
         else
         {
+            bullet.Tr.Clear();
             bullet.GameObject.SetActive(true);
         }
 
@@ -227,7 +240,9 @@ public class Shooting
         currentGun.CurrentAmmo--;
 
         if ( currentGun.CurrentAmmo <= 0 )
+        {
             OnReload();
+        }
     }
 
     private void UpdateBulletStats ( ref Gun bullet, GunStats currentGun, Transform ownerTransform )

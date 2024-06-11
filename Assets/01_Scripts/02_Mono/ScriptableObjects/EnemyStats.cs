@@ -7,8 +7,9 @@ public class EnemyStats : ScriptableObject
 
     public float statMultiplier = 1;
 
-    private float _maxHealth;
-    public float MaxHealth {
+    [SerializeField] private float _maxHealth;
+    public float MaxHealth
+    {
         get
         {
             return _maxHealth * statMultiplier;
@@ -16,7 +17,7 @@ public class EnemyStats : ScriptableObject
         set => _maxHealth = value;
     }
 
-    private float _moveSpeed;
+    [SerializeField] private float _moveSpeed;
     public float MoveSpeed
     {
         get
@@ -26,7 +27,7 @@ public class EnemyStats : ScriptableObject
         set => _moveSpeed = value;
     }
 
-    private float _damage;
+    [SerializeField] private float _damage;
     public float Damage
     {
         get
@@ -39,7 +40,7 @@ public class EnemyStats : ScriptableObject
     public float attackRange;
     public float spawnSpeed;
 
-    private float _attackSpeed;
+    [SerializeField] private float _attackSpeed;
     public float AttackSpeed
     {
         get

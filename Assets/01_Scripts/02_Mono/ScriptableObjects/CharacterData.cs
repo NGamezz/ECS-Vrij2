@@ -12,8 +12,6 @@ public class CharacterData : ScriptableObject
 
     public bool Player = false;
 
-    public float3 PlayerMousePosition;
-
     public GunStats currentGun;
 
     [SerializeField] private int souls;
@@ -52,7 +50,6 @@ public class CharacterData : ScriptableObject
     public float Speed;
 
     public float DamageMultiplier;
-    public float SpeedMultiplier;
 
     public float Armour;
 
@@ -74,11 +71,6 @@ public class CharacterData : ScriptableObject
         UponSoulValueChanged = uponSoulChanged;
     }
 
-    public void SetMousePosition ( Vector3 pos )
-    {
-        PlayerMousePosition = pos;
-    }
-
     public void Reset ()
     {
         OnHit = null;
@@ -89,7 +81,6 @@ public class CharacterData : ScriptableObject
         MaxStamina = cache.MaxStamina;
         Armour = cache.Armour;
         Speed = cache.Speed;
-        SpeedMultiplier = cache.SpeedMultiplier;
         DamageMultiplier = cache.DamageMultiplier;
         Health = cache.Health;
         decoyPrefab = cache.decoyPrefab;
@@ -121,7 +112,6 @@ class CharacterDataCache
     public float MaxHealth;
     public float Speed;
     public float DamageMultiplier;
-    public float SpeedMultiplier;
     public float Armour;
 
     public CharacterDataCache ( CharacterData data )
@@ -131,7 +121,6 @@ class CharacterDataCache
         MaxStamina = data.MaxStamina;
         Armour = data.Armour;
         Speed = data.Speed;
-        SpeedMultiplier = data.SpeedMultiplier;
         DamageMultiplier = data.DamageMultiplier;
         Health = data.Health;
         decoyPrefab = data.decoyPrefab;
