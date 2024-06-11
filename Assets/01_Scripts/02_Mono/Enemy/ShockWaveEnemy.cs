@@ -46,7 +46,7 @@ public class ShockWaveEnemy : Enemy, IAbilityOwner, ILockOnAble
             await UniTask.NextFrame();
         }
 
-        var time = animator.GetCurrentAnimatorStateInfo(0).length / 2.0f;
+        var time = animator.GetCurrentAnimatorStateInfo(0).length / 2.2f;
 
         await UniTask.Delay(TimeSpan.FromSeconds(time));
 
@@ -69,7 +69,7 @@ public class ShockWaveEnemy : Enemy, IAbilityOwner, ILockOnAble
         }
 
         MeshTransform.forward = (moveTarget.target.position - MeshTransform.position).normalized;
-        UseAbility();
+        UseAbility().Forget();
     }
 
     public void AcquireAbility ( Ability ability ) { }

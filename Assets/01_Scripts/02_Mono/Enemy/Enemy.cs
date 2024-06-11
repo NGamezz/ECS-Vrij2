@@ -17,8 +17,6 @@ public class Enemy : Soulable, IDamageable
 {
     public bool Dead { get; private set; }
 
-    public Action<Enemy> OnDisabled;
-
     public BlackBoardObject blackBoardObject;
 
     public EnemyType EnemyType;
@@ -177,14 +175,12 @@ public class Enemy : Soulable, IDamageable
         }
         else
         {
-            OnDisabled?.Invoke(this);
             shooting.OnDisable();
         }
 
         blackBoard.SetVariable("OverrideChase", false);
 
         OnDeath = null;
-        OnDisabled = null;
     }
 
     public void AfflictDamage ( float amount )
@@ -194,12 +190,12 @@ public class Enemy : Soulable, IDamageable
 
         health -= amount;
 
-        if ( health <= 0 )
-        {
-            Dead = true;
+        if ( health > 0 )
+            return;
 
-            if ( GameObject != null )
-                GameObject.SetActive(false);
-        }
+        Dead = true;
+
+        if ( GameObject != null )
+            GameObject.SetActive(false);
     }
 }
