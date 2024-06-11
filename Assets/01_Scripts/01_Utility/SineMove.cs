@@ -32,7 +32,7 @@ public class SineMove : MonoBehaviour
     private void Animate ()
     {
         var position = cachedTransform.position;
-        position[(int)moveAxis] += cachedPosition[(int)moveAxis] + math.sin(Time.time * frequency) * sineStrength;
+        position[(int)moveAxis] = cachedPosition[(int)moveAxis] + math.sin(Time.time * frequency) * sineStrength;
         cachedTransform.position = position;
     }
 

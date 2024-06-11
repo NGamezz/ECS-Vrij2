@@ -1,7 +1,6 @@
 using Cysharp.Threading.Tasks;
 using System;
 using Unity.Mathematics;
-using Unity.VisualScripting;
 using UnityEngine;
 using Utility;
 
@@ -39,7 +38,7 @@ public class LieAbility : Ability
         }
 
         activeCount--;
-        if ( transform != null )
+        if ( transform != null && transform.gameObject != null )
         {
             UnityEngine.Object.Destroy(transform.gameObject);
         }

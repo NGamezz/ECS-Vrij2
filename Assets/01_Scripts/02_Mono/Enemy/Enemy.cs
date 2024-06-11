@@ -48,6 +48,8 @@ public class Enemy : Soulable, IDamageable
 
     protected bool overrideChase = false;
 
+    protected Blackboard blackBoard = new();
+
     public NavMeshAgent agent { get; protected set; }
 
     public virtual void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData, Transform manager, bool inAnimate = false )
@@ -71,6 +73,8 @@ public class Enemy : Soulable, IDamageable
 
         this.moveTarget = moveTarget;
 
+        blackBoard.SetVariable("OverrideChase", false);
+
         var chasingState = new BaseState(() =>
         {
             if ( moveTarget.target == null )
@@ -86,7 +90,7 @@ public class Enemy : Soulable, IDamageable
             return Vector3.Distance(MeshTransform.position, moveTarget.target.position) < enemyStats.attackRange;
         }, () =>
         {
-            if ( agent.isActiveAndEnabled && !agent.isStopped )
+            if ( agent.isActiveAndEnabled && agent.isOnNavMesh && !agent.isStopped )
             {
                 agent.isStopped = true;
                 agent.ResetPath();
@@ -138,15 +142,19 @@ public class Enemy : Soulable, IDamageable
 
     protected virtual void Chasing ()
     {
-        if ( overrideChase )
+        var over = blackBoard.GetVariable<bool>("OverrideChase");
+
+        if ( over )
+        {
             return;
+        }
 
         if ( agent.isActiveAndEnabled == false || agent.isOnNavMesh == false )
         {
             return;
         }
 
-        if ( moveTarget.target != null && agent.hasPath == false || Vector3.Distance(agent.pathEndPosition, moveTarget.target.position) > 5.0f )
+        if ( moveTarget.target != null && (agent.hasPath == false || Vector3.Distance(agent.pathEndPosition, moveTarget.target.position) > 5.0f) )
         {
             agent.SetDestination(moveTarget.target.position);
         }
@@ -172,6 +180,8 @@ public class Enemy : Soulable, IDamageable
             OnDisabled?.Invoke(this);
             shooting.OnDisable();
         }
+
+        blackBoard.SetVariable("OverrideChase", false);
 
         OnDeath = null;
         OnDisabled = null;

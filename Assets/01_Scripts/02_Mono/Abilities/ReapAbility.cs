@@ -1,4 +1,5 @@
 //To be improved.
+using Cysharp.Threading.Tasks;
 using System.Diagnostics;
 using UnityEngine;
 
@@ -11,6 +12,7 @@ public class ReapAbility : Ability
             UnityEngine.Debug.Log("No Targeted Transform.");
             return;
         }
+        Owner.OnExecuteAbility(Type);
 
         var enemyTransform = ownerData.TargetedTransform;
         if ( enemyTransform.gameObject.activeInHierarchy == false )
@@ -34,8 +36,6 @@ public class ReapAbility : Ability
 
         Owner.AcquireAbility(ability);
         EventManagerGeneric<Transform>.InvokeEvent(EventType.TargetSelection, null);
-
-        Owner.OnExecuteAbility(Type);
     }
 
     private void Enemy ( CharacterData ownerData )

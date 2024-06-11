@@ -1,6 +1,11 @@
+using Cysharp.Threading.Tasks;
+using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public struct TextPopup
@@ -19,23 +24,31 @@ public class TextPopUpManager : MonoBehaviour
 {
     [SerializeField] private TMP_Text popupTextObject;
 
-    private readonly Queue<TextPopup> textPopupQueue = new();
+    private readonly ConcurrentQueue<TextPopup> textPopupQueue = new();
 
-    private Coroutine currentPopupRoutine = null;
+    private int count = 0;
+    private bool running = false;
 
     public void QueuePopup ( TextPopup popup )
     {
+        Interlocked.Increment(ref count);
         textPopupQueue.Enqueue(popup);
     }
 
     private void Dequeue ()
     {
-        currentPopupRoutine ??= StartCoroutine(PlayPopup(textPopupQueue.Dequeue()));
+        if ( !running )
+        {
+            var succes = textPopupQueue.TryDequeue(out var popup);
+            if ( succes )
+                PlayPopup(popup).Forget();
+        }
     }
 
     private void OnDisable ()
     {
         EventManagerGeneric<TextPopup>.RemoveListener(EventType.OnTextPopupQueue, QueuePopup);
+        textPopupQueue.Clear();
     }
 
     private void OnEnable ()
@@ -43,22 +56,25 @@ public class TextPopUpManager : MonoBehaviour
         EventManagerGeneric<TextPopup>.AddListener(EventType.OnTextPopupQueue, QueuePopup);
     }
 
-    private IEnumerator PlayPopup ( TextPopup popup )
+    private async UniTaskVoid PlayPopup ( TextPopup popup )
     {
+        running = true;
+
         popupTextObject.gameObject.SetActive(true);
         popupTextObject.text = popup.Text;
 
-        yield return Utility.Yielders.Get(popup.Duration);
+        await UniTask.Delay(TimeSpan.FromSeconds(popup.Duration));
 
         popupTextObject.gameObject.SetActive(false);
         popupTextObject.text = "";
 
-        currentPopupRoutine = null;
+        Interlocked.Decrement(ref count);
+        running = false;
     }
 
     private void FixedUpdate ()
     {
-        if ( textPopupQueue.Count > 0 )
+        if ( count > 0 )
             Dequeue();
     }
 }

@@ -135,19 +135,13 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
         if ( !canUseAbility || ctx.phase != InputActionPhase.Performed )
             return;
-
         canUseAbility = false;
 
-        var hasAbility = abilityHolder.GetAbility(0, out var ability);
+        const int index = 0;
 
-        if ( hasAbility == false )
-            return;
+        abilityHolder.UseAbility(index, characterData, () => abilityCooldownBars[index].gameObject.SetActive(false));
 
-        abilityHolder.UseAbility(0, characterData, null);
-
-        OnReapUse?.Invoke(ability.Type);
-
-        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true, this.GetCancellationTokenOnDestroy()).Forget();
+        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => { canUseAbility = x; Debug.Log("FinishCallBack"); }, true).Forget();
     }
 
     //Use the ability, if it fails due to not having enough souls, re-add it.
@@ -160,18 +154,11 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
             return;
         canUseAbility = false;
 
-        int index = 1;
-
-        var hasAbility = abilityHolder.GetAbility(index, out var ability);
-
-        if ( hasAbility == false )
-            return;
-
-        OnReapUse?.Invoke(ability.Type);
+        const int index = 1;
 
         abilityHolder.UseAbility(index, characterData, () => abilityCooldownBars[index].gameObject.SetActive(false));
 
-        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true, this.GetCancellationTokenOnDestroy()).Forget();
+        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true).Forget();
     }
 
     //Use the ability, if it fails due to not having enough souls, re-add it.
@@ -184,17 +171,11 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
             return;
         canUseAbility = false;
 
-        int index = 2;
-        var hasAbility = abilityHolder.GetAbility(index, out var ability);
-
-        if ( hasAbility == false )
-            return;
-
-        OnReapUse?.Invoke(ability.Type);
+        const int index = 2;
 
         abilityHolder.UseAbility(index, characterData, () => abilityCooldownBars[index].gameObject.SetActive(false));
 
-        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true, this.GetCancellationTokenOnDestroy()).Forget();
+        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true).Forget();
     }
 
     //Use the ability, if it fails due to not having enough souls, re-add it.
@@ -207,18 +188,11 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
             return;
         canUseAbility = false;
 
-        int index = 3;
-
-        var hasAbility = abilityHolder.GetAbility(index, out var ability);
-
-        if ( hasAbility == false )
-            return;
-
-        OnReapUse?.Invoke(ability.Type);
+        const int index = 3;
 
         abilityHolder.UseAbility(index, characterData, () => abilityCooldownBars[index].gameObject.SetActive(false));
 
-        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true, this.GetCancellationTokenOnDestroy()).Forget();
+        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => { canUseAbility = x; Debug.Log("FinishCallBack"); }, true).Forget();
     }
     #endregion
 
@@ -256,7 +230,6 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
     private void Start ()
     {
         characterData.CharacterTransform = meshTransform;
-
 
         characterData.Player = true;
 
@@ -353,7 +326,7 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
         ability.Initialize(this, characterData);
 
-        EventManagerGeneric<TextPopup>.InvokeEvent(EventType.OnTextPopupQueue, new(2.0f, $"Acquired : {ability.GetType()}"));
+        EventManagerGeneric<TextPopup>.InvokeEvent(EventType.OnTextPopupQueue, new(1.0f, $"Acquired : {ability.GetType()}"));
         EventManagerGeneric<Transform>.InvokeEvent(EventType.TargetSelection, null);
 
         var index = abilityHolder.AddAbility(ability);
@@ -361,6 +334,7 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
         if ( index == 0 )
             return;
         abilityCooldownBars[index].gameObject.SetActive(true);
+        abilityCooldownBars[index].fillAmount = 0;
     }
 
     public Ability HarvestAbility ()
@@ -388,7 +362,7 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
     public void RemoveRandomUpgrade ()
     {
-        upgradeHolder.UndoRandomAction();
+        abilityHolder.RemoveRandomAbility();
     }
 }
 
@@ -398,7 +372,7 @@ public interface IAbilityHolder
     public bool GetAbility ( int index, out Ability ability );
     public int AddAbility ( Ability ability );
     public void ForeachAbility ( Action<int, Ability, int> body );
-    public void UseAbility ( int index, object data, Action succesCallBack );
+    public bool UseAbility ( int index, CharacterData data, Action succesCallBack );
     public void RemoveRandomAbility ();
 }
 
@@ -439,6 +413,9 @@ public class PlayerAbilityHolder : IAbilityHolder
     {
         var nonNullAbilities = abilities.Where(x => x != null && x.GetType() != typeof(ReapAbility)).ToArray();
 
+        if ( nonNullAbilities.Length < 1 )
+            return;
+
         var ability = nonNullAbilities[UnityEngine.Random.Range(0, nonNullAbilities.Length)];
 
         if ( ability != null )
@@ -448,15 +425,12 @@ public class PlayerAbilityHolder : IAbilityHolder
         }
     }
 
-    public void UseAbility ( int index, object data, Action succesCallBack )
+    public bool UseAbility ( int index, CharacterData data, Action succesCallBack )
     {
-        if ( data is not CharacterData characterData )
-            return;
-
         if ( index >= abilities.Count )
         {
             EventManagerGeneric<TextPopup>.InvokeEvent(EventType.OnTextPopupQueue, new(1.0f, $"No ability at position : {index}"));
-            return;
+            return false;
         }
 
         var abilty = abilities[index];
@@ -464,20 +438,21 @@ public class PlayerAbilityHolder : IAbilityHolder
         if ( abilty == null )
         {
             EventManagerGeneric<TextPopup>.InvokeEvent(EventType.OnTextPopupQueue, new(1.0f, $"No ability at position : {index}"));
-            return;
+            return false;
         }
 
         if ( !abilty.Trigger() )
         {
             EventManagerGeneric<TextPopup>.InvokeEvent(EventType.OnTextPopupQueue, new(1.0f, $"Not Enough Souls. Requires : {abilty.ActivationCost}"));
-            return;
+            return false;
         }
 
-        if ( !abilty.Execute(characterData) )
-            return;
+        if ( abilty.Execute(data) == false )
+            return false;
 
         succesCallBack?.Invoke();
         abilities.RemoveAt(index);
+        return true;
     }
 }
 
@@ -526,8 +501,17 @@ public class UpgradeHolder : IUpgradeHolder
     public void UndoRandomAction ()
     {
         var randomIndex = UnityEngine.Random.Range(0, undoActions.Count);
+
+        Debug.Log("Upgrade");
+
+        if ( randomIndex >= undoActions.Count )
+        {
+            return;
+        }
+
         var upgrade = undoActions[randomIndex];
         upgrade();
+        EventManagerGeneric<TextPopup>.InvokeEvent(EventType.OnTextPopupQueue, new(1.0f, $"An ability was stolen."));
 
         undoActions.RemoveAt(randomIndex);
     }
