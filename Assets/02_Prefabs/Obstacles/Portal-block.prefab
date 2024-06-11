@@ -432,8 +432,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sceneIndex: 1
-  mode: 0
-  cutSceneDuration: 2
 --- !u!1001 &2035149981104180138
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -472,7 +470,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 907279319477519141, guid: 606a6316d8445474ea463614af023cbe, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 1
+      value: 0.6671827
       objectReference: {fileID: 0}
     - target: {fileID: 907279319477519141, guid: 606a6316d8445474ea463614af023cbe, type: 3}
       propertyPath: m_LocalRotation.x
@@ -480,7 +478,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 907279319477519141, guid: 606a6316d8445474ea463614af023cbe, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: 0.74489415
       objectReference: {fileID: 0}
     - target: {fileID: 907279319477519141, guid: 606a6316d8445474ea463614af023cbe, type: 3}
       propertyPath: m_LocalRotation.z
@@ -492,7 +490,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 907279319477519141, guid: 606a6316d8445474ea463614af023cbe, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
+      value: 96.3
       objectReference: {fileID: 0}
     - target: {fileID: 907279319477519141, guid: 606a6316d8445474ea463614af023cbe, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
