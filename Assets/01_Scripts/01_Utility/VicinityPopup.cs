@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Events;
 
-[RequireComponent(typeof(SphereCollider))]
+[RequireComponent(typeof(Collider))]
 public class VicinityPopup : MonoBehaviour
 {
     [SerializeField] private int radius = 15;
@@ -15,8 +15,8 @@ public class VicinityPopup : MonoBehaviour
 
     private void Start ()
     {
-        var coll = (SphereCollider)GetComponent(typeof(SphereCollider));
-        coll.radius = radius;
+        var coll = (Collider)GetComponent(typeof(Collider));
+        //coll.radius = radius;
         coll.isTrigger = true;
     }
 
