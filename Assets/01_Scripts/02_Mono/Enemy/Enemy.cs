@@ -39,6 +39,8 @@ public class Enemy : Soulable, IDamageable
 
     private float health;
 
+    [SerializeField] private UnityEvent onDeath;
+
     public UnityEvent<float, Transform> OnHit;
 
     protected MoveTarget moveTarget;
@@ -175,6 +177,7 @@ public class Enemy : Soulable, IDamageable
 
         if ( Dead )
         {
+            onDeath?.Invoke();
             OnDeath?.Invoke(this);
         }
         else

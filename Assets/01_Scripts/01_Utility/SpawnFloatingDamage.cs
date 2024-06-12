@@ -13,12 +13,9 @@ public class SpawnFloatingDamage : MonoBehaviour
     public void Activate ( float amount, Transform target )
     {
         var random = UnityEngine.Random.insideUnitSphere * UnityEngine.Random.Range(spawnRange.x, spawnRange.y);
-        Debug.Log(target.position);
 
         var pos = target.position + random;
         pos.y += 5.0f;
-
-        Debug.Log(pos);
 
         var instance = Instantiate(prefab, target);
         instance.transform.position = pos;
