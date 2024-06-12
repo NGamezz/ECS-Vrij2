@@ -15,7 +15,7 @@ public class CollectionPointManager : MonoBehaviour
 
     private void OnEnable ()
     {
-        EventManager.AddListener(EventType.UponDesiredSoulsAmount, () => ActivateCompletion().Forget(), ref subscription);
+        EventManager.AddListener(EventType.UponDesiredSoulsAmount, () => ActivateCompletion().Forget(), this);
     }
 
     private async UniTaskVoid ActivateCompletion ()
@@ -30,11 +30,6 @@ public class CollectionPointManager : MonoBehaviour
         UponCompletionOfPoints?.Invoke();
         EventManager.InvokeEvent(EventType.PortalActivation);
         EventManagerGeneric<TextPopup>.InvokeEvent(EventType.OnTextPopupQueue, new(1.0f, "Portal Has Been Unlocked."));
-    }
-
-    private void OnDisable ()
-    {
-        subscription.UnsubscribeAll();
     }
 
     private void Start ()

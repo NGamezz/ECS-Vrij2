@@ -1,10 +1,9 @@
-//To be improved.
-using Cysharp.Threading.Tasks;
-using System.Diagnostics;
 using UnityEngine;
 
 public class ReapAbility : Ability
 {
+    public bool oneTimeUse = false;
+
     private void Player ( CharacterData ownerData )
     {
         if ( ownerData.TargetedTransform == null )
@@ -63,7 +62,6 @@ public class ReapAbility : Ability
 
         abilityOwner.RemoveRandomUpgrade();
         Owner.OnExecuteAbility(AbilityType.None);
-
     }
 
     public override bool Execute ( object context )
@@ -80,7 +78,7 @@ public class ReapAbility : Ability
             Enemy(data);
         }
 
-        return false;
+        return oneTimeUse;
     }
 
     //Set the values, the trigger condition and the cost.

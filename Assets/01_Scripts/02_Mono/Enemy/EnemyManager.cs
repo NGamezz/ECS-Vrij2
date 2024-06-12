@@ -216,7 +216,13 @@ public class EnemyManager : MonoBehaviour
     private void OnEnable ()
     {
         EventManagerGeneric<GameState>.AddListener(EventType.OnGameStateChange, SetGameState);
-        EventManager.AddListener(EventType.OnSceneChange, OnSceneChange, ref subscription);
+        EventManager.AddListener(EventType.OnSceneChange, OnSceneChange, this);
+        EventManager.AddListener(EventType.GameOver, OnGameOver, this);
+    }
+
+    private void OnGameOver ()
+    {
+        Destroy(gameObject);
     }
 
     private void SetGameState ( GameState state )
@@ -246,8 +252,6 @@ public class EnemyManager : MonoBehaviour
 
     private void OnDisable ()
     {
-        subscription.UnsubscribeAll();
-
         EventManagerGeneric<GameState>.RemoveListener(EventType.OnGameStateChange, SetGameState);
 
         foreach ( var enemy in activeEnemies )

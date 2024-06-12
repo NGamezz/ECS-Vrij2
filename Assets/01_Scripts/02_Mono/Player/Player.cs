@@ -3,12 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
-using static UnityEngine.Rendering.DebugUI;
 
 public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgradable, ICharacterDataHolder
 {
@@ -35,8 +33,6 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
     [SerializeField] private PlayerMovement playerMovement;
 
-    //[SerializeField] TMP_Text soulsUiText;
-
     [SerializeField] private ParticleSystem walkEffects;
 
     [SerializeField] private UnityEvent OnReloadEvent;
@@ -47,10 +43,12 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
     [SerializeField] private MoveTarget enemyMoveTarget;
 
-    [SerializeField] private UnityEvent<AbilityType> OnReapUse;
-    [SerializeField] private UnityEvent<AbilityType> OnAbility1Use;
-    [SerializeField] private UnityEvent<AbilityType> OnAbility2Use;
-    [SerializeField] private UnityEvent<AbilityType> OnAbility3Use;
+    [SerializeField] private UnityEvent OnReapUse;
+    [SerializeField] private UnityEvent OnStolenReap;
+    [SerializeField] private UnityEvent OnLie;
+
+    [SerializeField] private UnityEvent PreOnShockWave;
+    [SerializeField] private UnityEvent PostOnShockWave;
 
     public Transform meshTransform;
 
@@ -139,12 +137,14 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
         const int index = 0;
 
-        abilityHolder.UseAbility(index, characterData, () => abilityCooldownBars[index].gameObject.SetActive(false));
+        var succes = abilityHolder.UseAbility(index, characterData, () => abilityCooldownBars[index].gameObject.SetActive(false));
+
+        if ( succes )
+            OnReapUse?.Invoke();
 
         Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => { canUseAbility = x; Debug.Log("FinishCallBack"); }, true).Forget();
     }
 
-    //Use the ability, if it fails due to not having enough souls, re-add it.
     public void OnUseAbilityA ( InputAction.CallbackContext ctx )
     {
         if ( gameState == GameState.Pauzed )
@@ -156,12 +156,13 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
         const int index = 1;
 
-        abilityHolder.UseAbility(index, characterData, () => abilityCooldownBars[index].gameObject.SetActive(false));
+        var succes = abilityHolder.UseAbility(index, characterData, () => abilityCooldownBars[index - 1].gameObject.SetActive(false));
+        if ( succes )
+            OnStolenReap?.Invoke();
 
         Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true).Forget();
     }
 
-    //Use the ability, if it fails due to not having enough souls, re-add it.
     public void OnUseAbilityB ( InputAction.CallbackContext ctx )
     {
         if ( gameState == GameState.Pauzed )
@@ -173,12 +174,13 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
         const int index = 2;
 
-        abilityHolder.UseAbility(index, characterData, () => abilityCooldownBars[index].gameObject.SetActive(false));
+        var succes = abilityHolder.UseAbility(index, characterData, () => abilityCooldownBars[index - 1].gameObject.SetActive(false));
+        if ( succes )
+            OnLie?.Invoke();
 
         Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => canUseAbility = x, true).Forget();
     }
 
-    //Use the ability, if it fails due to not having enough souls, re-add it.
     public void OnUseAbilityC ( InputAction.CallbackContext ctx )
     {
         if ( gameState == GameState.Pauzed )
@@ -190,9 +192,11 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
         const int index = 3;
 
-        abilityHolder.UseAbility(index, characterData, () => abilityCooldownBars[index].gameObject.SetActive(false));
+        var succes = abilityHolder.UseAbility(index, characterData, () => abilityCooldownBars[index - 1].gameObject.SetActive(false), () => PreOnShockWave?.Invoke());
+        if ( succes )
+            PostOnShockWave?.Invoke();
 
-        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => { canUseAbility = x; Debug.Log("FinishCallBack"); }, true).Forget();
+        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => { canUseAbility = x; }, true).Forget();
     }
     #endregion
 
@@ -213,6 +217,12 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
         EventManagerGeneric<int>.AddListener(EventType.UponHarvestSoul, Collect);
         EventManagerGeneric<Transform>.AddListener(EventType.TargetSelection, ( transform ) => characterData.TargetedTransform = transform);
         EventManagerGeneric<GameState>.AddListener(EventType.OnGameStateChange, SetGameState);
+        EventManager.AddListener(EventType.PostGameOverWait, OnGameOver, this);
+    }
+
+    private void OnGameOver ()
+    {
+        Destroy(gameObject);
     }
 
     private void OnDisable ()
@@ -253,6 +263,13 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
         UpdateSoulsUI();
 
         AcquireAbility(new ReapAbility());
+        var reap = new ReapAbility
+        {
+            oneTimeUse = true
+        };
+        AcquireAbility(reap);
+        AcquireAbility(new ShockWaveAbility());
+        AcquireAbility(new LieAbility());
 
         characterData.Health = characterData.MaxHealth;
     }
@@ -316,7 +333,7 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
         Souls += amount;
     }
 
-    //Returns if the player already owns the ability, otherwise adds it.
+    //Returns if the player already owns the ability, otherwise adds it. Not the greatest Function.
     public void AcquireAbility ( Ability ability )
     {
         if ( ability == null )
@@ -327,12 +344,61 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
         EventManagerGeneric<TextPopup>.InvokeEvent(EventType.OnTextPopupQueue, new(1.0f, $"Acquired : {ability.GetType()}"));
         EventManagerGeneric<Transform>.InvokeEvent(EventType.TargetSelection, null);
 
-        var index = abilityHolder.AddAbility(ability);
+        int index;
+        var type = ability.GetType();
+
+        index = GetAbilityIndex(type, ability);
+
+        if ( index == -1 )
+            return;
+
+        abilityHolder.AddAbility(ability, index, out var unique);
 
         if ( index == 0 )
             return;
+
+        if ( unique && type == typeof(ShockWaveAbility) )
+        {
+            index = 2;
+        }
+        if ( unique && type == typeof(LieAbility) )
+        {
+            index = 1;
+        }
+        if ( unique && ability is ReapAbility reap && reap.oneTimeUse )
+        {
+            index = 0;
+        }
+
         abilityCooldownBars[index].gameObject.SetActive(true);
         abilityCooldownBars[index].fillAmount = 0;
+
+        Debug.Log(abilityCooldownBars[index]);
+        Debug.Log(index);
+    }
+
+    private int GetAbilityIndex ( Type type, Ability ability )
+    {
+        if ( type == typeof(ShockWaveAbility) )
+        {
+            return 3;
+        }
+        if ( type == typeof(LieAbility) )
+        {
+            return 2;
+        }
+        if ( ability is ReapAbility reap )
+        {
+            if ( reap.oneTimeUse )
+            {
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+        return -1;
     }
 
     public Ability HarvestAbility ()
@@ -367,43 +433,57 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 //To abstract the usage of the abilities a bit.
 public interface IAbilityHolder
 {
-    public bool GetAbility ( int index, out Ability ability );
-    public int AddAbility ( Ability ability );
+    public void AddAbility ( Ability ability, int index, out bool unique );
+    public bool HasAbilityAt ( int index );
+    public bool HasAbilityOfType ( Type type );
     public void ForeachAbility ( Action<int, Ability, int> body );
-    public bool UseAbility ( int index, CharacterData data, Action succesCallBack );
+    public bool UseAbility ( int index, CharacterData data, Action succesCallBack, Action preActivationCallBack = null );
     public void RemoveRandomAbility ();
 }
 
 public class PlayerAbilityHolder : IAbilityHolder
 {
-    private List<Ability> abilities = new();
+    private Ability[] abilities = new Ability[4];
 
-    public int AddAbility ( Ability ability )
+    public bool HasAbilityOfType ( Type type )
     {
-        if ( abilities.Count >= 4 || abilities.Contains(ability) )
-            return -1;
-
-        abilities.Add(ability);
-        return abilities.Count - 1;
+        for ( int i = 0; i < abilities.Length; ++i )
+        {
+            if ( abilities[i].GetType() == type )
+                return true;
+        }
+        return false;
     }
 
-    public bool GetAbility ( int index, out Ability ability )
+    public void AddAbility ( Ability ability, int index, out bool unique )
     {
-        if ( index >= abilities.Count )
+        if ( abilities.Length > 4 )
         {
-            ability = null;
-            return false;
+            unique = false;
+            return;
         }
 
-        ability = abilities[index];
-        return true;
+        if ( abilities.Contains(ability) )
+            unique = false;
+        else
+            unique = true;
+
+        abilities[index] = ability;
+    }
+
+    public bool HasAbilityAt ( int index )
+    {
+        return index < abilities.Length && abilities[index] != null;
     }
 
     public void ForeachAbility ( Action<int, Ability, int> body )
     {
-        for ( int i = 0; i < abilities.Count; ++i )
+        for ( int i = 0; i < abilities.Length; ++i )
         {
-            body(i, abilities[i], abilities.Count);
+            if ( abilities[i] == null )
+                continue;
+
+            body(i, abilities[i], abilities.Length);
         }
     }
 
@@ -419,13 +499,15 @@ public class PlayerAbilityHolder : IAbilityHolder
         if ( ability != null )
         {
             EventManagerGeneric<TextPopup>.InvokeEvent(EventType.OnTextPopupQueue, new(1.0f, $"{ability} was stolen."));
-            abilities.Remove(ability);
+
+            var index = Array.IndexOf(abilities, ability);
+            abilities[index] = null;
         }
     }
 
-    public bool UseAbility ( int index, CharacterData data, Action succesCallBack )
+    public bool UseAbility ( int index, CharacterData data, Action succesCallBack, Action preActivationCallBack )
     {
-        if ( index >= abilities.Count )
+        if ( index >= abilities.Length || abilities[index] == null )
         {
             EventManagerGeneric<TextPopup>.InvokeEvent(EventType.OnTextPopupQueue, new(1.0f, $"No ability at position : {index}"));
             return false;
@@ -445,11 +527,13 @@ public class PlayerAbilityHolder : IAbilityHolder
             return false;
         }
 
-        if ( abilty.Execute(data) == false )
+        preActivationCallBack?.Invoke();
+
+        if ( !abilty.Execute(data) )
             return false;
 
         succesCallBack?.Invoke();
-        abilities.RemoveAt(index);
+        abilities[index] = null;
         return true;
     }
 }

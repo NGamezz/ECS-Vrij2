@@ -27,6 +27,17 @@ public class CutsceneManager : MonoBehaviour
         SharedInstance = this;
     }
 
+    private void OnEnable ()
+    {
+        EventManager.AddListener(EventType.GameOver, OnGameOver, this);
+    }
+
+    private void OnGameOver ()
+    {
+        Destroy(SharedInstance);
+        Destroy(gameObject);
+    }
+
     private void OnDisable ()
     {
         Destroy(SharedInstance);
@@ -70,7 +81,7 @@ public class CutsceneManager : MonoBehaviour
         Destroy(spawnPoint.gameObject);
 
         await LoadScene.UnLoadScene(currentSceneIndex);
-        
+
         EventManager.InvokeEvent(EventType.OnSceneChange);
 
         var elapsed = sw.Elapsed.TotalSeconds;

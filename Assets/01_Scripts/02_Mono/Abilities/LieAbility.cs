@@ -21,6 +21,11 @@ public class LieAbility : Ability
 
         transform.gameObject.SetActive(true);
 
+        if ( transform.TryGetComponent<AudioListener>(out var audioListener) )
+        {
+            audioListener.enabled = false;
+        }
+
         var enemy = transform.gameObject.GetOrAddComponentI<Enemy>();
 
         contextCallBackStart?.Invoke(ownerData, enemy);
@@ -64,7 +69,7 @@ public class LieAbility : Ability
 
         ownerData.Souls -= (int)ActivationCost;
 
-        var position = ownerData.CharacterTransform.position + (UnityEngine.Random.insideUnitSphere.normalized * UnityEngine.Random.Range(spawnRange.x, spawnRange.y));
+        var position = ownerData.CharacterTransform.position + (UnityEngine.Random.insideUnitSphere * UnityEngine.Random.Range(spawnRange.x, spawnRange.y));
         var cachedTarget = ownerData.MoveTarget.target;
 
         ActivateDecoy(position, ( data, enemy ) =>
