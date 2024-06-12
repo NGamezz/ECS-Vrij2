@@ -35,11 +35,6 @@ public class Portal : MonoBehaviour
 
     void OnEnable ()
     {
-        EventManager.AddListener(EventType.PortalActivation, ActivatePortal, ref subscription);
-    }
-
-    void OnDisable ()
-    {
-        subscription.UnsubscribeAll();
+        EventManager.AddListener(EventType.PortalActivation, ActivatePortal, this);
     }
 }

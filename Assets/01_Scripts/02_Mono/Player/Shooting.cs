@@ -1,12 +1,11 @@
 using Cysharp.Threading.Tasks;
-using Cysharp.Threading.Tasks.Linq;
-using Cysharp.Threading.Tasks.Triggers;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.InputSystem;
 using Random = UnityEngine.Random;
 
@@ -19,6 +18,8 @@ public class Shooting
 
     public Action<float> reloadTimeStream;
     public Action onFinishReload;
+
+    [SerializeField] private UnityEvent onShoot;
 
     [SerializeField] private Transform gunPosition;
     [SerializeField] private Transform meshTransform;
@@ -219,7 +220,6 @@ public class Shooting
 
     private void ShootBody ()
     {
-
         if ( currentGun.CurrentAmmo - 1 < 0 )
             return;
 
@@ -234,6 +234,7 @@ public class Shooting
             bullet.Tr.Clear();
             bullet.GameObject.SetActive(true);
         }
+        onShoot?.Invoke();
 
         activeBullets.Add(bullet);
         UpdateBulletStats(ref bullet, currentGun, meshTransform);

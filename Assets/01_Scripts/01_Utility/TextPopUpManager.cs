@@ -1,11 +1,8 @@
 using Cysharp.Threading.Tasks;
 using System;
-using System.Collections;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Threading;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public struct TextPopup
@@ -63,7 +60,7 @@ public class TextPopUpManager : MonoBehaviour
         popupTextObject.gameObject.SetActive(true);
         popupTextObject.text = popup.Text;
 
-        await UniTask.Delay(TimeSpan.FromSeconds(popup.Duration));
+        await UniTask.Delay(TimeSpan.FromSeconds(popup.Duration), cancellationToken: this.GetCancellationTokenOnDestroy());
 
         popupTextObject.gameObject.SetActive(false);
         popupTextObject.text = "";

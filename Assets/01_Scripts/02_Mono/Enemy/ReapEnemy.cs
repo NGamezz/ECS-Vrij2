@@ -4,7 +4,9 @@ using UnityEngine;
 
 public class ReapEnemy : Enemy, IAbilityOwner
 {
-    private Ability ability = new ReapAbility();
+    private Ability ability;
+    private ReapAbility reapAbil = new ReapAbility();
+
     private bool canUseAbility = true;
 
     public override void OnStart ( EnemyStats stats, MoveTarget moveTarget, Vector3 startPosition, Func<CharacterData> characterData, Transform manager, bool inAnimate = false )
@@ -14,7 +16,7 @@ public class ReapEnemy : Enemy, IAbilityOwner
 
         if ( inAnimate )
             return;
-        ability.Initialize(this, this.characterData);
+        reapAbil.Initialize(this, this.characterData);
     }
 
     private void UseAbility ()
@@ -23,9 +25,9 @@ public class ReapEnemy : Enemy, IAbilityOwner
             return;
         canUseAbility = false;
 
-        ability.Execute(characterData);
+        reapAbil.Execute(characterData);
 
-        Utility.Async.ChangeValueAfterSeconds(ability.ActivationCooldown, ( x ) => canUseAbility = x, true, this.GetCancellationTokenOnDestroy()).Forget();
+        Utility.Async.ChangeValueAfterSeconds(reapAbil.ActivationCooldown, ( x ) => canUseAbility = x, true, this.GetCancellationTokenOnDestroy()).Forget();
     }
 
     protected override void Attacking ()
@@ -46,7 +48,8 @@ public class ReapEnemy : Enemy, IAbilityOwner
     public Ability HarvestAbility ()
     {
         gameObject.SetActive(false);
-        return ability;
+        reapAbil.oneTimeUse = true;
+        return reapAbil;
     }
 
     public void AcquireAbility ( Ability ability ) { }

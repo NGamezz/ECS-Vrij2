@@ -1,4 +1,7 @@
+using Cysharp.Threading.Tasks;
+using System;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public enum GameState
 {
@@ -10,9 +13,11 @@ public class GameManager : MonoBehaviour
 {
     [SerializeField] private int[] levelIndexes;
 
-    public static GameManager SharedInstance;
+    [SerializeField] private GameObject gameOverScreen;
 
-    private EventSubscription subscription;
+    [SerializeField] private float returnToMainMenuDelay = 2;
+
+    public static GameManager SharedInstance;
 
     private void Awake ()
     {
@@ -38,7 +43,30 @@ public class GameManager : MonoBehaviour
 
     private void OnEnable ()
     {
-        EventManager.AddListener(EventType.OnSceneChange, OnSceneChange, ref subscription);
+        EventManager.AddListener(EventType.OnSceneChange, OnSceneChange, this);
+        EventManager.AddListener(EventType.GameOver, OnGameOver, this);
+    }
+
+    private void OnGameOver ()
+    {
+        GameOver().Forget();
+    }
+
+    private async UniTaskVoid GameOver ()
+    {
+        gameOverScreen.SetActive(true);
+
+        EventManagerGeneric<GameState>.InvokeEvent(EventType.OnGameStateChange, GameState.Pauzed);
+
+        await UniTask.Delay(TimeSpan.FromSeconds(returnToMainMenuDelay));
+
+        gameOverScreen.SetActive(false);
+
+        EventManager.InvokeEvent(EventType.PostGameOverWait);
+        await SceneManager.LoadSceneAsync(0);
+
+        Destroy(SharedInstance);
+        Destroy(gameObject);
     }
 
     private void OnSceneChange ()
@@ -48,10 +76,9 @@ public class GameManager : MonoBehaviour
 
     private void OnDisable ()
     {
-        subscription.UnsubscribeAll();
         EventManager.ClearListeners();
         EventManagerGeneric<bool>.ClearListeners();
-        Destroy(SharedInstance);
+        WorldManager.ClearAllEvents();
     }
 
     public bool TryGetRandomLevelIndex ( out int index )

@@ -12,8 +12,9 @@ public enum EventType
     PortalActivation = 4,
     ActivateSoulEffect = 5,
     GameOver = 6,
-    OnGameStateChange = 7,
-    OnSceneChange = 8,
+    PostGameOverWait = 7,
+    OnGameStateChange = 8,
+    OnSceneChange = 9,
 }
 
 public struct EventHolder
@@ -28,11 +29,11 @@ public struct EventHolder
     }
 }
 
-public struct EventSubscription
+public struct EventSubscriptions
 {
     private List<EventHolder> events;
 
-    public EventSubscription ( EventHolder eventHandle )
+    public EventSubscriptions ( EventHolder eventHandle )
     {
         events = new()
         {
@@ -55,11 +56,26 @@ public struct EventSubscription
     }
 }
 
+public struct EventSubscription
+{
+    private EventHolder eventHandle;
+
+    public EventSubscription ( EventHolder eventHandle )
+    {
+        this.eventHandle = eventHandle;
+    }
+
+    public readonly void UnSubcribe ()
+    {
+        EventManager.RemoveListener(eventHandle.type, eventHandle.action);
+    }
+}
+
 public static class EventManager
 {
     private static readonly ConcurrentDictionary<EventType, Action> events = new();
 
-    public static void AddListener ( EventType type, Action action, ref EventSubscription sub )
+    public static void AddListener ( EventType type, Action action, ref EventSubscriptions sub )
     {
         if ( !events.ContainsKey(type) )
         {
