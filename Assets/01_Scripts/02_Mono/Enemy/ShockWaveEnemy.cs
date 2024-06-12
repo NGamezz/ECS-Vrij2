@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using System;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -12,6 +13,8 @@ public class ShockWaveEnemy : Enemy, IAbilityOwner, ILockOnAble
     public UnityEvent OnFinishAttack;
 
     public Animator animator;
+
+    [SerializeField] private float shockWaveRadius = 6;
 
     const string animBaseLayer = "Base Layer";
     int animAttackHash = Animator.StringToHash(animBaseLayer + ".Attack");
@@ -30,7 +33,6 @@ public class ShockWaveEnemy : Enemy, IAbilityOwner, ILockOnAble
         shockAbil = ability as ShockWaveAbility;
 
         shockAbil.Initialize(this, characterData());
-        shockAbil.attackDelay = shockwaveDelay;
     }
 
     private async UniTaskVoid UseAbility ()
@@ -73,6 +75,12 @@ public class ShockWaveEnemy : Enemy, IAbilityOwner, ILockOnAble
 
         MeshTransform.forward = (moveTarget.target.position - MeshTransform.position).normalized;
         UseAbility().Forget();
+    }
+
+    private void OnDrawGizmos ()
+    {
+        if ( EditorApplication.isPlaying )
+            Gizmos.DrawWireSphere(MeshTransform.position, shockWaveRadius);
     }
 
     public void AcquireAbility ( Ability ability ) { }
