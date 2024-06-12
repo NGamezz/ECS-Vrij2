@@ -14,6 +14,8 @@ public class PlayerMovement
 
     [SerializeField] private int groundLayerMask = 4;
 
+    [SerializeField] private bool inverse = false;
+
     public CharacterData characterData;
     private Vector2 inputVector;
 
@@ -22,7 +24,12 @@ public class PlayerMovement
 
     public void OnMove ( InputAction.CallbackContext ctx )
     {
-        inputVector = ctx.ReadValue<Vector2>();
+        if ( inverse )
+        {
+            inputVector = -ctx.ReadValue<Vector2>();
+        }
+        else
+            inputVector = ctx.ReadValue<Vector2>();
     }
 
     public void OnDash ( Action<float> coolDownStream, Action completionCallback )
@@ -30,7 +37,7 @@ public class PlayerMovement
         var ownPos = cachedMeshTransform.position;
         var halfStamina = characterData.MaxStamina / 2.0f;
 
-        if ( !canDash || characterData.Stamina < halfStamina || !Physics.CheckSphere(ownPos - new Vector3(ownPos.x, ownPos.y + 0.25f, ownPos.z), 0.5f, 1 << groundLayerMask) )
+        if ( !canDash || characterData.Stamina < halfStamina || !Physics.CheckSphere(new Vector3(ownPos.x, ownPos.y + 0.25f, ownPos.z), 0.5f, 1 << groundLayerMask) )
             return;
         canDash = false;
 

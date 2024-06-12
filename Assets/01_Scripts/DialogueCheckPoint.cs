@@ -5,23 +5,26 @@ public class DialogueCheckPoint : MonoBehaviour
 {
     [SerializeField] private GameObject objectToActivate;
 
-    [SerializeField] private InputAction actionToContinue;
+    //[SerializeField] private InputAction actionToContinue;
     private bool isActive = false;
 
     private void OnDisable ()
     {
-        actionToContinue.performed -= Continue;
-        actionToContinue.Disable();
+        //actionToContinue.performed -= Continue;
+        //actionToContinue.Disable();
     }
 
-    private void Continue ( InputAction.CallbackContext ctx )
+    public void Continue ( InputAction.CallbackContext ctx )
     {
+        if ( ctx.phase != InputActionPhase.Performed )
+            return;
+
         if ( !isActive )
             return;
 
+        //actionToContinue.Disable();
         objectToActivate.SetActive(false);
         EventManagerGeneric<GameState>.InvokeEvent(EventType.OnGameStateChange, GameState.Running);
-        actionToContinue.Disable();
         gameObject.SetActive(false);
     }
 
@@ -31,7 +34,7 @@ public class DialogueCheckPoint : MonoBehaviour
         EventManagerGeneric<GameState>.InvokeEvent(EventType.OnGameStateChange, GameState.Pauzed);
         objectToActivate.SetActive(true);
 
-        actionToContinue.performed += Continue;
-        actionToContinue.Enable();
+        //actionToContinue.performed += Continue;
+        //actionToContinue.Enable();
     }
 }
