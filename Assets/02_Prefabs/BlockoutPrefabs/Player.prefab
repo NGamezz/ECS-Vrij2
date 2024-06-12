@@ -1849,6 +1849,10 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: c4fb9ed9-97b6-4203-ad19-744fab6af3b9
     m_ActionName: 'Player/useAbility3[/Keyboard/e]'
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 1aba0c79-ed3f-473d-8dd4-51f23c8ef3d2
+    m_ActionName: 'Player/interact[/Keyboard/anyKey]'
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
@@ -1873,8 +1877,9 @@ MonoBehaviour:
     dashCooldown: 0.5
     meshObject: {fileID: 7294249835103176944}
     groundLayerMask: 3
+    inverse: 0
     characterData: {fileID: 11400000, guid: 1ea490321fae9314dbd18d05918a95a8, type: 2}
-  walkEffects: {fileID: 8781185168541966965}
+  walkEffects: {fileID: 0}
   OnReloadEvent:
     m_PersistentCalls:
       m_Calls:
@@ -7414,7 +7419,6 @@ RectTransform:
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 908.14984, y: 585}
-  m_AnchoredPosition: {x: -2151.85, y: -96.5}
   m_SizeDelta: {x: 526.1, y: 75}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4755411248913447618
