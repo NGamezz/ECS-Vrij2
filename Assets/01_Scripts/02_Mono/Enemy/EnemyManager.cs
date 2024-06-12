@@ -137,7 +137,7 @@ public class EnemyManager : MonoBehaviour
     {
         sender.OnDeath = null;
 
-        Stopwatch sw = Stopwatch.StartNew();
+        UnityEngine.Debug.Log("Enemy Death.");
 
         sender.gameObject.SetActive(false);
         onEnemyDeath?.Invoke();
