@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Player: 1
   currentGun: {fileID: 11400000, guid: 438c0530b40d20b4399dd2a270c2507f, type: 2}
-  souls: 300
+  souls: 0
   soulBankLimit: 30
   hasShield: 0
   shieldRechargeSpeed: 5
