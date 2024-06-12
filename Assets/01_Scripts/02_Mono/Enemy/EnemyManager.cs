@@ -32,14 +32,14 @@ public class EnemyManager : MonoBehaviour
 
     [Header("Difficulty Scaling.")]
     [SerializeField] private List<DifficultyGrade> difficultyGrades = new();
-    [SerializeField] private float currentDifficultyIndex = 0;
-    [SerializeField] private float difficultyIncreasePerSecond = 0.2f;
     [SerializeField] private int gradeIndex = 0;
 
     private DifficultyGrade currentDifficultyGrade;
     private int requiredIndexForDifficultyAdvancement = 5;
 
     private CancellationTokenSource tokenSrc = new();
+
+    SoulCollectionPointManager soulCollectionManager;
 
     private bool spawnEnemies = false;
     private Transform playerTransform;
@@ -72,7 +72,12 @@ public class EnemyManager : MonoBehaviour
         Instance = this;
     }
 
-    private void OnSceneChange ()
+    private void SceneChange ()
+    {
+        OnSceneChange();
+    }
+
+    private UniTask OnSceneChange ()
     {
         var projectiles = GetComponentsInChildren(typeof(Gun), true);
 
@@ -99,7 +104,13 @@ public class EnemyManager : MonoBehaviour
 
         spawnEnemies = true;
 
+        soulCollectionManager = FindAnyObjectByType<SoulCollectionPointManager>();
+
+        UpdateDifficultyIndex();
+
         GenerateObjects();
+
+        return UniTask.CompletedTask;
     }
 
     private void Start ()
@@ -108,6 +119,8 @@ public class EnemyManager : MonoBehaviour
         {
             difficulty.InitializeDictionary();
         }
+
+        soulCollectionManager = FindAnyObjectByType<SoulCollectionPointManager>();
 
         currentDifficultyGrade = difficultyGrades[gradeIndex];
 
@@ -133,7 +146,7 @@ public class EnemyManager : MonoBehaviour
         objectPool.PoolObject(sender);
     }
 
-    private void OnEnemyDeath ( Enemy sender )
+    private async UniTaskVoid OnEnemyDeath ( Enemy sender )
     {
         sender.OnDeath = null;
 
@@ -146,8 +159,9 @@ public class EnemyManager : MonoBehaviour
 
         RemoveEnemy(sender);
 
-        var succes = WorldManager.InvokeCellEvent(CellEventType.OnEntityDeath, position, position);
-        if ( !succes )
+        var result = await soulCollectionManager.CheckCollections(position);
+
+        if ( !result )
         {
             EventManagerGeneric<VectorAndTransformAndCallBack>.InvokeEvent(EventType.ActivateSoulEffect, new(position, playerTransform, () =>
             {
@@ -167,7 +181,7 @@ public class EnemyManager : MonoBehaviour
 
     private void OnDeathWrapper ( Enemy sender )
     {
-        OnEnemyDeath(sender);
+        OnEnemyDeath(sender).Forget();
     }
 
     private async UniTaskVoid SpawnEnemiesIE ( CancellationToken token )
@@ -216,7 +230,7 @@ public class EnemyManager : MonoBehaviour
     private void OnEnable ()
     {
         EventManagerGeneric<GameState>.AddListener(EventType.OnGameStateChange, SetGameState);
-        EventManager.AddListener(EventType.OnSceneChange, OnSceneChange, this);
+        EventManager.AddListener(EventType.OnSceneChange, SceneChange, this);
         EventManager.AddListener(EventType.GameOver, OnGameOver, this);
     }
 
@@ -266,20 +280,19 @@ public class EnemyManager : MonoBehaviour
         StopAllCoroutines();
     }
 
+    private bool updatingDifficulty = false;
     private void UpdateDifficultyIndex ()
     {
-        currentDifficultyIndex += difficultyIncreasePerSecond * Time.fixedDeltaTime;
+        if ( updatingDifficulty )
+            return;
+        updatingDifficulty = true;
 
-        if ( currentDifficultyIndex >= requiredIndexForDifficultyAdvancement )
-        {
-            currentDifficultyIndex = 0;
-            if ( ++gradeIndex >= difficultyGrades.Count )
-                return;
+        if ( ++gradeIndex >= difficultyGrades.Count )
+            return;
 
-            currentDifficultyGrade = difficultyGrades[gradeIndex];
-        }
+        currentDifficultyGrade = difficultyGrades[gradeIndex];
 
-        currentDifficultyGrade.enemyStats.statMultiplier += 0.001f * Time.fixedDeltaTime;
+        updatingDifficulty = false;
     }
 
     private async UniTaskVoid CleanUpLostEnemies ( CancellationToken token )
@@ -327,8 +340,6 @@ public class EnemyManager : MonoBehaviour
 
             enemy.OnFixedUpdate();
         }
-
-        //UpdateDifficultyIndex();
     }
 }
 

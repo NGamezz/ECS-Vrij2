@@ -289,7 +289,15 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
     private void CheckSlider ( int index, Ability abil, int count )
     {
-        if ( index + 1 >= count )
+        if ( abil == null && abilityCooldownBars[index].gameObject.activeInHierarchy == true )
+        {
+            abilityCooldownBars[index].gameObject.SetActive(false);
+            return;
+        }
+        else if ( abil == null )
+            return;
+
+        if ( index == 0 )
             return;
 
         //Normalize the value with the max value, if it exceeds it, make it 1.
@@ -298,10 +306,7 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
         if ( amount > abil.ActivationCost )
             amount = 1;
 
-        if ( index >= abilityCooldownBars.Length )
-            return;
-
-        abilityCooldownBars[index].fillAmount = amount;
+        abilityCooldownBars[index - 1].fillAmount = amount;
     }
 
     private void Update ()
@@ -372,9 +377,6 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
         abilityCooldownBars[index].gameObject.SetActive(true);
         abilityCooldownBars[index].fillAmount = 0;
-
-        Debug.Log(abilityCooldownBars[index]);
-        Debug.Log(index);
     }
 
     private int GetAbilityIndex ( Type type, Ability ability )
@@ -480,9 +482,6 @@ public class PlayerAbilityHolder : IAbilityHolder
     {
         for ( int i = 0; i < abilities.Length; ++i )
         {
-            if ( abilities[i] == null )
-                continue;
-
             body(i, abilities[i], abilities.Length);
         }
     }

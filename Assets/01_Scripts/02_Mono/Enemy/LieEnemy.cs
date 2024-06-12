@@ -39,6 +39,9 @@ public class LieEnemy : Enemy, IAbilityOwner
             agent.ResetPath();
         }
 
+        if ( moveTarget == null || MeshTransform == null )
+            return;
+
         MeshTransform.forward = (moveTarget.target.position - MeshTransform.position).normalized;
         UseAbility();
     }

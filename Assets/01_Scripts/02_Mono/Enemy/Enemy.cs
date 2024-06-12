@@ -40,6 +40,7 @@ public class Enemy : Soulable, IDamageable
     private float health;
 
     [SerializeField] private UnityEvent onDeath;
+    [SerializeField] private UnityEvent<Vector3> PositionOnDeath;
 
     public UnityEvent<float, Transform> OnHit;
 
@@ -178,6 +179,7 @@ public class Enemy : Soulable, IDamageable
         if ( Dead )
         {
             onDeath?.Invoke();
+            PositionOnDeath?.Invoke(MeshTransform.position);
             OnDeath?.Invoke(this);
         }
         else

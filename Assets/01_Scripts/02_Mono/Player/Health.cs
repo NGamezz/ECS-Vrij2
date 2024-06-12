@@ -11,6 +11,15 @@ public class Health : MonoBehaviour, IDamageable, ICharacterDataHolder
 
     public Image healthBar;
 
+    public void Heal ( float amount )
+    {
+        if ( amount < 1 )
+            return;
+
+        data.Health += amount;
+        healthBar.fillAmount = data.Health / data.MaxHealth;
+    }
+
     public void AfflictDamage ( float amount )
     {
         if ( data.shieldActive )
@@ -27,13 +36,12 @@ public class Health : MonoBehaviour, IDamageable, ICharacterDataHolder
 
         if ( data.Health <= 0 )
         {
-            gameObject.SetActive(false);
+            EventManager.InvokeEvent(EventType.GameOver);
         }
 
         data.OnHit?.Invoke();
 
         healthBar.fillAmount = data.Health / data.MaxHealth;
-
     }
 
     private async UniTaskVoid ResetShield ( CharacterData data )

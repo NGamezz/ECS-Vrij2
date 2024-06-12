@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using UnityEngine;
 
 public class Gun : MonoBehaviour
@@ -19,7 +18,7 @@ public class Gun : MonoBehaviour
         {
             if ( _tr == null )
             {
-                _tr = (TrailRenderer)GetComponent(typeof(TrailRenderer));
+                _tr = (TrailRenderer)GameObject.GetComponent(typeof(TrailRenderer));
                 if ( _tr == null )
                     _tr = GameObject.AddComponent<TrailRenderer>();
             }

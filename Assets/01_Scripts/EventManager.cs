@@ -15,6 +15,7 @@ public enum EventType
     PostGameOverWait = 7,
     OnGameStateChange = 8,
     OnSceneChange = 9,
+    OnEnemyDeath = 10,
 }
 
 public struct EventHolder
