@@ -32,11 +32,11 @@ public class PlayerMovement
 
         if ( !canDash || characterData.Stamina < halfStamina || !Physics.CheckSphere(ownPos - new Vector3(ownPos.x, ownPos.y + 0.25f, ownPos.z), 0.5f, 1 << groundLayerMask) )
             return;
+        canDash = false;
 
         var direction = inputVector.magnitude == 0 ? rb.transform.forward : new(inputVector.x, 0.0f, inputVector.y);
         characterData.Stamina -= halfStamina;
 
-        canDash = false;
         rb.AddForce((characterData.Speed) * direction.normalized, ForceMode.Impulse);
 
         Utility.Async.StreamedTimerAsync(coolDownStream, () => { completionCallback?.Invoke(); canDash = true; }, dashCooldown).Forget();
@@ -67,23 +67,23 @@ public class PlayerMovement
         rb.AddForce(new float3(inputVector.x, 0.0f, inputVector.y) * characterData.Speed, ForceMode.Force);
     }
 
-    public void OnUpdate ()
+    private void StaminaRegen ()
     {
-    }
-
-    public void OnFixedUpdate ()
-    {
-        ApplyForce();
-        VelocityLimiting();
-
         if ( characterData.Stamina < characterData.MaxStamina )
         {
-            characterData.Stamina += Time.fixedDeltaTime;
+            characterData.Stamina += 10 * Time.fixedDeltaTime;
 
             if ( characterData.Stamina > characterData.MaxStamina )
             {
                 characterData.Stamina = characterData.MaxStamina;
             }
         }
+    }
+
+    public void OnFixedUpdate ()
+    {
+        ApplyForce();
+        VelocityLimiting();
+        StaminaRegen();
     }
 }

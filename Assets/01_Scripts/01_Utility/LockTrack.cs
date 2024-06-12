@@ -37,7 +37,6 @@ public class LockTrack : MonoBehaviour
 
     private void CancelTracking ()
     {
-        EventManagerGeneric<Transform>.InvokeEvent(EventType.TargetSelection, null);
         trackingIdentifier.gameObject.SetActive(false);
         tracking = false;
         trackingTarget = null;
@@ -52,6 +51,10 @@ public class LockTrack : MonoBehaviour
                 CancelTracking();
             }
             return;
+        }
+        if ( trackingTarget != null && trackingTarget.gameObject.activeInHierarchy == false )
+        {
+            EventManagerGeneric<Transform>.InvokeEvent(EventType.TargetSelection, null);
         }
 
         var position = trackingTarget.position;
