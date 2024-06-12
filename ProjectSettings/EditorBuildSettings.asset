@@ -5,23 +5,23 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
-    path: Assets/00_Scenes/GameObjectScene.unity
-    guid: 22b62158b19949a4fbec74cbf8e74d46
-  - enabled: 0
-    path: Assets/00_Scenes/EssentialComponents.unity
-    guid: c14a6849922d4e8419e5fd59b0504766
-  - enabled: 0
-    path: Assets/00_Scenes/TestLoadScene.unity
-    guid: d080d5e1493a8f242802d7fc7b550b6a
   - enabled: 1
-    path: Assets/00_Scenes/LevelTestBlockout.unity
-    guid: 2d13469552d90fb4d8d16e7efb625223
-  - enabled: 0
-    path: Assets/00_Scenes/MainScene.unity
-    guid: e47c71be0c380d943baf5ef1ff855faa
+    path: Assets/00_Scenes/Main Menu.unity
+    guid: f0123fc5811a9db4b8303fb64e0ec2dd
   - enabled: 1
-    path: Assets/00_Scenes/EmptyScene.unity
-    guid: a3b2312eb21ae9b40a1519aa411d448a
+    path: Assets/00_Scenes/Q Scene.unity
+    guid: 7839390c7b2242141b2c40b869492c30
+  - enabled: 1
+    path: Assets/00_Scenes/Levels/Level 1.unity
+    guid: 405deb9d7f0657a479488a6b3ab1e06d
+  - enabled: 1
+    path: Assets/00_Scenes/Levels/Level 2.unity
+    guid: 7a88c92ae10f491428844c8dd7bf0945
+  - enabled: 1
+    path: Assets/00_Scenes/Levels/Level 3.unity
+    guid: 752eb3c0e1da0ee49849a76a6b3c00f3
+  - enabled: 1
+    path: Assets/00_Scenes/Levels/Level 4.unity
+    guid: 331b8889ef3a33247aa9fc8bc6c1549a
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0

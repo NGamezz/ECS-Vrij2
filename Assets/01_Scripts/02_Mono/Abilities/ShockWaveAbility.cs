@@ -7,8 +7,6 @@ public class ShockWaveAbility : Ability
     private float shockWaveRadius;
     private readonly Collider[] hits = new Collider[10];
 
-    public float attackDelay = 1;
-
     public override bool Execute ( object context )
     {
         if ( !initialized )
@@ -29,19 +27,20 @@ public class ShockWaveAbility : Ability
         ownerData.Souls -= (int)ActivationCost;
         for ( int i = 0; i < hitCount; i++ )
         {
-            if ( hits[i].gameObject.layer == ownLayer )
+            var hit = hits[i];
+            if ( hit.gameObject.layer == ownLayer )
                 continue;
 
-            IDamageable hit;
-            if ( hits[i].transform.root == hits[i].transform )
-                hit = (IDamageable)hits[i].GetComponent(typeof(IDamageable));
+            IDamageable damagable;
+            if ( hit.transform.root == hit.transform )
+                damagable = (IDamageable)hit.GetComponent(typeof(IDamageable));
             else
-                hit = (IDamageable)hits[i].GetComponentInParent(typeof(IDamageable));
+                damagable = (IDamageable)hit.GetComponentInParent(typeof(IDamageable));
 
-            if ( hit == null )
+            if ( damagable == null )
                 continue;
 
-            hit.AfflictDamage(50.0f);
+            damagable.AfflictDamage(50.0f);
         }
 
         if ( Owner == null )
