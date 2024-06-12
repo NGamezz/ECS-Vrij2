@@ -48,7 +48,7 @@ public class ShockWaveEnemy : Enemy, IAbilityOwner, ILockOnAble
             await UniTask.NextFrame();
         }
 
-        var time = animator.GetCurrentAnimatorStateInfo(0).length / 2.2f;
+        var time = animator.GetCurrentAnimatorStateInfo(0).length / 3.0f;
 
         await UniTask.Delay(TimeSpan.FromSeconds(time));
         OnFinishAttack?.Invoke();

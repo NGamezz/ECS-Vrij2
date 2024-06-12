@@ -1,5 +1,6 @@
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.InputSystem;
 
 public class EnableTeleportManager : MonoBehaviour
@@ -7,6 +8,8 @@ public class EnableTeleportManager : MonoBehaviour
     [SerializeField] private InputAction teleporterActivationAction;
 
     [SerializeField] private float radius = 5.0f;
+
+    [SerializeField] private UnityEvent OnTeleport;
 
     private EnableTeleport[] teleports;
     private Vector3[] teleporterPositions;
@@ -38,8 +41,11 @@ public class EnableTeleportManager : MonoBehaviour
             if ( Vector3.Distance(playerMeshTransform.position, teleporterPositions[i]) < radius )
             {
                 int index = (i + 1) % teleports.Length;
+                var teleporter = teleports[index];
 
-                playerMeshTransform.position = teleports[index].GetSpawnPosition();
+                playerMeshTransform.position = teleporter.GetSpawnPosition();
+                teleporter.Teleport();
+
                 return;
             }
         }

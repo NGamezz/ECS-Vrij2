@@ -166,7 +166,7 @@ namespace Utility
             return component.gameObject.GetAsyncGameObjectDeactivationTrigger();
         }
 
-        public static async UniTaskVoid StreamedTimerAsync ( Action<float> stream, Action finishCallback, float duration )
+        public static async UniTask StreamedTimerAsync ( Action<float> stream, Action finishCallback, float duration )
         {
             float t = 0;
             await foreach ( var _ in UniTaskAsyncEnumerable.EveryUpdate() )

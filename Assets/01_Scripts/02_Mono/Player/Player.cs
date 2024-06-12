@@ -293,8 +293,6 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
             return;
 
         abilityHolder.ForeachAbility(CheckSlider);
-
-        playerMovement.OnUpdate();
     }
 
     private void FixedUpdate ()
