@@ -162,6 +162,9 @@ MonoBehaviour:
     currentGun: {fileID: 11400000, guid: 39cdbf6e965615549bc612fd7f0cf3b1, type: 2}
     recoilMultiplier: 0
     ownerData: {fileID: 0}
+    onShoot:
+      m_PersistentCalls:
+        m_Calls: []
     gunPosition: {fileID: 6373827368194751219}
     meshTransform: {fileID: 1808295935842128988}
     defaultAmountOfPooledObjects: 25
@@ -202,18 +205,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 4051607141016930107}
-        m_TargetAssemblyTypeName: UnityEngine.Animation, UnityEngine
-        m_MethodName: CrossFade
-        m_Mode: 5
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: Rock Attacked
-          m_BoolArgument: 1
-        m_CallState: 2
   OnFinishAttack:
     m_PersistentCalls:
       m_Calls:
@@ -229,21 +220,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 4051607141016930107}
-        m_TargetAssemblyTypeName: UnityEngine.Animation, UnityEngine
-        m_MethodName: Stop
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
   animator: {fileID: 5099437954961680297}
-  shockWaveRadius: 6
-  shockwaveDelay: 2
 --- !u!114 &2666853703071191049
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -499,7 +476,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2068223269240131464, guid: 7061bb3a3dff1a04e83db3359fa944f6, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
-      value: -0.35600004
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8536898720617071975, guid: 7061bb3a3dff1a04e83db3359fa944f6, type: 3}
       propertyPath: m_Name
@@ -512,18 +489,38 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8536898720617071975, guid: 7061bb3a3dff1a04e83db3359fa944f6, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2326156022043750217}
   m_SourcePrefab: {fileID: 100100000, guid: 7061bb3a3dff1a04e83db3359fa944f6, type: 3}
 --- !u!1 &1010322862129588825 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8536898720617071975, guid: 7061bb3a3dff1a04e83db3359fa944f6, type: 3}
   m_PrefabInstance: {fileID: 8681897115945709374}
   m_PrefabAsset: {fileID: 0}
---- !u!111 &4051607141016930107 stripped
-Animation:
-  m_CorrespondingSourceObject: {fileID: 4631521585573832709, guid: 7061bb3a3dff1a04e83db3359fa944f6, type: 3}
-  m_PrefabInstance: {fileID: 8681897115945709374}
+--- !u!95 &2326156022043750217
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1010322862129588825}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 32da29a3d6ee33a43a19ee07d1b293d6, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 1
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!4 &7264171471649366198 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2068223269240131464, guid: 7061bb3a3dff1a04e83db3359fa944f6, type: 3}

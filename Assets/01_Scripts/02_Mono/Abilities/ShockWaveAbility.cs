@@ -60,7 +60,7 @@ public class ShockWaveAbility : Ability
         ActivationCooldown = 5;
 
         ActivationCost = 10;
-        shockWaveRadius = 5;
+        shockWaveRadius = 6;
 
         Trigger = () => { return ownerData.Souls >= (ActivationCost * ownerData.abilityCostMultiplier); };
     }

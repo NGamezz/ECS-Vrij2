@@ -106,8 +106,7 @@ public class Shooting
 
         if ( ownerData.Player )
         {
-            Utility.Async.StreamedTimerAsync(reloadTimeStream, () => { reloading = false; onFinishReload?.Invoke(); }, currentGun.attackSpeed).Forget();
-            EventManagerGeneric<TextPopup>.InvokeEvent(EventType.OnTextPopupQueue, new(1.0f, "Reloading."));
+            Utility.Async.StreamedTimerAsync(reloadTimeStream, () => { reloading = false; onFinishReload?.Invoke(); SetReload(); }, currentGun.attackSpeed).Forget();
         }
         else
         {
@@ -115,11 +114,16 @@ public class Shooting
         }
     }
 
+    private void SetReload ()
+    {
+        currentGun.CurrentAmmo = currentGun.MagSize;
+        reloading = false;
+    }
+
     private async UniTaskVoid Reload ()
     {
         await UniTask.Delay(TimeSpan.FromSeconds(currentGun.ReloadSpeed));
-        currentGun.CurrentAmmo = currentGun.MagSize;
-        reloading = false;
+        SetReload();
     }
 
     private void OnObjectHit ( bool succes, Gun objectToPool )

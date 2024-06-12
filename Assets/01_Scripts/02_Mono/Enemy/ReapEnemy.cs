@@ -30,6 +30,28 @@ public class ReapEnemy : Enemy, IAbilityOwner
         Utility.Async.ChangeValueAfterSeconds(reapAbil.ActivationCooldown, ( x ) => canUseAbility = x, true, this.GetCancellationTokenOnDestroy()).Forget();
     }
 
+    protected override void Chasing ()
+    {
+        var over = blackBoard.GetVariable<bool>("OverrideChase");
+
+        if ( over )
+        {
+            Debug.Log(over);
+            return;
+        }
+
+        if ( agent.isActiveAndEnabled == false || agent.isOnNavMesh == false )
+        {
+            return;
+        }
+
+        if ( moveTarget.target != null && (agent.hasPath == false || Vector3.Distance(agent.pathEndPosition, moveTarget.target.position) > 5.0f) )
+        {
+            agent.SetDestination(moveTarget.target.position);
+        }
+        agent.isStopped = false;
+    }
+
     protected override void Attacking ()
     {
         if ( agent.isActiveAndEnabled == false || agent.isOnNavMesh == false )
@@ -68,6 +90,7 @@ public class ReapEnemy : Enemy, IAbilityOwner
 
     public void OnExecuteAbility ( AbilityType type )
     {
+        Debug.Log("On Execute Abil");
         MoveAway().Forget();
     }
 }

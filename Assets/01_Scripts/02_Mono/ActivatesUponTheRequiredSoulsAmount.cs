@@ -1,11 +1,9 @@
-using Cysharp.Threading.Tasks;
-using System.Collections.Generic;
 using System.Diagnostics;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class ActivatesUponTheRequiredSoulsAmount : MonoBehaviour
+public class ActivatesUponTheRequiredSoulsAmount : ISoulCollectionArea
 {
     [SerializeField] private int range = 10;
 
@@ -13,49 +11,32 @@ public class ActivatesUponTheRequiredSoulsAmount : MonoBehaviour
 
     [SerializeField] private UnityEvent uponComepletion;
 
-    private Transform playerMeshTransform;
-
-    private HashSet<int2> cellPositions;
     private int souls = 0;
     private Vector3 ownPosition;
 
     private void Start ()
     {
         ownPosition = transform.position;
-        playerMeshTransform = ((PlayerMesh)FindAnyObjectByType(typeof(PlayerMesh))).GetTransform();
-        SetupPositions().Forget();
     }
 
-    private void CalculateOnDeathWrapper ( object entity )
-    {
-        CalculateOnDeath(entity).Forget();
-    }
-
-    private async UniTaskVoid SetupPositions ()
-    {
-        cellPositions = await WorldManager.AddGridListener(ownPosition, range, CalculateOnDeathWrapper, CellEventType.OnEntityDeath);
-    }
-
-    private async UniTaskVoid CalculateOnDeath ( object entity )
+    public override bool CalculateOnDeath ( object entity )
     {
         if ( entity is not Vector3 pos )
-            return;
-
-        await UniTask.SwitchToThreadPool();
+            return false;
 
         var lenght = math.length(pos - ownPosition);
 
         if ( lenght > range )
         {
-            await UniTask.SwitchToMainThread();
-
-            EventManagerGeneric<VectorAndTransform>.InvokeEvent(EventType.ActivateSoulEffect, new(pos, playerMeshTransform));
-            EventManagerGeneric<int>.InvokeEvent(EventType.UponHarvestSoul, 1);
-            return;
+            return false;
         }
 
-        EventManagerGeneric<DoubleVector3>.InvokeEvent(EventType.ActivateSoulEffect, new(pos, ownPosition));
-        AddSoul(1);
+        EventManagerGeneric<VectorAndTransformAndCallBack>.InvokeEvent(EventType.ActivateSoulEffect, new(pos, transform, () =>
+        {
+            AddSoul(1);
+        }));
+
+        return true;
     }
 
     private void AddSoul ( int amount )
@@ -69,33 +50,14 @@ public class ActivatesUponTheRequiredSoulsAmount : MonoBehaviour
         {
             if ( uponComepletion != null )
             {
-                MainThreadQueue.Instance.Enqueue(() =>
-                {
-                    uponComepletion?.Invoke();
-                });
+                uponComepletion?.Invoke();
             }
-
-            WorldManager.RemoveGridListeners(cellPositions, CalculateOnDeathWrapper, CellEventType.OnEntityDeath);
         }
-    }
-
-    private void OnDisable ()
-    {
-        cellPositions.Clear();
-        WorldManager.RemoveGridListeners(cellPositions, CalculateOnDeathWrapper, CellEventType.OnEntityDeath);
     }
 
     [Conditional("ENABLE_LOGS")]
     private void OnDrawGizmos ()
     {
-        if ( cellPositions == null )
-            return;
-
         Gizmos.DrawWireSphere(ownPosition, range);
-
-        foreach ( var cell in cellPositions )
-        {
-            Gizmos.DrawWireCube(new(cell.x, 0.0f, cell.y), Vector3.one * WorldManager.CellSize);
-        }
     }
 }

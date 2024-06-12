@@ -1,31 +1,26 @@
-using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 
 public class CollectionPointManager : MonoBehaviour
 {
     [SerializeField] private int amountOfCompletedPoints = 0;
-
     [SerializeField] private int requiredAmountOfCompletedPoints = 3;
 
     [SerializeField] private UnityEvent UponCompletionOfPoints;
 
     private CollectionPoint[] collectionPoints;
-    private EventSubscription subscription;
 
     private void OnEnable ()
     {
-        EventManager.AddListener(EventType.UponDesiredSoulsAmount, () => ActivateCompletion().Forget(), this);
+        EventManager.AddListener(EventType.UponDesiredSoulsAmount, ActivateCompletion, this);
     }
 
-    private async UniTaskVoid ActivateCompletion ()
+    private void ActivateCompletion ()
     {
         amountOfCompletedPoints++;
 
         if ( amountOfCompletedPoints < requiredAmountOfCompletedPoints )
             return;
-
-        await UniTask.SwitchToMainThread();
 
         UponCompletionOfPoints?.Invoke();
         EventManager.InvokeEvent(EventType.PortalActivation);
@@ -35,11 +30,10 @@ public class CollectionPointManager : MonoBehaviour
     private void Start ()
     {
         collectionPoints = FindObjectsByType<CollectionPoint>(FindObjectsSortMode.None);
-        var playerTransform = FindAnyObjectByType<PlayerManager>().meshTransform;
 
         foreach ( var point in collectionPoints )
         {
-            point.OnStart(playerTransform).Forget();
+            point.OnStart();
         }
     }
 }
