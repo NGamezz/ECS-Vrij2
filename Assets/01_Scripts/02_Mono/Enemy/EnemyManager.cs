@@ -32,8 +32,6 @@ public class EnemyManager : MonoBehaviour
 
     [Header("Difficulty Scaling.")]
     [SerializeField] private List<DifficultyGrade> difficultyGrades = new();
-    [SerializeField] private float currentDifficultyIndex = 0;
-    [SerializeField] private float difficultyIncreasePerSecond = 0.2f;
     [SerializeField] private int gradeIndex = 0;
 
     private DifficultyGrade currentDifficultyGrade;
@@ -289,7 +287,6 @@ public class EnemyManager : MonoBehaviour
             return;
         updatingDifficulty = true;
 
-        currentDifficultyIndex = 0;
         if ( ++gradeIndex >= difficultyGrades.Count )
             return;
 
