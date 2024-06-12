@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 1786112733166538991}
   - component: {fileID: 1652976375952071211}
   - component: {fileID: 6444911222268598544}
+  - component: {fileID: 873421567486791544}
   m_Layer: 8
   m_Name: EnemyMesh
   m_TagString: Untagged
@@ -109,6 +110,18 @@ CapsuleCollider:
   m_Height: 5.6472263
   m_Direction: 1
   m_Center: {x: -0.054612756, y: 1.7716646, z: 0.09065056}
+--- !u!114 &873421567486791544
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 194154656066336725}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa74a88d2a23fc8459a14919c9196e3b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &5639215074042341115
 GameObject:
   m_ObjectHideFlags: 0
@@ -173,6 +186,9 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   onDeath:
+    m_PersistentCalls:
+      m_Calls: []
+  PositionOnDeath:
     m_PersistentCalls:
       m_Calls: []
   OnHit:

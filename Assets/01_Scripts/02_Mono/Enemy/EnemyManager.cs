@@ -145,11 +145,9 @@ public class EnemyManager : MonoBehaviour
         objectPool.PoolObject(sender);
     }
 
-    private async UniTaskVoid OnEnemyDeath ( Enemy sender )
+    private void OnEnemyDeath ( Enemy sender )
     {
         sender.OnDeath = null;
-
-        UnityEngine.Debug.Log("Enemy Death.");
 
         sender.gameObject.SetActive(false);
         onEnemyDeath?.Invoke();
@@ -158,7 +156,7 @@ public class EnemyManager : MonoBehaviour
 
         RemoveEnemy(sender);
 
-        var result = await soulCollectionManager.CheckCollections(position);
+        var result = soulCollectionManager.CheckCollections(position);
 
         if ( !result )
         {
@@ -180,7 +178,7 @@ public class EnemyManager : MonoBehaviour
 
     private void OnDeathWrapper ( Enemy sender )
     {
-        OnEnemyDeath(sender).Forget();
+        OnEnemyDeath(sender);
     }
 
     private async UniTaskVoid SpawnEnemiesIE ( CancellationToken token )

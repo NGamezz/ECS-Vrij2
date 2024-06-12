@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 4761958026482789043}
   - component: {fileID: 5895747614925339125}
   - component: {fileID: 7853942867956229747}
+  - component: {fileID: 158404377073319036}
   m_Layer: 8
   m_Name: Capsule
   m_TagString: Untagged
@@ -108,6 +109,18 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 122
   m_CollisionDetection: 0
+--- !u!114 &158404377073319036
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4282949157034062994}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa74a88d2a23fc8459a14919c9196e3b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &8361122080533841886
 GameObject:
   m_ObjectHideFlags: 0
@@ -191,10 +204,22 @@ MonoBehaviour:
     currentGun: {fileID: 11400000, guid: 2405d90e6c2fd0d47a1ec20ec1496373, type: 2}
     recoilMultiplier: 0
     ownerData: {fileID: 0}
+    onShoot:
+      m_PersistentCalls:
+        m_Calls: []
     gunPosition: {fileID: 3997561119205905866}
     meshTransform: {fileID: 5745277930421314644}
     defaultAmountOfPooledObjects: 25
     ownLayer: 8
+  OnAttack:
+    m_PersistentCalls:
+      m_Calls: []
+  onDeath:
+    m_PersistentCalls:
+      m_Calls: []
+  PositionOnDeath:
+    m_PersistentCalls:
+      m_Calls: []
   OnHit:
     m_PersistentCalls:
       m_Calls:
@@ -223,6 +248,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prefab: {fileID: 896930638078634540, guid: 250de82ba91dd8d4d8997e2b4493ad1b, type: 3}
+  lifeTime: 1
   spawnRange:
     x: 1
     y: 3

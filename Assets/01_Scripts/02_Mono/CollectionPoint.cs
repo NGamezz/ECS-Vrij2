@@ -1,4 +1,3 @@
-using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Events;
 using System.Diagnostics;
@@ -22,17 +21,14 @@ public class CollectionPoint : ISoulCollectionArea
 
     private Vector3 ownPosition;
 
-    public override bool CalculateOnDeath ( object entity )
+    public override bool CalculateOnDeath ( Vector3 entity )
     {
         return StandardCollection(entity);
     }
 
-    private bool StandardCollection ( object entity )
+    private bool StandardCollection ( Vector3 pos )
     {
-        if ( entity is not Vector3 pos )
-            return false;
-
-        var lenght = math.length(pos - ownPosition);
+        var lenght = Vector3.Distance(pos, ownPosition);
 
         if ( lenght > range )
         {

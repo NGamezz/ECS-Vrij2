@@ -14,12 +14,12 @@ public class SendSoulToPlayerOrEnv : MonoBehaviour
 
     public void CheckWrapper ( Vector3 pos )
     {
-        Check(pos).Forget();
+        Check(pos);
     }
 
-    public async UniTaskVoid Check ( Vector3 position )
+    public void Check ( Vector3 position )
     {
-        var result = await _pointManager.CheckCollections(position);
+        var result = _pointManager.CheckCollections(position);
 
         if ( !result )
         {

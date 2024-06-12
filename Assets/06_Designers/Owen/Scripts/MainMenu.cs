@@ -3,22 +3,29 @@ using UnityEngine.SceneManagement;
 
 public class MainMenu : MonoBehaviour
 {
-    public void OnPlayButton()
+    [SerializeField] private int startSceneIndex = 1;
+
+    public void OnPlayButton ()
     {
-        SceneManager.LoadScene(1);
+        SceneManager.LoadScene(startSceneIndex);
     }
 
-    public void OnCreditButton()
+    public void LoadScene ( int scene )
+    {
+        SceneManager.LoadScene(scene);
+    }
+
+    public void OnCreditButton ()
     {
         //SceneManager.LoadScene("Credits");
     }
 
-    public void OnSettingsButton()
+    public void OnSettingsButton ()
     {
         //SceneManager.LoadScene("Settings");
     }
 
-    public void OnQuitButton()
+    public void OnQuitButton ()
     {
         Application.Quit();
     }

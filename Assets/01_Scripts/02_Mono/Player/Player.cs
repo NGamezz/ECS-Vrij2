@@ -263,13 +263,6 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
         UpdateSoulsUI();
 
         AcquireAbility(new ReapAbility());
-        var reap = new ReapAbility
-        {
-            oneTimeUse = true
-        };
-        AcquireAbility(reap);
-        AcquireAbility(new ShockWaveAbility());
-        AcquireAbility(new LieAbility());
 
         characterData.Health = characterData.MaxHealth;
     }
@@ -284,20 +277,19 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
     {
         var value = characterData.Souls / (float)characterData.soulBankLimit;
         soulsBar.fillAmount = value;
-        //soulsUiText.SetText($"Amount of Souls = {characterData.Souls}");
     }
 
     private void CheckSlider ( int index, Ability abil, int count )
     {
-        if ( abil == null && abilityCooldownBars[index].gameObject.activeInHierarchy == true )
-        {
-            abilityCooldownBars[index].gameObject.SetActive(false);
-            return;
-        }
-        else if ( abil == null )
+        if ( index == 0 )
             return;
 
-        if ( index == 0 )
+        if ( abil == null && (abilityCooldownBars[index - 1] != null && abilityCooldownBars[index - 1].gameObject.activeInHierarchy == true) )
+        {
+            abilityCooldownBars[index - 1].gameObject.SetActive(false);
+            return;
+        }
+        else if ( abil == null || abilityCooldownBars[index - 1] == null )
             return;
 
         //Normalize the value with the max value, if it exceeds it, make it 1.
@@ -346,7 +338,6 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
         ability.Initialize(this, characterData);
 
-        EventManagerGeneric<TextPopup>.InvokeEvent(EventType.OnTextPopupQueue, new(1.0f, $"Acquired : {ability.GetType()}"));
         EventManagerGeneric<Transform>.InvokeEvent(EventType.TargetSelection, null);
 
         int index;
@@ -361,6 +352,8 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
 
         if ( index == 0 )
             return;
+
+        EventManagerGeneric<TextPopup>.InvokeEvent(EventType.OnTextPopupQueue, new(1.0f, $"Acquired : {ability.GetType()}"));
 
         if ( unique && type == typeof(ShockWaveAbility) )
         {

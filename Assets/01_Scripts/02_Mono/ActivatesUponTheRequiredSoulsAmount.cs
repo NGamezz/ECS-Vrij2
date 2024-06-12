@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -19,12 +18,9 @@ public class ActivatesUponTheRequiredSoulsAmount : ISoulCollectionArea
         ownPosition = transform.position;
     }
 
-    public override bool CalculateOnDeath ( object entity )
+    public override bool CalculateOnDeath ( Vector3 pos )
     {
-        if ( entity is not Vector3 pos )
-            return false;
-
-        var lenght = math.length(pos - ownPosition);
+        var lenght = Vector3.Distance(pos, ownPosition);
 
         if ( lenght > range )
         {

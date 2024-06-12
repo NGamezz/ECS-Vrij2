@@ -1,4 +1,3 @@
-using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public class SoulCollectionPointManager : MonoBehaviour
@@ -10,20 +9,23 @@ public class SoulCollectionPointManager : MonoBehaviour
         collectors = FindObjectsByType<ISoulCollectionArea>(FindObjectsSortMode.None);
     }
 
-    public UniTask<bool> CheckCollections ( Vector3 position )
+    public bool CheckCollections ( Vector3 position )
     {
         for ( int i = 0; i < collectors.Length; ++i )
         {
+            if ( !collectors[i].gameObject.activeInHierarchy )
+                continue;
+
             if ( collectors[i].CalculateOnDeath(position) )
             {
-                return UniTask.FromResult(true);
+                return true;
             }
         }
-        return UniTask.FromResult(false);
+        return false;
     }
 }
 
-public class ISoulCollectionArea : MonoBehaviour
+public abstract class ISoulCollectionArea : MonoBehaviour
 {
-    public virtual bool CalculateOnDeath ( object entity ) { return false; }
+    public abstract bool CalculateOnDeath ( Vector3 pos );
 }
