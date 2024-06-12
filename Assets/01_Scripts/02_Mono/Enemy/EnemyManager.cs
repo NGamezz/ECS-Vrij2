@@ -28,8 +28,6 @@ public class EnemyManager : MonoBehaviour
 
     private readonly ObjectPool<Enemy> objectPool = new();
 
-    private Transform currentlySelectedTarget = null;
-
     private GameState gameState = GameState.Running;
 
     [Header("Difficulty Scaling.")]
@@ -123,15 +121,12 @@ public class EnemyManager : MonoBehaviour
 
         SpawnEnemies = true;
         SpawnEnemiesIE(tokenSrc.Token).Forget();
-        CleanUpLostEnemies(tokenSrc.Token).Forget();
+        //CleanUpLostEnemies(tokenSrc.Token).Forget();
     }
 
     private void RemoveEnemy ( Enemy sender )
     {
         sender.OnDeath = null;
-
-        if ( currentlySelectedTarget != null && currentlySelectedTarget.IsChildOf(sender.transform) )
-            EventManagerGeneric<Transform>.InvokeEvent(EventType.TargetSelection, null);
 
         activeEnemies.Remove(sender);
         sender.gameObject.SetActive(false);
@@ -220,7 +215,6 @@ public class EnemyManager : MonoBehaviour
 
     private void OnEnable ()
     {
-        EventManagerGeneric<Transform>.AddListener(EventType.TargetSelection, ( target ) => currentlySelectedTarget = target);
         EventManagerGeneric<GameState>.AddListener(EventType.OnGameStateChange, SetGameState);
         EventManager.AddListener(EventType.OnSceneChange, OnSceneChange, ref subscription);
     }
@@ -246,7 +240,7 @@ public class EnemyManager : MonoBehaviour
             spawnEnemies = true;
             gameState = state;
             SpawnEnemiesIE(tokenSrc.Token).Forget();
-            CleanUpLostEnemies(tokenSrc.Token).Forget();
+            //CleanUpLostEnemies(tokenSrc.Token).Forget();
         }
     }
 
@@ -255,7 +249,6 @@ public class EnemyManager : MonoBehaviour
         subscription.UnsubscribeAll();
 
         EventManagerGeneric<GameState>.RemoveListener(EventType.OnGameStateChange, SetGameState);
-        EventManagerGeneric<Transform>.RemoveListener(EventType.TargetSelection, ( target ) => currentlySelectedTarget = target);
 
         foreach ( var enemy in activeEnemies )
         {

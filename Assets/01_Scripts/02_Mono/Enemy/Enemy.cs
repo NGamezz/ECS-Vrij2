@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using System;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Events;
 
 public enum EnemyType
 {
@@ -17,8 +18,6 @@ public class Enemy : Soulable, IDamageable
 {
     public bool Dead { get; private set; }
 
-    public BlackBoardObject blackBoardObject;
-
     public EnemyType EnemyType;
 
     public Transform MeshTransform;
@@ -29,6 +28,8 @@ public class Enemy : Soulable, IDamageable
 
     protected CharacterData characterData;
 
+    public UnityEvent OnAttack;
+
     public GameObject GameObject
     {
         get => cachedGameObject;
@@ -37,6 +38,10 @@ public class Enemy : Soulable, IDamageable
     protected bool gameOver = false;
 
     private float health;
+
+    [SerializeField] private UnityEvent onDeath;
+
+    public UnityEvent<float, Transform> OnHit;
 
     protected MoveTarget moveTarget;
 
@@ -135,6 +140,7 @@ public class Enemy : Soulable, IDamageable
             return;
 
         MeshTransform.forward = (moveTarget.target.position - MeshTransform.position).normalized;
+        OnAttack?.Invoke();
         Attack();
     }
 
@@ -171,6 +177,7 @@ public class Enemy : Soulable, IDamageable
 
         if ( Dead )
         {
+            onDeath?.Invoke();
             OnDeath?.Invoke(this);
         }
         else
@@ -189,6 +196,7 @@ public class Enemy : Soulable, IDamageable
             return;
 
         health -= amount;
+        OnHit?.Invoke(amount, MeshTransform);
 
         if ( health > 0 )
             return;

@@ -1,6 +1,7 @@
 using System.Collections.Specialized;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using UnityEngine.Events;
 
 //Not really neccessary.
 public class EnableTeleport : MonoBehaviour
@@ -10,7 +11,14 @@ public class EnableTeleport : MonoBehaviour
 
     [SerializeField] private Transform spawnPosition;
 
+    [SerializeField] private UnityEvent OnTeleport;
+
     private Vector3 _spawnPos;
+
+    public void Teleport ()
+    {
+        OnTeleport?.Invoke();
+    }
 
     private void Start ()
     {

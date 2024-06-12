@@ -9,7 +9,7 @@ public class LockTrack : MonoBehaviour
 
     private void StartTracking ( Transform target )
     {
-        if ( target == null )
+        if ( target == null || target.gameObject.activeInHierarchy == false )
         {
             CancelTracking();
             return;
@@ -44,13 +44,17 @@ public class LockTrack : MonoBehaviour
 
     private void FixedUpdate ()
     {
-        if ( !tracking || trackingTarget == null )
+        if ( !tracking || trackingTarget == null || trackingTarget.gameObject.activeInHierarchy == false )
         {
             if ( trackingIdentifier.gameObject.activeInHierarchy )
             {
-                trackingIdentifier.gameObject.SetActive(false);
+                CancelTracking();
             }
             return;
+        }
+        if ( trackingTarget != null && trackingTarget.gameObject.activeInHierarchy == false )
+        {
+            EventManagerGeneric<Transform>.InvokeEvent(EventType.TargetSelection, null);
         }
 
         var position = trackingTarget.position;

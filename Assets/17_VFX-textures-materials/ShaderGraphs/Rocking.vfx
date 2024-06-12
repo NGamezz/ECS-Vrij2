@@ -107,10 +107,10 @@ MonoBehaviour:
   categories: []
   uiBounds:
     serializedVersion: 2
-    x: 74
+    x: 21
     y: -565
-    width: 1087
-    height: 2068
+    width: 1140
+    height: 1990
 --- !u!114 &114350483966674976
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -533,7 +533,7 @@ VisualEffectResource:
     m_CullingFlags: 3
     m_UpdateMode: 0
     m_PreWarmDeltaTime: 0.05
-    m_PreWarmStepCount: 0
+    m_PreWarmStepCount: 1
     m_InitialEventName: OnPlay
     m_InstancingMode: 0
     m_InstancingCapacity: 64
@@ -1847,7 +1847,7 @@ MonoBehaviour:
   m_UIIgnoredErrors: []
   m_Parent: {fileID: 114350483966674976}
   m_Children: []
-  m_UIPosition: {x: 74, y: 448}
+  m_UIPosition: {x: 21, y: 434}
   m_UICollapsed: 0
   m_UISuperCollapsed: 0
   m_InputSlots: []

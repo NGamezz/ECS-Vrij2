@@ -1,4 +1,3 @@
-using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -9,36 +8,53 @@ public class LockOnHandler : MonoBehaviour
     [SerializeField] private Transform meshTransform;
 
     private Collider[] hits = new Collider[50];
-    private int targetCount = 0;
 
-    public void SwitchLock (InputAction.CallbackContext ctx)
+    public void SwitchLock ( InputAction.CallbackContext ctx )
     {
         if ( ctx.phase != InputActionPhase.Performed )
             return;
 
-        targetCount = Physics.OverlapSphereNonAlloc(meshTransform.position, radius, hits);
+        var targetCount = Physics.OverlapSphereNonAlloc(meshTransform.position, radius, hits);
 
         if ( targetCount < 1 )
             return;
 
-        var collider = GetNearest(meshTransform.position, hits);
+        var collider = GetNearest(meshTransform.position, targetCount, hits);
 
         if ( collider == null )
         {
-            EventManagerGeneric<Transform>.InvokeEvent(EventType.TargetSelection, null);
             return;
         }
 
         EventManagerGeneric<Transform>.InvokeEvent(EventType.TargetSelection, collider.transform);
     }
 
-    private Collider GetNearest ( Vector3 startPosition, params Collider[] colliders )
+    private Collider GetNearest ( Vector3 startPosition, int count, params Collider[] colliders )
     {
         int ownLayer = gameObject.layer;
-        var numerator = colliders.Where(x => x != null && x.gameObject.layer != ownLayer && (x.GetComponentInParent<IAbilityOwner>() != null || x.GetComponent<IAbilityOwner>() != null));
-        var nearest = numerator.OrderBy(x => Vector3.Distance(x.transform.position, startPosition)).FirstOrDefault();
 
-        return nearest;
+        var closest = colliders[0];
+        float closestDist = Vector3.Distance(startPosition, closest.transform.position);
+
+        for ( int i = 0; i < count; ++i )
+        {
+            var coll = colliders[i];
+
+            if ( coll == null || coll.gameObject.layer == ownLayer )
+                continue;
+
+            if ( (coll.GetComponentInParent(typeof(IAbilityOwner)) ?? coll.GetComponent(typeof(IAbilityOwner))) == null )
+                continue;
+
+            var dist = Vector3.Distance(coll.transform.position, startPosition);
+            if ( dist < closestDist )
+            {
+                closestDist = dist;
+                closest = coll;
+            }
+        }
+
+        return closest;
     }
 }
 

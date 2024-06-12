@@ -9,6 +9,7 @@ public class ShockWaveEnemy : Enemy, IAbilityOwner, ILockOnAble
     private ShockWaveAbility shockAbil;
 
     public UnityEvent OnAttackEvent;
+    public UnityEvent OnFinishAttack;
 
     public Animator animator;
 
@@ -39,16 +40,18 @@ public class ShockWaveEnemy : Enemy, IAbilityOwner, ILockOnAble
         canUseAbility = false;
 
         OnAttackEvent?.Invoke();
+
         animator.CrossFadeInFixedTime("Attack", 0.6f);
 
-        while ( animator.GetCurrentAnimatorStateInfo(0).fullPathHash != animAttackHash )
+        while ( animator != null && animator.GetCurrentAnimatorStateInfo(0).fullPathHash != animAttackHash )
         {
             await UniTask.NextFrame();
         }
 
-        var time = animator.GetCurrentAnimatorStateInfo(0).length / 2.2f;
+        var time = animator.GetCurrentAnimatorStateInfo(0).length / 3.0f;
 
         await UniTask.Delay(TimeSpan.FromSeconds(time));
+        OnFinishAttack?.Invoke();
 
         shockAbil.Execute(characterData);
         Utility.Async.ChangeValueAfterSeconds(shockAbil.ActivationCooldown, ( x ) => canUseAbility = x, true, this.GetCancellationTokenOnDestroy()).Forget();
