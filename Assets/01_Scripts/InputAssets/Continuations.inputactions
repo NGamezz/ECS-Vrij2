@@ -1,0 +1,45 @@
+{
+    "name": "Continuations",
+    "maps": [
+        {
+            "name": "Continuation",
+            "id": "d17a5ed8-0077-4bbe-987f-a379bf6cb8aa",
+            "actions": [
+                {
+                    "name": "Use",
+                    "type": "Button",
+                    "id": "55a6c1e0-7e2e-461d-890e-574e87c97d2d",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "6990f1ec-37bd-42ec-bb98-6282348c01cc",
+                    "path": "<Keyboard>/anyKey",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Use",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "2faa2d5e-11bc-48ed-9263-25468e71ac66",
+                    "path": "<Gamepad>/buttonEast",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Use",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}

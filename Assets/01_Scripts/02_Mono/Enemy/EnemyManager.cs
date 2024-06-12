@@ -35,7 +35,6 @@ public class EnemyManager : MonoBehaviour
     [SerializeField] private int gradeIndex = 0;
 
     private DifficultyGrade currentDifficultyGrade;
-    private int requiredIndexForDifficultyAdvancement = 5;
 
     private CancellationTokenSource tokenSrc = new();
 
