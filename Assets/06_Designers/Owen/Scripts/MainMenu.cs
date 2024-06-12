@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -5,12 +6,12 @@ public class MainMenu : MonoBehaviour
 {
     public void OnPlayButton()
     {
-        SceneManager.LoadScene(1);
+        StartCoroutine(DelayBeforeAction());
     }
 
     public void OnCreditButton()
     {
-        //SceneManager.LoadScene("Credits");
+        SceneManager.LoadScene("CreditScene");
     }
 
     public void OnSettingsButton()
@@ -21,5 +22,15 @@ public class MainMenu : MonoBehaviour
     public void OnQuitButton()
     {
         Application.Quit();
+    }
+
+
+    private IEnumerator DelayBeforeAction()
+    {
+        yield return new WaitForSeconds(2.0f);
+
+        print("Hij werkt ja kanker");
+
+        SceneManager.LoadScene(1);
     }
 }
