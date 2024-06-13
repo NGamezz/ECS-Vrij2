@@ -24,13 +24,16 @@ public class MainMenu : MonoBehaviour
         Application.Quit();
     }
 
+    public void OnBackButton()
+    {
+        SceneManager.LoadScene("Main Menu");
+    }
+
 
     private IEnumerator DelayBeforeAction()
     {
         yield return new WaitForSeconds(2.0f);
 
-        print("Hij werkt ja kanker");
-
-        SceneManager.LoadScene(1);
+        SceneManager.LoadScene("CreditScene");
     }
 }
