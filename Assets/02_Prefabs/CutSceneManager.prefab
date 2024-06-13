@@ -121,7 +121,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Dialogues:
-  - Potatoes is spelled Potatoes.
+  - Dark sight, Mark Light Feed souls,  Reach goals DIE The way you deserve
   cutSceneDuration: 2
   textDelay: 0.1
   cutSceneObject: {fileID: 5429299391771020157}
@@ -144,7 +144,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &4288996388222845457
 RectTransform:
   m_ObjectHideFlags: 0
@@ -295,12 +295,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Dark sight, Mark Light
-
-    Feed souls,  Reach goals
-
-    DIE The way
-    you deserve'
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: d6321e186e17c674b954db7000136951, type: 2}
   m_sharedMaterial: {fileID: 7716960847816696085, guid: d6321e186e17c674b954db7000136951, type: 2}
@@ -327,7 +322,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 150
+  m_fontSize: 36
   m_fontSizeBase: 150
   m_fontWeight: 400
   m_enableAutoSizing: 0

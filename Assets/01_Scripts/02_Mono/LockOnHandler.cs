@@ -47,8 +47,6 @@ public class LockOnHandler : MonoBehaviour
             if ( (coll.GetComponentInParent(typeof(LockOnAble)) == null && coll.GetComponent(typeof(LockOnAble)) == null) )
                 continue;
 
-            Debug.Log(coll);
-
             var dist = Vector3.Distance(coll.transform.position, startPosition);
             if ( dist < closestDist )
             {

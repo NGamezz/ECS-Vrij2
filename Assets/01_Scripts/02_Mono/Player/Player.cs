@@ -142,7 +142,7 @@ public class PlayerManager : MonoBehaviour, ISoulCollector, IAbilityOwner, IUpgr
         if ( succes )
             OnReapUse?.Invoke();
 
-        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => { canUseAbility = x; Debug.Log("FinishCallBack"); }, true).Forget();
+        Utility.Async.ChangeValueAfterSeconds(abilityCooldown, ( x ) => { canUseAbility = x;}, true).Forget();
     }
 
     public void OnUseAbilityA ( InputAction.CallbackContext ctx )
