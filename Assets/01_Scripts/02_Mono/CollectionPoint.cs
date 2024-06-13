@@ -30,6 +30,9 @@ public class CollectionPoint : ISoulCollectionArea
     {
         var lenght = Vector3.Distance(pos, ownPosition);
 
+        UnityEngine.Debug.Log(lenght);
+        UnityEngine.Debug.Log(range);
+
         if ( lenght > range )
         {
             return false;

@@ -29,6 +29,7 @@ public class Portal : MonoBehaviour
         if ( !active )
             return;
 
+        activationAction.Enable();
         uponEnablePortal?.Invoke();
         active = false;
     }

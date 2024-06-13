@@ -1,7 +1,6 @@
 using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Unity.Mathematics;
@@ -145,16 +144,19 @@ public class EnemyManager : MonoBehaviour
         objectPool.PoolObject(sender);
     }
 
-    private void OnEnemyDeath ( Enemy sender )
+    private void OnEnemyDeath ( Enemy sender, bool silent )
     {
-        sender.OnDeath = null;
-
         sender.gameObject.SetActive(false);
+        RemoveEnemy(sender);
+        UnityEngine.Debug.Log(silent);
+
+        if ( silent )
+            return;
+
+        UnityEngine.Debug.Log(silent);
         onEnemyDeath?.Invoke();
 
         Vector3 position = sender.MeshTransform.position;
-
-        RemoveEnemy(sender);
 
         var result = soulCollectionManager.CheckCollections(position);
 
@@ -176,9 +178,9 @@ public class EnemyManager : MonoBehaviour
         }
     }
 
-    private void OnDeathWrapper ( Enemy sender )
+    private void OnDeathWrapper ( Enemy sender, bool silent )
     {
-        OnEnemyDeath(sender);
+        OnEnemyDeath(sender, silent);
     }
 
     private async UniTaskVoid SpawnEnemiesIE ( CancellationToken token )
@@ -211,9 +213,9 @@ public class EnemyManager : MonoBehaviour
                 else
                 {
                     enemy.OnReuse(currentDifficultyGrade.enemyStats, position);
-                    enemy.OnDeath = OnDeathWrapper;
                 }
 
+                enemy.OnDeath = OnDeathWrapper;
                 var gameObject = enemy.GameObject;
                 gameObject.SetActive(true);
 
@@ -378,7 +380,7 @@ public class EnemyPrefab
 
 public class EnemyCreator : IEnemyCreator
 {
-    public Enemy CreateEnemy ( DifficultyGrade difficulty, Transform transform, Action<Enemy> onDeath, MoveTarget enemyTarget, Vector3 position, Transform parentTransform, bool inAnimate = false )
+    public Enemy CreateEnemy ( DifficultyGrade difficulty, Transform transform, Action<Enemy, bool> onDeath, MoveTarget enemyTarget, Vector3 position, Transform parentTransform, bool inAnimate = false )
     {
         var gameObject = UnityEngine.Object.Instantiate(difficulty.enemyPrefabs[UnityEngine.Random.Range(0, difficulty.enemyPrefabs.Count)].meshPrefab, parentTransform);
 
@@ -420,6 +422,6 @@ public class EnemyCreator : IEnemyCreator
 
 public interface IEnemyCreator
 {
-    public Enemy CreateEnemy ( DifficultyGrade difficulty, Transform transform, Action<Enemy> onDeath, MoveTarget enemyTarget, Vector3 position, Transform parentTransform, bool inAnimate = false );
+    public Enemy CreateEnemy ( DifficultyGrade difficulty, Transform transform, Action<Enemy, bool> onDeath, MoveTarget enemyTarget, Vector3 position, Transform parentTransform, bool inAnimate = false );
     public CharacterData CreateEnemyDataObject ( Enemy enemy, DifficultyGrade currentDifficultyGrade, MoveTarget enemyTarget );
 }

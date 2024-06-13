@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.XR;
 
 public class Gun : MonoBehaviour
 {
@@ -44,6 +45,14 @@ public class Gun : MonoBehaviour
     private void OnTriggerEnter ( Collider other )
     {
         var layer = other.gameObject.layer;
+
+        if ( (playerLayer == 8 || playerLayer == 9) && (layer == 8 || layer == 9) )
+        {
+            GameObject.SetActive(false);
+            UponHit?.Invoke(false, this);
+            return;
+        }
+
         if ( layer == playerLayer || layer == GameObject.layer )
         {
             return;
@@ -68,7 +77,7 @@ public class Gun : MonoBehaviour
             return;
         }
 
-        damagable.AfflictDamage(Damage);
+        damagable.AfflictDamage(Damage, false);
         UponHit?.Invoke(true, this);
     }
 

@@ -3,5 +3,5 @@ using UnityEngine;
 
 public class Soulable : MonoBehaviour
 {
-    public Action<Enemy> OnDeath;
+    public Action<Enemy, bool> OnDeath;
 }

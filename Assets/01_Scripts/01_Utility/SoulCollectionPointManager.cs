@@ -18,6 +18,7 @@ public class SoulCollectionPointManager : MonoBehaviour
 
             if ( collectors[i].CalculateOnDeath(position) )
             {
+                Debug.Log("Collection Point in Range.");
                 return true;
             }
         }

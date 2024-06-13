@@ -20,4 +20,4 @@ MonoBehaviour:
   attackRange: 10
   spawnSpeed: 5
   _attackSpeed: 0
-  enemiesPerBatch: 3
+  enemiesPerBatch: 10

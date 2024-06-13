@@ -2,5 +2,5 @@ public interface IDamageable
 {
     public bool Dead { get; }
 
-    public void AfflictDamage ( float amount );
+    public void AfflictDamage ( float amount, bool silent );
 }

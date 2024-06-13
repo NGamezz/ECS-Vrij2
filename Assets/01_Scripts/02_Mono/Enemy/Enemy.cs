@@ -35,8 +35,6 @@ public class Enemy : Soulable, IDamageable
         get => cachedGameObject;
     }
 
-    protected bool gameOver = false;
-
     private float health;
 
     [SerializeField] private UnityEvent onDeath;
@@ -51,8 +49,6 @@ public class Enemy : Soulable, IDamageable
     protected StateManager stateManager = new();
 
     protected bool overrideChase = false;
-
-    protected Blackboard blackBoard = new();
 
     public NavMeshAgent agent { get; protected set; }
 
@@ -76,8 +72,6 @@ public class Enemy : Soulable, IDamageable
         shooting.OnStart(manager, this);
 
         this.moveTarget = moveTarget;
-
-        blackBoard.SetVariable("OverrideChase", false);
 
         var chasingState = new BaseState(() =>
         {
@@ -113,8 +107,8 @@ public class Enemy : Soulable, IDamageable
         Dead = false;
         enemyStats = stats;
         agent.Warp(startPosition);
-        gameOver = false;
         shooting.SelectGun(shooting.currentGun);
+
         health = stats.MaxHealth;
     }
 
@@ -147,13 +141,6 @@ public class Enemy : Soulable, IDamageable
 
     protected virtual void Chasing ()
     {
-        var over = blackBoard.GetVariable<bool>("OverrideChase");
-
-        if ( over )
-        {
-            return;
-        }
-
         if ( agent.isActiveAndEnabled == false || agent.isOnNavMesh == false )
         {
             return;
@@ -174,35 +161,33 @@ public class Enemy : Soulable, IDamageable
     protected void OnDisable ()
     {
         StopAllCoroutines();
-        gameOver = true;
 
-        if ( Dead )
-        {
-            onDeath?.Invoke();
-            PositionOnDeath?.Invoke(MeshTransform.position);
-            OnDeath?.Invoke(this);
-        }
-        else
-        {
+        if ( !Dead )
             shooting.OnDisable();
-        }
-
-        blackBoard.SetVariable("OverrideChase", false);
-
-        OnDeath = null;
     }
 
-    public void AfflictDamage ( float amount )
+    public void AfflictDamage ( float amount, bool silent )
     {
         if ( Dead )
             return;
 
         health -= amount;
-        OnHit?.Invoke(amount, MeshTransform);
+
+        if ( !silent )
+            OnHit?.Invoke(amount, MeshTransform);
 
         if ( health > 0 )
             return;
 
+        Debug.Log("Enemy Died.");
+
+        if ( !silent )
+        {
+            onDeath?.Invoke();
+            PositionOnDeath?.Invoke(MeshTransform.position);
+        }
+
+        OnDeath?.Invoke(this, silent);
         Dead = true;
 
         if ( GameObject != null )
