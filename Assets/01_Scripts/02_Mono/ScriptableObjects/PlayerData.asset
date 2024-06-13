@@ -18,7 +18,7 @@ MonoBehaviour:
   soulBankLimit: 30
   hasShield: 0
   shieldRechargeSpeed: 5
-  canTakeDamage: 0
+  canTakeDamage: 1
   abilityCostMultiplier: 1
   Health: 100
   Stamina: 150

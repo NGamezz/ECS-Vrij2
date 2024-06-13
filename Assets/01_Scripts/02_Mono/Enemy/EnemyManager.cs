@@ -148,12 +148,10 @@ public class EnemyManager : MonoBehaviour
     {
         sender.gameObject.SetActive(false);
         RemoveEnemy(sender);
-        UnityEngine.Debug.Log(silent);
 
         if ( silent )
             return;
 
-        UnityEngine.Debug.Log(silent);
         onEnemyDeath?.Invoke();
 
         Vector3 position = sender.MeshTransform.position;

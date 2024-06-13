@@ -179,8 +179,6 @@ public class Enemy : Soulable, IDamageable
         if ( health > 0 )
             return;
 
-        Debug.Log("Enemy Died.");
-
         if ( !silent )
         {
             onDeath?.Invoke();

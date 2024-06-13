@@ -1,4 +1,3 @@
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
@@ -7,7 +6,7 @@ public class EnableTeleportManager : MonoBehaviour
 {
     [SerializeField] private InputAction teleporterActivationAction;
 
-    [SerializeField] private float radius = 5.0f;
+    [SerializeField] private float radius = 7.0f;
 
     [SerializeField] private UnityEvent OnTeleport;
 
@@ -25,6 +24,8 @@ public class EnableTeleportManager : MonoBehaviour
 
     public void EnableChildTeleporters ()
     {
+        Debug.Log("Activate Portals.");
+
         for ( int i = 0; i < teleports.Length; ++i )
         {
             teleporterPositions[i] = teleports[i].transform.position;
@@ -55,16 +56,5 @@ public class EnableTeleportManager : MonoBehaviour
     {
         teleporterActivationAction.performed -= CheckActivation;
         teleporterActivationAction.Disable();
-    }
-
-    private void OnDrawGizmos ()
-    {
-        if ( !EditorApplication.isPlaying )
-            return;
-
-        foreach ( var teleporter in teleports )
-        {
-            Gizmos.DrawWireSphere(teleporter.transform.position, radius);
-        }
     }
 }

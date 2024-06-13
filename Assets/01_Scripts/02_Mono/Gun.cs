@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using UnityEngine.XR;
 
 public class Gun : MonoBehaviour
 {
@@ -19,6 +18,9 @@ public class Gun : MonoBehaviour
         {
             if ( _tr == null )
             {
+                if ( GameObject == null )
+                    return null;
+
                 _tr = (TrailRenderer)GameObject.GetComponent(typeof(TrailRenderer));
                 if ( _tr == null )
                     _tr = GameObject.AddComponent<TrailRenderer>();

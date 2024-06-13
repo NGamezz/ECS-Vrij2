@@ -12,8 +12,6 @@ public class Portal : MonoBehaviour
 
     private bool active = true;
 
-    private EventSubscription subscription;
-
     private void Start ()
     {
         activationAction.performed += Activate;
@@ -22,6 +20,7 @@ public class Portal : MonoBehaviour
     private void ActivatePortal ()
     {
         uponEnablePortal?.Invoke();
+        activationAction.Enable();
     }
 
     private void Activate ( InputAction.CallbackContext ctx )
@@ -29,8 +28,7 @@ public class Portal : MonoBehaviour
         if ( !active )
             return;
 
-        activationAction.Enable();
-        uponEnablePortal?.Invoke();
+        uponPortalActivation?.Invoke();
         active = false;
     }
 

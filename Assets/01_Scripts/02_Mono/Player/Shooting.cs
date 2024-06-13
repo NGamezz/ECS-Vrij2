@@ -240,8 +240,8 @@ public class Shooting
         }
         else
         {
-            bullet.Tr.Clear();
-            bullet.GameObject.SetActive(true);
+            bullet?.Tr.Clear();
+            bullet?.GameObject.SetActive(true);
         }
         onShoot?.Invoke();
 
