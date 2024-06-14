@@ -1,6 +1,6 @@
 using System.Diagnostics;
-using Unity.Mathematics;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 using UnityEngine.Events;
 
 public class ActivatesUponTheRequiredSoulsAmount : ISoulCollectionArea
@@ -12,19 +12,17 @@ public class ActivatesUponTheRequiredSoulsAmount : ISoulCollectionArea
     [SerializeField] private UnityEvent uponComepletion;
 
     private int souls = 0;
-    private Vector3 ownPosition;
+
+    private Vector3 ownPos = Vector3.zero;
 
     private void Start ()
     {
-        ownPosition = transform.position;
+        ownPos = new(transform.position.x, 0.0f, transform.position.z);
     }
 
-    public override bool CalculateOnDeath ( object entity )
+    public override bool CalculateOnDeath ( Vector3 pos )
     {
-        if ( entity is not Vector3 pos )
-            return false;
-
-        var lenght = math.length(pos - ownPosition);
+        var lenght = Vector3.Distance(new(pos.x, 0.0f, pos.z), ownPos);
 
         if ( lenght > range )
         {
@@ -58,6 +56,6 @@ public class ActivatesUponTheRequiredSoulsAmount : ISoulCollectionArea
     [Conditional("ENABLE_LOGS")]
     private void OnDrawGizmos ()
     {
-        Gizmos.DrawWireSphere(ownPosition, range);
+        Gizmos.DrawWireSphere(transform.position, range);
     }
 }

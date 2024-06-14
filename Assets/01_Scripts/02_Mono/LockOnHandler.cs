@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -33,8 +34,8 @@ public class LockOnHandler : MonoBehaviour
     {
         int ownLayer = gameObject.layer;
 
-        var closest = colliders[0];
-        float closestDist = Vector3.Distance(startPosition, closest.transform.position);
+        Collider closest = null;
+        float closestDist = float.MaxValue;
 
         for ( int i = 0; i < count; ++i )
         {
@@ -43,7 +44,7 @@ public class LockOnHandler : MonoBehaviour
             if ( coll == null || coll.gameObject.layer == ownLayer )
                 continue;
 
-            if ( (coll.GetComponentInParent(typeof(IAbilityOwner)) ?? coll.GetComponent(typeof(IAbilityOwner))) == null )
+            if ( (coll.GetComponentInParent(typeof(LockOnAble)) == null && coll.GetComponent(typeof(LockOnAble)) == null) )
                 continue;
 
             var dist = Vector3.Distance(coll.transform.position, startPosition);

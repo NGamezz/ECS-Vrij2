@@ -1,11 +1,10 @@
-using Cysharp.Threading.Tasks;
 using System;
 using UnityEngine;
 
 public class ReapEnemy : Enemy, IAbilityOwner
 {
     private Ability ability;
-    private ReapAbility reapAbil = new ReapAbility();
+    private ReapAbility reapAbil = new();
 
     private bool canUseAbility = true;
 
@@ -16,6 +15,8 @@ public class ReapEnemy : Enemy, IAbilityOwner
 
         if ( inAnimate )
             return;
+
+        reapAbil.oneTimeUse = true;
         reapAbil.Initialize(this, this.characterData);
     }
 
@@ -23,23 +24,14 @@ public class ReapEnemy : Enemy, IAbilityOwner
     {
         if ( !canUseAbility )
             return;
+
         canUseAbility = false;
 
         reapAbil.Execute(characterData);
-
-        Utility.Async.ChangeValueAfterSeconds(reapAbil.ActivationCooldown, ( x ) => canUseAbility = x, true, this.GetCancellationTokenOnDestroy()).Forget();
     }
 
     protected override void Chasing ()
     {
-        var over = blackBoard.GetVariable<bool>("OverrideChase");
-
-        if ( over )
-        {
-            Debug.Log(over);
-            return;
-        }
-
         if ( agent.isActiveAndEnabled == false || agent.isOnNavMesh == false )
         {
             return;
@@ -70,27 +62,10 @@ public class ReapEnemy : Enemy, IAbilityOwner
     public Ability HarvestAbility ()
     {
         gameObject.SetActive(false);
-        reapAbil.oneTimeUse = true;
         return reapAbil;
     }
 
     public void AcquireAbility ( Ability ability ) { }
 
-    private async UniTaskVoid MoveAway ()
-    {
-        blackBoard.SetVariable("OverrideChase", true);
-
-        Vector3 newPos = UnityEngine.Random.insideUnitCircle * UnityEngine.Random.Range(10, 20);
-        var result = agent.SetDestination(newPos);
-
-        await UniTask.WaitUntil(() => MeshTransform == null || Vector3.Distance(MeshTransform.position, newPos) <= 4.0f || !result);
-
-        blackBoard.SetVariable("OverrideChase", false);
-    }
-
-    public void OnExecuteAbility ( AbilityType type )
-    {
-        Debug.Log("On Execute Abil");
-        MoveAway().Forget();
-    }
+    public void OnExecuteAbility ( AbilityType type ) { }
 }

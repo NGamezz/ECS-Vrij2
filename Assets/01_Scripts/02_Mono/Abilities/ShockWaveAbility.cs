@@ -40,7 +40,7 @@ public class ShockWaveAbility : Ability
             if ( damagable == null )
                 continue;
 
-            damagable.AfflictDamage(50.0f);
+            damagable.AfflictDamage(50.0f, false);
         }
 
         if ( Owner == null )

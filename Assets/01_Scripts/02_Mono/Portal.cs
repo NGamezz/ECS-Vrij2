@@ -6,22 +6,26 @@ public class Portal : MonoBehaviour
 {
     [SerializeField] private UnityEvent uponEnablePortal;
 
+    [SerializeField] private float range = 10.0f;
+
     [SerializeField] private UnityEvent uponPortalActivation;
 
     [SerializeField] private InputAction activationAction;
 
-    private bool active = true;
+    private Transform playerTransform;
 
-    private EventSubscription subscription;
+    private bool active = true;
 
     private void Start ()
     {
+        playerTransform = FindAnyObjectByType<PlayerMesh>().GetTransform();
         activationAction.performed += Activate;
     }
 
     private void ActivatePortal ()
     {
         uponEnablePortal?.Invoke();
+        activationAction.Enable();
     }
 
     private void Activate ( InputAction.CallbackContext ctx )
@@ -29,7 +33,16 @@ public class Portal : MonoBehaviour
         if ( !active )
             return;
 
-        uponEnablePortal?.Invoke();
+        var playerPos = playerTransform.position;
+        var ownPos = transform.position;
+
+        playerPos.y = 0.0f;
+        ownPos.y = 0.0f;
+
+        if ( Vector3.Distance(playerPos, ownPos) > range )
+            return;
+
+        uponPortalActivation?.Invoke();
         active = false;
     }
 

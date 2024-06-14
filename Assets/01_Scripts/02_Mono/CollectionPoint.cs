@@ -1,7 +1,5 @@
-using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Events;
-using System.Diagnostics;
 
 public enum CollectionPointMode
 {
@@ -20,41 +18,28 @@ public class CollectionPoint : ISoulCollectionArea
 
     [SerializeField] private UnityEvent eventToTrigger;
 
-    private Vector3 ownPosition;
+    private Vector3 ownPos;
 
-    public override bool CalculateOnDeath ( object entity )
+    private void Start ()
     {
-        return StandardCollection(entity);
+        ownPos = new(transform.position.x, 0.0f, transform.position.z);
     }
 
-    private bool StandardCollection ( object entity )
+    public override bool CalculateOnDeath ( Vector3 entity )
     {
-        if ( entity is not Vector3 pos )
-            return false;
-
-        var lenght = math.length(pos - ownPosition);
+        var lenght = Vector3.Distance(new(entity.x, 0.0f, entity.z), ownPos);
 
         if ( lenght > range )
         {
             return false;
         }
 
-        EventManagerGeneric<VectorAndTransformAndCallBack>.InvokeEvent(EventType.ActivateSoulEffect, new(pos, transform, () =>
+        EventManagerGeneric<VectorAndTransformAndCallBack>.InvokeEvent(EventType.ActivateSoulEffect, new(entity, transform, () =>
         {
             AddSoul(1);
         }));
 
         return true;
-    }
-
-    public void OnStart ()
-    {
-        ownPosition = transform.position;
-    }
-
-    private void OnDisable ()
-    {
-        souls = 0;
     }
 
     private void AddSoul ( int amount )
@@ -73,14 +58,5 @@ public class CollectionPoint : ISoulCollectionArea
 
             EventManager.InvokeEvent(EventType.UponDesiredSoulsAmount);
         }
-    }
-
-    [Conditional("ENABLE_LOGS")]
-    private void OnDrawGizmos ()
-    {
-        if ( !gizmos )
-            return;
-
-        Gizmos.DrawWireSphere(ownPosition, range);
     }
 }

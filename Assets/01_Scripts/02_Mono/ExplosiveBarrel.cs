@@ -24,7 +24,7 @@ public class ExplosiveBarrel : MonoBehaviour
             if ( hit == null )
                 continue;
 
-            hit.AfflictDamage(damage);
+            hit.AfflictDamage(damage, false);
         }
 
         gameObject.SetActive(false);

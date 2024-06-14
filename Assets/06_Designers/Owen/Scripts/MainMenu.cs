@@ -1,39 +1,32 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class MainMenu : MonoBehaviour
 {
-    public void OnPlayButton()
+    [SerializeField] private int startSceneIndex = 1;
+
+    public void OnPlayButton ()
     {
-        StartCoroutine(DelayBeforeAction());
+        SceneManager.LoadScene(startSceneIndex);
     }
 
-    public void OnCreditButton()
+    public void LoadScene ( int scene )
     {
-        SceneManager.LoadScene("CreditScene");
+        SceneManager.LoadScene(scene);
     }
 
-    public void OnSettingsButton()
+    public void OnCreditButton ()
+    {
+        //SceneManager.LoadScene("Credits");
+    }
+
+    public void OnSettingsButton ()
     {
         //SceneManager.LoadScene("Settings");
     }
 
-    public void OnQuitButton()
+    public void OnQuitButton ()
     {
         Application.Quit();
-    }
-
-    public void OnBackButton()
-    {
-        SceneManager.LoadScene("Main Menu");
-    }
-
-
-    private IEnumerator DelayBeforeAction()
-    {
-        yield return new WaitForSeconds(2.0f);
-
-        SceneManager.LoadScene("CreditScene");
     }
 }

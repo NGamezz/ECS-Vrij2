@@ -54,7 +54,7 @@ public class Shooting
         gunObject.transform.position = gunPosition.position;
         currentGun.CurrentAmmo = currentGun.MagSize;
 
-        SetLayerRecursive(gunObject, meshTransform.gameObject.layer);
+        SetLayerRecursive(gunObject, owner.gameObject.layer);
 
         GenerateBullets();
 
@@ -86,6 +86,7 @@ public class Shooting
         }
     }
 
+    private bool isRunning = false;
     public void SelectGun ( GunStats gun )
     {
         tokenSrc.Cancel();
@@ -94,7 +95,10 @@ public class Shooting
         gun.CurrentAmmo = gun.MagSize;
 
         running = true;
-        Shoot(tokenSrc.Token).Forget();
+        tokenSrc = new();
+
+        if ( !isRunning )
+            Shoot(tokenSrc.Token).Forget();
     }
 
     public void OnReload ()
@@ -141,9 +145,8 @@ public class Shooting
     public void OnDisable ()
     {
         running = false;
-        return;
-
         tokenSrc.Cancel();
+        return;
 
         for ( int i = activeBullets.Count - 1; i >= 0; i-- )
         {
@@ -163,6 +166,7 @@ public class Shooting
 
     private async UniTask Shoot ( CancellationToken token )
     {
+        isRunning = true;
         while ( running )
         {
             token.ThrowIfCancellationRequested();
@@ -176,11 +180,12 @@ public class Shooting
                 CheckShootType();
 
                 if ( currentGun.GunType == GunType.Burst )
-                    await UniTask.Delay(TimeSpan.FromSeconds((currentGun.attackSpeed)), cancellationToken: token);
+                    await UniTask.Delay(TimeSpan.FromSeconds((currentGun.attackSpeed)));
 
-                await UniTask.Delay(TimeSpan.FromSeconds((currentGun.attackSpeed)), cancellationToken: token);
+                await UniTask.Delay(TimeSpan.FromSeconds((currentGun.attackSpeed)));
             }
         }
+        isRunning = false;
     }
 
     private void CheckShootType ()
@@ -235,8 +240,8 @@ public class Shooting
         }
         else
         {
-            bullet.Tr.Clear();
-            bullet.GameObject.SetActive(true);
+            bullet?.Tr.Clear();
+            bullet?.GameObject.SetActive(true);
         }
         onShoot?.Invoke();
 

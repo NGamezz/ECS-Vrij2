@@ -15,15 +15,15 @@ public class SpawnFloatingDamage : MonoBehaviour
         var random = UnityEngine.Random.insideUnitSphere * UnityEngine.Random.Range(spawnRange.x, spawnRange.y);
 
         var pos = target.position + random;
-        pos.y += 5.0f;
+        pos.y =  5.0f;
 
-        var instance = Instantiate(prefab, target);
+        var instance = Instantiate(prefab);
         instance.transform.position = pos;
 
         var text = instance.GetComponent<TMP_Text>();
 
         text.text = amount.ToString();
-        instance.transform.forward = target.forward;
+        instance.transform.forward = -target.forward;
 
         DestroyAfterTime(instance).Forget();
     }

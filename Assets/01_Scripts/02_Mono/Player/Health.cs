@@ -20,7 +20,7 @@ public class Health : MonoBehaviour, IDamageable, ICharacterDataHolder
         healthBar.fillAmount = data.Health / data.MaxHealth;
     }
 
-    public void AfflictDamage ( float amount )
+    public void AfflictDamage ( float amount, bool silent )
     {
         if ( data.shieldActive )
         {

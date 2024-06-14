@@ -18,6 +18,9 @@ public class Gun : MonoBehaviour
         {
             if ( _tr == null )
             {
+                if ( GameObject == null )
+                    return null;
+
                 _tr = (TrailRenderer)GameObject.GetComponent(typeof(TrailRenderer));
                 if ( _tr == null )
                     _tr = GameObject.AddComponent<TrailRenderer>();
@@ -44,6 +47,14 @@ public class Gun : MonoBehaviour
     private void OnTriggerEnter ( Collider other )
     {
         var layer = other.gameObject.layer;
+
+        if ( (playerLayer == 8 || playerLayer == 9) && (layer == 8 || layer == 9) )
+        {
+            GameObject.SetActive(false);
+            UponHit?.Invoke(false, this);
+            return;
+        }
+
         if ( layer == playerLayer || layer == GameObject.layer )
         {
             return;
@@ -68,7 +79,7 @@ public class Gun : MonoBehaviour
             return;
         }
 
-        damagable.AfflictDamage(Damage);
+        damagable.AfflictDamage(Damage, false);
         UponHit?.Invoke(true, this);
     }
 
