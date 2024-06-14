@@ -391,6 +391,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
+  range: 10
   uponPortalActivation:
     m_PersistentCalls:
       m_Calls:
@@ -424,7 +425,7 @@ MonoBehaviour:
       m_Flags: 0
     - m_Name: 
       m_Id: ed49cf23-9b84-4a1e-8b6f-9e0154fcb18a
-      m_Path: <Gamepad>/buttonEast
+      m_Path: <Gamepad>/buttonWest
       m_Interactions: 
       m_Processors: 
       m_Groups: 

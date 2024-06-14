@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3745032952947512454}
   - component: {fileID: 6961338852609706418}
   - component: {fileID: 7434617751588817274}
-  m_Layer: 0
+  m_Layer: 4
   m_Name: Popup Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -35,8 +35,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: -3, y: -412}
-  m_SizeDelta: {x: 750, y: 200}
+  m_AnchoredPosition: {x: 0, y: 310.5}
+  m_SizeDelta: {x: 1000, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3745032952947512454
 CanvasRenderer:
@@ -93,13 +93,13 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 35
-  m_fontSizeBase: 35
+  m_fontSize: 50
+  m_fontSizeBase: 50
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 100
-  m_fontStyle: 17
+  m_fontStyle: 1
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 1024
   m_textAlignment: 65535
@@ -306,7 +306,7 @@ GameObject:
   - component: {fileID: 8684380749812693857}
   - component: {fileID: 293202547048980855}
   - component: {fileID: 1206797665595691280}
-  m_Layer: 0
+  m_Layer: 4
   m_Name: GameManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -341,7 +341,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cff78414936aecd40b61207d8f12d474, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  levelIndexes: 02000000030000000400000005000000
+  levelIndexes: 0300000004000000
   gameOverScreen: {fileID: 2710388542560508191}
   returnToMainMenuDelay: 2
 --- !u!114 &3047090865901122402
@@ -406,7 +406,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8900099207508335624}
-  m_Layer: 0
+  m_Layer: 4
   m_Name: DeathScreen
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -446,7 +446,7 @@ GameObject:
   - component: {fileID: 8039136691979070255}
   - component: {fileID: 8120014606108163096}
   - component: {fileID: 5906464537535136497}
-  m_Layer: 0
+  m_Layer: 4
   m_Name: Image
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -521,7 +521,7 @@ GameObject:
   - component: {fileID: 6228801758706539779}
   - component: {fileID: 2039592249078038294}
   - component: {fileID: 8894693991270627175}
-  m_Layer: 0
+  m_Layer: 4
   m_Name: Text (TMP)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -661,7 +661,7 @@ GameObject:
   - component: {fileID: 1906038398499340761}
   - component: {fileID: 5793338827949126295}
   - component: {fileID: 3587427901552317762}
-  m_Layer: 0
+  m_Layer: 4
   m_Name: Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -763,7 +763,7 @@ GameObject:
   - component: {fileID: 900114647374442843}
   - component: {fileID: 5445438404363107580}
   - component: {fileID: 5225936914314549837}
-  m_Layer: 0
+  m_Layer: 4
   m_Name: BG
   m_TagString: Untagged
   m_Icon: {fileID: 0}

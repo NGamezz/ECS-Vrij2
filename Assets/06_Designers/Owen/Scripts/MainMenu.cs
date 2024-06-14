@@ -5,27 +5,32 @@ public class MainMenu : MonoBehaviour
 {
     [SerializeField] private int startSceneIndex = 1;
 
-    public void OnPlayButton ()
+    public void OnPlayButton()
     {
         SceneManager.LoadScene(startSceneIndex);
     }
 
-    public void LoadScene ( int scene )
+    public void LoadScene(int scene)
     {
         SceneManager.LoadScene(scene);
     }
 
-    public void OnCreditButton ()
+    public void OnCreditButton()
     {
-        //SceneManager.LoadScene("Credits");
+        SceneManager.LoadScene("CreditScene");
     }
 
-    public void OnSettingsButton ()
+    public void OnBackButton()
+    {
+        SceneManager.LoadScene("Main Menu");
+    }
+
+    public void OnSettingsButton()
     {
         //SceneManager.LoadScene("Settings");
     }
 
-    public void OnQuitButton ()
+    public void OnQuitButton()
     {
         Application.Quit();
     }

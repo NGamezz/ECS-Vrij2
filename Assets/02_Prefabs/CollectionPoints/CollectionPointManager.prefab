@@ -88,6 +88,14 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 940410988369209911, guid: 33433553ed57bdc4aa52c8fc54ee27cd, type: 3}
       propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1412051469892906914, guid: 33433553ed57bdc4aa52c8fc54ee27cd, type: 3}
+      propertyPath: OnExit.m_PersistentCalls.m_Calls.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1412051469892906914, guid: 33433553ed57bdc4aa52c8fc54ee27cd, type: 3}
+      propertyPath: OnEnter.m_PersistentCalls.m_Calls.Array.size
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1657449708863341812, guid: 33433553ed57bdc4aa52c8fc54ee27cd, type: 3}
@@ -239,6 +247,14 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 940410988369209911, guid: 33433553ed57bdc4aa52c8fc54ee27cd, type: 3}
       propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1412051469892906914, guid: 33433553ed57bdc4aa52c8fc54ee27cd, type: 3}
+      propertyPath: OnExit.m_PersistentCalls.m_Calls.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1412051469892906914, guid: 33433553ed57bdc4aa52c8fc54ee27cd, type: 3}
+      propertyPath: OnEnter.m_PersistentCalls.m_Calls.Array.size
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1657449708863341812, guid: 33433553ed57bdc4aa52c8fc54ee27cd, type: 3}
@@ -386,7 +402,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 940410988369209911, guid: 33433553ed57bdc4aa52c8fc54ee27cd, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1179396800124622559, guid: 33433553ed57bdc4aa52c8fc54ee27cd, type: 3}
       propertyPath: ShapeModule.radius.value
@@ -395,6 +411,14 @@ PrefabInstance:
     - target: {fileID: 1219651508510121882, guid: 33433553ed57bdc4aa52c8fc54ee27cd, type: 3}
       propertyPath: m_ConstrainProportionsScale
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1412051469892906914, guid: 33433553ed57bdc4aa52c8fc54ee27cd, type: 3}
+      propertyPath: OnExit.m_PersistentCalls.m_Calls.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1412051469892906914, guid: 33433553ed57bdc4aa52c8fc54ee27cd, type: 3}
+      propertyPath: OnEnter.m_PersistentCalls.m_Calls.Array.size
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1657449708863341812, guid: 33433553ed57bdc4aa52c8fc54ee27cd, type: 3}
       propertyPath: m_LocalPosition.x

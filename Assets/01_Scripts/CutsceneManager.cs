@@ -18,37 +18,37 @@ public class CutsceneManager : MonoBehaviour
 
     public static CutsceneManager SharedInstance;
 
-    private void Awake ()
+    private void Awake()
     {
-        if ( SharedInstance != null )
+        if (SharedInstance != null)
         { Destroy(SharedInstance); }
 
         DontDestroyOnLoad(gameObject);
         SharedInstance = this;
     }
 
-    private void OnEnable ()
+    private void OnEnable()
     {
         EventManager.AddListener(EventType.GameOver, OnGameOver, this);
     }
 
-    private void OnGameOver ()
+    private void OnGameOver()
     {
         Destroy(SharedInstance);
         Destroy(gameObject);
     }
 
-    private void OnDisable ()
+    private void OnDisable()
     {
         Destroy(SharedInstance);
     }
 
-    private async UniTask SetDialogue ()
+    private async UniTask SetDialogue()
     {
         string text = Dialogues[UnityEngine.Random.Range(0, Dialogues.Length)];
         cutSceneText.text = "";
 
-        foreach ( char c in text )
+        foreach (char c in text)
         {
             cutSceneText.text += c;
             await UniTask.Delay(TimeSpan.FromSeconds(textDelay));
@@ -57,7 +57,7 @@ public class CutsceneManager : MonoBehaviour
         await UniTask.Delay(TimeSpan.FromSeconds(0.5f));
     }
 
-    public async UniTask StartCutScene ( int sceneIndex )
+    public async UniTask StartCutScene(int sceneIndex)
     {
         Stopwatch sw = Stopwatch.StartNew();
 
@@ -67,7 +67,6 @@ public class CutsceneManager : MonoBehaviour
         var currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
 
         var playerMesh = FindAnyObjectByType<PlayerMesh>().GetTransform();
-
         await SetDialogue();
 
         await LoadScene.LoadSceneByIndex(sceneIndex, LoadSceneMode.Additive);
@@ -78,7 +77,7 @@ public class CutsceneManager : MonoBehaviour
 
         playerMesh.position = spawnPoint.transform.position;
 
-        Destroy(spawnPoint.gameObject);
+        await UniTask.Delay(TimeSpan.FromSeconds(1));
 
         await LoadScene.UnLoadScene(currentSceneIndex);
 
@@ -86,7 +85,7 @@ public class CutsceneManager : MonoBehaviour
 
         var elapsed = sw.Elapsed.TotalSeconds;
 
-        if ( elapsed < cutSceneDuration )
+        if (elapsed < cutSceneDuration)
         {
             await UniTask.Delay(TimeSpan.FromSeconds(cutSceneDuration - elapsed));
         }
